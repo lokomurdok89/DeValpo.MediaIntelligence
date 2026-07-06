@@ -1,7 +1,9 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.HumanReview;
+using DeValpo.MediaIntelligence.Application.Webhooks;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.HumanReview;
+using DeValpo.MediaIntelligence.Contracts.Webhooks;
 using DeValpo.MediaIntelligence.Domain.Entities;
 using FluentAssertions;
 
@@ -127,6 +129,7 @@ public sealed class HumanReviewApplicationServiceTests
     {
         return new HumanReviewApplicationService(
             new FakeHumanReviewTaskRepository(tasks),
+            new FakeWebhookDeliveryApplicationService(),
             new FakeUnitOfWork());
     }
 
@@ -203,5 +206,36 @@ public sealed class HumanReviewApplicationServiceTests
     private sealed class FakeUnitOfWork : IUnitOfWork
     {
         public Task SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class FakeWebhookDeliveryApplicationService : IWebhookDeliveryApplicationService
+    {
+        public Task<WebhookTargetResponse> CreateTargetAsync(
+            string clientKey,
+            CreateWebhookTargetRequest request,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyCollection<WebhookTargetResponse>> ListTargetsAsync(
+            string clientKey,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyCollection<WebhookDeliveryResponse>> ListDeliveriesAsync(
+            string? clientKey,
+            Guid? jobId,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task EnqueueForJobAsync(Guid jobId, string eventType, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

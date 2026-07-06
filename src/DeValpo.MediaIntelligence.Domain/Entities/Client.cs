@@ -10,4 +10,5 @@ public sealed class Client
     public bool IsActive { get; set; } = true;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public List<ClientApiKey> ApiKeys { get; set; } = [];
+    public List<ClientWebhookTarget> WebhookTargets { get; set; } = [];
 }

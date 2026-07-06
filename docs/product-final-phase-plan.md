@@ -212,7 +212,7 @@ Evidencia QA:
 
 Objetivo: hacer robusto el manejo de documentos reales.
 
-Estado: en implementacion en la rama `codex/phase-5-file-ingestion-validation`; no se puede iniciar Fase 6 hasta que PR, CI, QA real y merge esten completos.
+Estado: implementada y mergeada en PR #12.
 
 Implementacion:
 
@@ -247,7 +247,7 @@ Exit criteria:
 
 Objetivo: convertir la revision humana en flujo usable.
 
-Estado: en implementacion en la rama `codex/phase-6-human-review-workflow`; no se puede iniciar Fase 7 hasta que PR, CI, QA real y merge esten completos.
+Estado: implementada y mergeada en PR #13.
 
 Implementacion:
 
@@ -277,6 +277,8 @@ Exit criteria:
 ## Fase 7: Webhooks Y Entrega De Resultados
 
 Objetivo: entregar resultados a sistemas externos de forma confiable.
+
+Estado: en implementacion en la rama `codex/phase-7-webhook-delivery`; no se puede iniciar Fase 8 hasta que PR, CI, QA real y merge esten completos.
 
 Implementacion:
 

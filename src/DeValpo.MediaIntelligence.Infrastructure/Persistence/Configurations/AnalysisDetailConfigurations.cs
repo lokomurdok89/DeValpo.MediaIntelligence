@@ -129,8 +129,20 @@ public sealed class WebhookDeliveryConfiguration : IEntityTypeConfiguration<Webh
     public void Configure(EntityTypeBuilder<WebhookDelivery> builder)
     {
         builder.HasKey(item => item.Id);
+        builder.Property(item => item.ClientKey).HasMaxLength(100).IsRequired();
         builder.Property(item => item.TargetKey).HasMaxLength(150).IsRequired();
+        builder.Property(item => item.EventType).HasMaxLength(100).IsRequired();
+        builder.Property(item => item.PayloadJson).HasColumnType("jsonb").IsRequired();
         builder.Property(item => item.Status).HasMaxLength(50).IsRequired();
+        builder.Property(item => item.LastError).HasMaxLength(2000);
         builder.HasIndex(item => item.JobId);
+        builder.HasIndex(item => item.ClientKey);
+        builder.HasIndex(item => item.Status);
+        builder.HasIndex(item => item.NextAttemptAt);
+        builder
+            .HasOne(item => item.ClientWebhookTarget)
+            .WithMany()
+            .HasForeignKey(item => item.ClientWebhookTargetId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

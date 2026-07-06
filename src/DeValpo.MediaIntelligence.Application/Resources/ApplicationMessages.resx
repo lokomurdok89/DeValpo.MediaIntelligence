@@ -33,6 +33,9 @@
   <data name="ClientAlreadyExists" xml:space="preserve">
     <value>Client '{0}' already exists.</value>
   </data>
+  <data name="ClientNotFound" xml:space="preserve">
+    <value>Client '{0}' was not found.</value>
+  </data>
   <data name="ApiKeyNotFound" xml:space="preserve">
     <value>API key '{0}' was not found.</value>
   </data>
@@ -86,6 +89,21 @@
   </data>
   <data name="HumanReviewRejectedResult" xml:space="preserve">
     <value>Human review rejected the analysis result.</value>
+  </data>
+  <data name="WebhookTargetKeyRequired" xml:space="preserve">
+    <value>Webhook target key is required.</value>
+  </data>
+  <data name="WebhookTargetUrlRequired" xml:space="preserve">
+    <value>Webhook target URL is required.</value>
+  </data>
+  <data name="WebhookTargetUrlInvalid" xml:space="preserve">
+    <value>Webhook target URL must be an absolute HTTP or HTTPS URL.</value>
+  </data>
+  <data name="WebhookSigningSecretRequired" xml:space="preserve">
+    <value>Webhook signing secret is required.</value>
+  </data>
+  <data name="WebhookTargetAlreadyExists" xml:space="preserve">
+    <value>Webhook target '{0}' already exists for client '{1}'.</value>
   </data>
   <data name="CapabilityResourceMissing" xml:space="preserve">
     <value>Missing capability resource '{0}'.</value>

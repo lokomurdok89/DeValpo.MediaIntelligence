@@ -6,6 +6,7 @@ using DeValpo.MediaIntelligence.Application.HumanReview;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Application.Skills;
+using DeValpo.MediaIntelligence.Application.Webhooks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DeValpo.MediaIntelligence.Application;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IProfileApplicationService, ProfileApplicationService>();
         services.AddScoped<IAnalysisJobApplicationService, AnalysisJobApplicationService>();
         services.AddScoped<IHumanReviewApplicationService, HumanReviewApplicationService>();
+        services.AddScoped<IWebhookDeliveryApplicationService, WebhookDeliveryApplicationService>();
         services.AddScoped<IMediaAnalysisApplicationService, MediaAnalysisApplicationService>();
         services.AddSingleton<IAnalysisProfileResolver, StaticAnalysisProfileResolver>();
         services.AddScoped<IMediaAnalysisOrchestrator, MediaAnalysisOrchestrator>();

@@ -5,6 +5,7 @@ using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 using DeValpo.MediaIntelligence.Domain.Entities;
+using DeValpo.MediaIntelligence.Application.Webhooks;
 using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Application.MediaAnalysis;
@@ -14,6 +15,7 @@ public sealed class MediaAnalysisApplicationService(
     IMediaAssetStorage storage,
     IAnalysisProfileResolver profileResolver,
     IAnalysisJobRepository jobRepository,
+    IWebhookDeliveryApplicationService webhookDeliveryService,
     IUnitOfWork unitOfWork,
     IOptions<AnalysisProcessingOptions> processingOptions) : IMediaAnalysisApplicationService
 {
@@ -225,6 +227,11 @@ public sealed class MediaAnalysisApplicationService(
             reviewTasks,
             completedAt,
             cancellationToken);
+
+        if (status == AnalysisJobStatus.Completed.ToString())
+        {
+            await webhookDeliveryService.EnqueueForJobAsync(job.Id, "analysis.completed", cancellationToken);
+        }
     }
 
     private async Task ValidateRequestAsync(CreateAnalysisJobRequest request, CancellationToken cancellationToken)

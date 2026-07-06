@@ -19,3 +19,19 @@ public sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.HasIndex(item => item.ClientKey).IsUnique();
     }
 }
+
+public sealed class ClientWebhookTargetConfiguration : IEntityTypeConfiguration<ClientWebhookTarget>
+{
+    /// <summary>
+    /// Maps webhook targets configured for outbound client notifications.
+    /// </summary>
+    public void Configure(EntityTypeBuilder<ClientWebhookTarget> builder)
+    {
+        builder.HasKey(item => item.Id);
+        builder.Property(item => item.TargetKey).HasMaxLength(150).IsRequired();
+        builder.Property(item => item.Url).HasMaxLength(1000).IsRequired();
+        builder.Property(item => item.SigningSecret).HasMaxLength(500).IsRequired();
+        builder.HasIndex(item => new { item.ClientId, item.TargetKey }).IsUnique();
+        builder.HasOne(item => item.Client).WithMany(client => client.WebhookTargets).HasForeignKey(item => item.ClientId);
+    }
+}

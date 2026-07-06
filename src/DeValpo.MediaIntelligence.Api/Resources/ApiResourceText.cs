@@ -36,6 +36,7 @@ internal static class ApiResourceText
     public static string JwtAccessTokenMinutesRequired => GetRequiredResource(nameof(JwtAccessTokenMinutesRequired));
     public static string InvalidClientCredentials => GetRequiredResource(nameof(InvalidClientCredentials));
     public static string AnalysisJobWorkerFailed => GetRequiredResource(nameof(AnalysisJobWorkerFailed));
+    public static string WebhookDeliveryWorkerFailed => GetRequiredResource(nameof(WebhookDeliveryWorkerFailed));
     public static string SwaggerBearerDescription => GetRequiredResource(nameof(SwaggerBearerDescription));
     public static string SwaggerResourceMissing(string name) => Format(nameof(SwaggerResourceMissing), name);
 

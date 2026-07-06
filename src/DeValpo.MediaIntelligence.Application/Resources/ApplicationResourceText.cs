@@ -30,9 +30,15 @@ internal static class ApplicationResourceText
     public static string HumanReviewCorrectionsRequired => GetRequiredResource(nameof(HumanReviewCorrectionsRequired));
     public static string HumanReviewResultMissing(Guid taskId) => Format(nameof(HumanReviewResultMissing), taskId);
     public static string HumanReviewRejectedResult => GetRequiredResource(nameof(HumanReviewRejectedResult));
+    public static string WebhookTargetKeyRequired => GetRequiredResource(nameof(WebhookTargetKeyRequired));
+    public static string WebhookTargetUrlRequired => GetRequiredResource(nameof(WebhookTargetUrlRequired));
+    public static string WebhookTargetUrlInvalid => GetRequiredResource(nameof(WebhookTargetUrlInvalid));
+    public static string WebhookSigningSecretRequired => GetRequiredResource(nameof(WebhookSigningSecretRequired));
+    public static string WebhookTargetAlreadyExists(string targetKey, string clientKey) => Format(nameof(WebhookTargetAlreadyExists), targetKey, clientKey);
     public static string CapabilityResourceMissing(string name) => Format(nameof(CapabilityResourceMissing), name);
     public static string ClientDisplayNameRequired => GetRequiredResource(nameof(ClientDisplayNameRequired));
     public static string ClientAlreadyExists(string clientKey) => Format(nameof(ClientAlreadyExists), clientKey);
+    public static string ClientNotFound(string clientKey) => Format(nameof(ClientNotFound), clientKey);
     public static string ApiKeyNotFound(Guid apiKeyId) => Format(nameof(ApiKeyNotFound), apiKeyId);
     public static string ApiKeyClientMismatch => GetRequiredResource(nameof(ApiKeyClientMismatch));
     public static string ApiKeyAlreadyRevoked => GetRequiredResource(nameof(ApiKeyAlreadyRevoked));
