@@ -7,4 +7,5 @@ public sealed class GoogleDocumentAiOptions
     public string Location { get; init; } = string.Empty;
     public string ProcessorId { get; init; } = string.Empty;
     public string CredentialsPath { get; init; } = string.Empty;
+    public bool AllowUserCredentials { get; init; }
 }

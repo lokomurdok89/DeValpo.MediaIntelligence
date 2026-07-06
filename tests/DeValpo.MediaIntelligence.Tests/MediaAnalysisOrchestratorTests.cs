@@ -5,6 +5,7 @@ using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Infrastructure.Skills;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Tests;
 
@@ -57,6 +58,9 @@ public sealed class MediaAnalysisOrchestratorTests
 
     private static IMediaAnalysisOrchestrator CreateOrchestrator(params IMediaAnalysisSkill[] skills)
     {
-        return new MediaAnalysisOrchestrator(new StaticAnalysisProfileResolver(), skills);
+        var profileResolver = new StaticAnalysisProfileResolver(
+            Options.Create(new AnalysisProfileOptions { EnableMockProfiles = true }));
+
+        return new MediaAnalysisOrchestrator(profileResolver, skills);
     }
 }

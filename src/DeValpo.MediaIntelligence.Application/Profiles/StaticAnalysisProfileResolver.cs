@@ -2,15 +2,17 @@ using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Models;
 using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts;
+using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Application.Profiles;
 
-public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
+public sealed class StaticAnalysisProfileResolver(
+    IOptions<AnalysisProfileOptions> options) : IAnalysisProfileResolver
 {
     // Constructor order for each profile:
     // profile key, client key, supported asset types, ordered skill names,
     // minimum confidence, human-review flag, human-readable description.
-    private static readonly AnalysisProfileDefinition[] Profiles =
+    private static readonly AnalysisProfileDefinition[] MockProfiles =
     [
         new(
             "arenysmed-delivery-evidence-v1",
@@ -35,7 +37,19 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
             ["MockDocumentOcrSkill"],
             0.80m,
             true,
-            ApplicationResourceText.GenericDocumentExtractionDescription),
+            ApplicationResourceText.GenericDocumentExtractionDescription)
+    ];
+
+    private static readonly AnalysisProfileDefinition[] RealProfiles =
+    [
+        new(
+            "generic-document-ocr-v1",
+            "generic",
+            [MediaAssetType.Document],
+            ["GoogleDocumentAiDocumentOcrSkill"],
+            0.85m,
+            true,
+            ApplicationResourceText.GenericDocumentOcrDescription),
         new(
             "invoice-extraction-v1",
             "generic",
@@ -53,7 +67,7 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
         string profileKey,
         CancellationToken cancellationToken)
     {
-        var profile = Profiles.FirstOrDefault(
+        var profile = GetProfiles().FirstOrDefault(
             item => string.Equals(item.ProfileKey, profileKey, StringComparison.OrdinalIgnoreCase));
 
         return Task.FromResult(profile);
@@ -65,6 +79,13 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
     public Task<IReadOnlyCollection<AnalysisProfileDefinition>> ListAsync(
         CancellationToken cancellationToken)
     {
-        return Task.FromResult<IReadOnlyCollection<AnalysisProfileDefinition>>(Profiles);
+        return Task.FromResult<IReadOnlyCollection<AnalysisProfileDefinition>>(GetProfiles().ToArray());
+    }
+
+    private IEnumerable<AnalysisProfileDefinition> GetProfiles()
+    {
+        return options.Value.EnableMockProfiles
+            ? RealProfiles.Concat(MockProfiles)
+            : RealProfiles;
     }
 }

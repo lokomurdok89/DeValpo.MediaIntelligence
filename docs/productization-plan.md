@@ -11,6 +11,9 @@ Already working:
 - Development token endpoint exists only for local Development.
 - Swagger is enabled and includes endpoint descriptions.
 - Google Document AI can process a real PDF through ADC credentials mounted outside the repository.
+- The real product document OCR profile is `generic-document-ocr-v1`.
+- `invoice-extraction-v1` remains as a temporary compatibility alias.
+- Mock skills and mock profiles are gated by explicit configuration and are disabled by default.
 - Analysis jobs, media assets, skill executions, results, issues and human review tasks are persisted.
 - Initial EF Core migration exists.
 - Basic unit and API security tests exist.
@@ -18,10 +21,7 @@ Already working:
 
 Known product gaps:
 
-- Mock skills are still registered in the production DI path.
-- The real Google profile is named `invoice-extraction-v1`, but the engine is generic document/media intelligence.
-- Many user-facing messages are still hardcoded instead of `.resx` resources.
-- `GoogleDocumentAiClientFactory` mixes credential resolution, file validation, scoping and client construction.
+- User-facing messages must continue to be audited so new runtime text remains resource-backed.
 - Local JWT is not a real customer auth workflow.
 - There is no API key/customer onboarding workflow yet.
 - Jobs run synchronously during `/api/v1/analyze`.
@@ -63,21 +63,20 @@ Work:
    - Cover Google status messages, validation errors, orchestration issues, health check messages and storage errors.
 
 2. Refactor Google Document AI credential handling.
-   - Split `IGoogleCredentialProvider` from `GoogleDocumentAiClientFactory`.
-   - Remove `#pragma warning disable CS0618`.
-   - Support ADC explicitly.
-   - Support service account JSON only if the credential type is allowed by the environment.
-   - Return safe errors without logging credential content.
+   - Done in Phase 1: `IGoogleCredentialProvider` is split from `GoogleDocumentAiClientFactory`.
+   - Done in Phase 1: obsolete credential loading pragmas are removed.
+   - Done in Phase 1: ADC and service account JSON file credentials are explicit.
+   - Done in Phase 1: credential content is not logged or exposed.
 
 3. Clean profile naming.
-   - Add `generic-document-ocr-v1` for the real OCR profile.
-   - Keep `invoice-extraction-v1` only as a temporary compatibility alias if required.
-   - Update docs and examples to use the generic profile.
+   - Done in Phase 1: `generic-document-ocr-v1` is the real OCR profile.
+   - Done in Phase 1: `invoice-extraction-v1` remains only as a compatibility alias.
+   - Done in Phase 1: docs and examples use the generic profile.
 
 4. Remove product dependency on mock skills.
-   - Register mock skills only in Development or a named test/demo mode.
-   - Ensure production profiles reference only real skills.
-   - Fail startup if a production profile references a mock skill.
+   - Done in Phase 1: mock skills are registered only when explicitly enabled.
+   - Done in Phase 1: production profiles reference only real skills by default.
+   - Done in Phase 1: startup validation fails when enabled profiles reference missing/mock skills while mocks are disabled.
 
 5. Keep interface segregation clean.
    - No public interface should share a file with its implementation.

@@ -62,6 +62,7 @@ flowchart LR
         DbContext["MediaIntelligenceDbContext"]
         Repos["Repositories + UnitOfWork"]
         AssetStorage["LocalMediaAssetStorage"]
+        GoogleCredentials["IGoogleCredentialProvider"]
         GoogleFactory["GoogleDocumentAiClientFactory"]
         GoogleStatus["GoogleDocumentAiStatusService"]
     end
@@ -79,7 +80,8 @@ flowchart LR
     Orchestrator --> Skills
     Skills --> GoogleFactory
     GoogleStatus --> GoogleFactory
-    GoogleFactory --> Secrets
+    GoogleFactory --> GoogleCredentials
+    GoogleCredentials --> Secrets
     GoogleFactory --> Google
 ```
 
@@ -225,6 +227,15 @@ classDiagram
         +CreateProcessorName(options)
     }
 
+    class IGoogleCredentialProvider {
+        <<interface>>
+        +GetCredentialAsync(options)
+    }
+
+    class GoogleCredentialProvider {
+        +GetCredentialAsync(options)
+    }
+
     class IGoogleDocumentAiStatusService {
         <<interface>>
         +GetStatusAsync(checkRemote)
@@ -256,6 +267,8 @@ classDiagram
     IMediaAnalysisSkill <|.. GoogleDocumentAiDocumentOcrSkill
     GoogleDocumentAiDocumentOcrSkill --> IGoogleDocumentAiClientFactory
     IGoogleDocumentAiClientFactory <|.. GoogleDocumentAiClientFactory
+    GoogleDocumentAiClientFactory --> IGoogleCredentialProvider
+    IGoogleCredentialProvider <|.. GoogleCredentialProvider
     IGoogleDocumentAiStatusService <|.. GoogleDocumentAiStatusService
     GoogleDocumentAiStatusService --> IGoogleDocumentAiClientFactory
 ```
@@ -575,6 +588,7 @@ GoogleDocumentAi__ProjectId=primeval-wind-499515-k6
 GoogleDocumentAi__Location=us
 GoogleDocumentAi__ProcessorId=44b3274ce1e84552
 GoogleDocumentAi__CredentialsPath=/run/secrets/google-application-default-credentials.json
+GoogleDocumentAi__AllowUserCredentials=true
 Jwt__SigningKey=replace-with-local-dev-secret-min-32-chars
 ```
 
@@ -634,7 +648,7 @@ GoogleDocumentAi__ProcessorId=your-processor
 GoogleDocumentAi__CredentialsPath=
 ```
 
-If `GoogleDocumentAi__CredentialsPath` is empty, the Google SDK uses Application Default Credentials. If you run inside Docker, set it to the mounted ADC file under `/run/secrets`. Do not commit Google credential JSON files.
+If `GoogleDocumentAi__CredentialsPath` is empty, the Google SDK uses Application Default Credentials. If you run inside Docker local with a mounted ADC user file, set it to the mounted file under `/run/secrets` and set `GoogleDocumentAi__AllowUserCredentials=true`. Production should use a service account or managed identity path and keep user credentials disabled. Do not commit Google credential JSON files.
 
 Check provider readiness:
 
@@ -651,11 +665,11 @@ The basic status endpoint checks local configuration and credential file presenc
 ```bash
 curl -X POST http://localhost:8085/api/v1/analyze \
   -H "Authorization: Bearer <accessToken>" \
-  -F "clientKey=arenysmed" \
-  -F "profileKey=arenysmed-delivery-evidence-v1" \
-  -F "assetType=Image" \
+  -F "clientKey=generic" \
+  -F "profileKey=generic-document-ocr-v1" \
+  -F "assetType=Document" \
   -F "metadataJson={\"source\":\"manual-test\"}" \
-  -F "file=@sample.png"
+  -F "file=@sample.pdf"
 ```
 
 ## Add a skill
@@ -688,3 +702,4 @@ The QA review for this change is recorded in:
 
 - [QA review](docs/qa-review.md)
 - [Phase 0 base hygiene QA](docs/qa-phase-0-base-hygiene.md)
+- [Phase 1 foundation hardening QA](docs/qa-phase-1-foundation-hardening.md)

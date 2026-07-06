@@ -27,6 +27,12 @@
   <data name="DuplicateSkillName" xml:space="preserve">
     <value>Duplicate skill name registered: {0}.</value>
   </data>
+  <data name="ProfileReferencesUnregisteredSkill" xml:space="preserve">
+    <value>Profile '{0}' references unregistered skill '{1}'.</value>
+  </data>
+  <data name="ProductionProfileReferencesMockSkill" xml:space="preserve">
+    <value>Profile '{0}' references mock skill '{1}' while mock skills are disabled.</value>
+  </data>
   <data name="ResolvedStoragePathOutsideRoot" xml:space="preserve">
     <value>Resolved storage path is outside the configured storage root.</value>
   </data>
@@ -53,6 +59,9 @@
   </data>
   <data name="GoogleDocumentAiCredentialsInvalid" xml:space="preserve">
     <value>Google Document AI credentials are invalid.</value>
+  </data>
+  <data name="GoogleDocumentAiUserCredentialsNotAllowed" xml:space="preserve">
+    <value>Google Document AI user ADC credentials are not allowed by configuration.</value>
   </data>
   <data name="GoogleDocumentAiCredentialsInvalidOrExpired" xml:space="preserve">
     <value>Google Document AI credentials are invalid or expired.</value>

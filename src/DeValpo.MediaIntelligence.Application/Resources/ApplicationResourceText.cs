@@ -26,6 +26,7 @@ internal static class ApplicationResourceText
     public static string ArenysmedDeliveryEvidenceDescription => GetRequiredResource(nameof(ArenysmedDeliveryEvidenceDescription));
     public static string SportsEventClipsDescription => GetRequiredResource(nameof(SportsEventClipsDescription));
     public static string GenericDocumentExtractionDescription => GetRequiredResource(nameof(GenericDocumentExtractionDescription));
+    public static string GenericDocumentOcrDescription => GetRequiredResource(nameof(GenericDocumentOcrDescription));
     public static string InvoiceExtractionDescription => GetRequiredResource(nameof(InvoiceExtractionDescription));
 
     private static string GetRequiredResource(string name)
