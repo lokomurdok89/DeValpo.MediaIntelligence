@@ -678,6 +678,7 @@ GitHub Actions validates restore, build, tests, Docker build and Docker Compose 
 The remaining work to move from MVP to product is tracked in:
 
 - [Productization plan](docs/productization-plan.md)
+- [Product final phase plan](docs/product-final-phase-plan.md)
 
 The repository also includes a reusable QA skill for future product-readiness audits:
 
