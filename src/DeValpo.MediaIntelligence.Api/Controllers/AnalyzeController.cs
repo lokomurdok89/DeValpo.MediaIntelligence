@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Api.Resources;
+using DeValpo.MediaIntelligence.Api.Validation;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
@@ -14,8 +15,10 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 public sealed class AnalyzeController(
     IMediaAnalysisApplicationService service,
     IRequestClientAccessService accessService,
-    IConfiguration configuration) : ControllerBase
+    IUploadedFileValidationService fileValidationService) : ControllerBase
 {
+    private const long MultipartRequestSizeLimitBytes = 125_829_120;
+
     /// <summary>
     /// Accepts a media file, stores it and queues the configured analysis profile.
     /// </summary>
@@ -34,7 +37,7 @@ public sealed class AnalyzeController(
     /// <response code="403">The token cannot submit work for the requested client or profile.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(104_857_600)]
+    [RequestSizeLimit(MultipartRequestSizeLimitBytes)]
     [ProducesResponseType(typeof(CreateAnalysisJobResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -47,20 +50,18 @@ public sealed class AnalyzeController(
         [FromForm] string? metadataJson,
         CancellationToken cancellationToken)
     {
-        if (file.Length == 0)
+        var fileValidation = await fileValidationService.ValidateAsync(file, assetType, cancellationToken);
+        if (!fileValidation.IsValid)
         {
-            return BadRequest(new ApiErrorResponse("INVALID_REQUEST", ApiResourceText.FileRequired, HttpContext.TraceIdentifier));
+            return BadRequest(new ApiErrorResponse(
+                fileValidation.ErrorCode!,
+                fileValidation.ErrorMessage!,
+                HttpContext.TraceIdentifier));
         }
 
         if (!await accessService.CanSubmitAsync(User, clientKey, profileKey, cancellationToken))
         {
             return Forbid();
-        }
-
-        var maxFileSizeBytes = configuration.GetValue<long>("MediaAnalysis:MaxFileSizeBytes", 104_857_600);
-        if (file.Length > maxFileSizeBytes)
-        {
-            return BadRequest(new ApiErrorResponse("INVALID_REQUEST", ApiResourceText.FileExceedsMaxSize(maxFileSizeBytes), HttpContext.TraceIdentifier));
         }
 
         var metadata = ParseMetadata(metadataJson);

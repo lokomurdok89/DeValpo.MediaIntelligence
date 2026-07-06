@@ -769,6 +769,8 @@ curl http://localhost:8085/api/v1/analysis-jobs/<jobId>/result \
   -H "Authorization: Bearer <accessToken>"
 ```
 
+Upload validation rejects invalid files before they are stored or queued. Supported document/image inputs are PDF, PNG, JPG/JPEG, WEBP and TIFF. Supported video inputs are MP4, MOV and AVI for video profiles. Empty files, oversized files, unsupported extensions, mismatched declared content types, invalid binary signatures and incomplete PDFs return controlled `400` responses with machine-readable error codes.
+
 ## Add a skill
 
 1. Implement `IMediaAnalysisSkill`.
