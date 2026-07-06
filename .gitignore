@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+.env
+*.db
+/storage/
+TestResults/
+coverage/
+test-results/
+playwright-report/

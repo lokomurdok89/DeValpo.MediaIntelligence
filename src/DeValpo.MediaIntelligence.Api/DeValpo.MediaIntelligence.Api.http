@@ -1,0 +1,16 @@
+@DeValpo.MediaIntelligence.Api_HostAddress = http://localhost:5254
+
+GET {{DeValpo.MediaIntelligence.Api_HostAddress}}/api/v1/capabilities
+Accept: application/json
+
+###
+
+GET {{DeValpo.MediaIntelligence.Api_HostAddress}}/api/v1/skills
+Accept: application/json
+
+###
+
+GET {{DeValpo.MediaIntelligence.Api_HostAddress}}/api/v1/profiles
+Accept: application/json
+
+###
