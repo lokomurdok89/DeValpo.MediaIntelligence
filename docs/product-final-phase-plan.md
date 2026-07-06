@@ -104,6 +104,8 @@ Exit criteria:
 
 Objetivo: reemplazar el flujo local de token por autenticacion real para clientes.
 
+Estado: implementada en la rama `codex/phase-2-customer-access-security`; pendiente de PR, CI y merge antes de iniciar Fase 3.
+
 Implementacion:
 
 - Crear modelo de API client.
@@ -132,6 +134,10 @@ Exit criteria:
 - Secretos no aparecen en logs, DB, Swagger ni tests.
 - Keys pueden rotarse sin romper keys activas no revocadas.
 - QA no tiene Blockers/Criticals.
+
+Evidencia QA:
+
+- `docs/qa-phase-2-customer-access-security.md`
 
 ## Fase 3: Tenant Isolation Y Autorizacion
 

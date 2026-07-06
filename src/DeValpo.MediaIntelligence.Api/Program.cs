@@ -75,6 +75,7 @@ builder.Services
     .AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IDevJwtTokenService, DevJwtTokenService>();
+builder.Services.AddScoped<IClientAccessTokenService, ClientAccessTokenService>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("MediaIntelligence")
@@ -129,6 +130,7 @@ static void AddJwtAuthentication(IServiceCollection services, IConfiguration con
         .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), ApiResourceText.JwtIssuerRequired)
         .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), ApiResourceText.JwtAudienceRequired)
         .Validate(options => Encoding.UTF8.GetByteCount(options.SigningKey) >= 32, ApiResourceText.JwtSigningKeyMinimumLength)
+        .Validate(options => options.AccessTokenMinutes > 0, ApiResourceText.JwtAccessTokenMinutesRequired)
         .ValidateOnStart();
 
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -156,10 +158,25 @@ static void AddJwtAuthentication(IServiceCollection services, IConfiguration con
 
     services.AddAuthorization(options =>
     {
+        options.AddPolicy("AdminScope", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireAssertion(context =>
+                HasScope(context.User, "admin") ||
+                HasScope(context.User, "media-intelligence:admin"));
+        });
+
         options.FallbackPolicy = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build();
     });
+}
+
+static bool HasScope(System.Security.Claims.ClaimsPrincipal user, string scope)
+{
+    return user.FindAll(AuthClaimTypes.Scope)
+        .SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        .Any(value => string.Equals(value, scope, StringComparison.OrdinalIgnoreCase));
 }
 
 // Applies EF Core migrations at startup only when the database option explicitly enables it.

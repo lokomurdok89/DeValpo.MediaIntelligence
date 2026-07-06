@@ -7,6 +7,7 @@ public sealed class MediaIntelligenceDbContext(DbContextOptions<MediaIntelligenc
     : DbContext(options)
 {
     public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ClientApiKey> ClientApiKeys => Set<ClientApiKey>();
     public DbSet<AnalysisProfile> AnalysisProfiles => Set<AnalysisProfile>();
     public DbSet<AnalysisJob> AnalysisJobs => Set<AnalysisJob>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();

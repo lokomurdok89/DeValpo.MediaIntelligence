@@ -60,6 +60,12 @@
   <data name="JwtSigningKeyMinimumLength" xml:space="preserve">
     <value>Jwt:SigningKey must be at least 32 bytes.</value>
   </data>
+  <data name="JwtAccessTokenMinutesRequired" xml:space="preserve">
+    <value>Jwt:AccessTokenMinutes must be greater than zero.</value>
+  </data>
+  <data name="InvalidClientCredentials" xml:space="preserve">
+    <value>Client credentials are invalid.</value>
+  </data>
   <data name="SwaggerBearerDescription" xml:space="preserve">
     <value>JWT Bearer token.</value>
   </data>
