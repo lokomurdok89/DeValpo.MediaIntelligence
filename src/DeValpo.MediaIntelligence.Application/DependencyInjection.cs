@@ -2,6 +2,7 @@ using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Auth;
 using DeValpo.MediaIntelligence.Application.AnalysisJobs;
 using DeValpo.MediaIntelligence.Application.Capabilities;
+using DeValpo.MediaIntelligence.Application.HumanReview;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Application.Skills;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<ISkillApplicationService, SkillApplicationService>();
         services.AddScoped<IProfileApplicationService, ProfileApplicationService>();
         services.AddScoped<IAnalysisJobApplicationService, AnalysisJobApplicationService>();
+        services.AddScoped<IHumanReviewApplicationService, HumanReviewApplicationService>();
         services.AddScoped<IMediaAnalysisApplicationService, MediaAnalysisApplicationService>();
         services.AddSingleton<IAnalysisProfileResolver, StaticAnalysisProfileResolver>();
         services.AddScoped<IMediaAnalysisOrchestrator, MediaAnalysisOrchestrator>();

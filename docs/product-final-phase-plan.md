@@ -247,6 +247,8 @@ Exit criteria:
 
 Objetivo: convertir la revision humana en flujo usable.
 
+Estado: en implementacion en la rama `codex/phase-6-human-review-workflow`; no se puede iniciar Fase 7 hasta que PR, CI, QA real y merge esten completos.
+
 Implementacion:
 
 - Crear endpoints para listar tareas pendientes.

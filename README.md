@@ -771,6 +771,27 @@ curl http://localhost:8085/api/v1/analysis-jobs/<jobId>/result \
 
 Upload validation rejects invalid files before they are stored or queued. Supported document/image inputs are PDF, PNG, JPG/JPEG, WEBP and TIFF. Supported video inputs are MP4, MOV and AVI for video profiles. Empty files, oversized files, unsupported extensions, mismatched declared content types, invalid binary signatures and incomplete PDFs return controlled `400` responses with machine-readable error codes.
 
+## Human review
+
+Operator or admin tokens can manage review tasks created when an analysis requires human validation:
+
+```bash
+curl http://localhost:8085/api/v1/human-review-tasks?status=Pending \
+  -H "Authorization: Bearer <operatorOrAdminAccessToken>"
+
+curl -X POST http://localhost:8085/api/v1/human-review-tasks/<taskId>/start \
+  -H "Authorization: Bearer <operatorOrAdminAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d "{\"comment\":\"Review started\"}"
+
+curl -X POST http://localhost:8085/api/v1/human-review-tasks/<taskId>/complete \
+  -H "Authorization: Bearer <operatorOrAdminAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d "{\"decision\":\"Approve\",\"comment\":\"Accepted\"}"
+```
+
+Supported decisions are `Approve`, `Correct` and `Reject`. `Correct` stores the original extracted fields on the review task and writes corrected fields to the result.
+
 ## Add a skill
 
 1. Implement `IMediaAnalysisSkill`.

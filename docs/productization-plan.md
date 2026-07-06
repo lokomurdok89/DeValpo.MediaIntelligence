@@ -179,19 +179,19 @@ Goal: turn `HumanReviewTask` from a persisted flag into a usable workflow.
 Work:
 
 1. Add review endpoints.
-   - List pending review tasks.
-   - Get review task detail.
-   - Approve/correct/reject extracted result.
-   - Complete review with operator identity and timestamp.
+   - Done in Phase 6: list review tasks with optional status filter.
+   - Done in Phase 6: get review task detail.
+   - Done in Phase 6: approve, correct or reject extracted result.
+   - Done in Phase 6: complete review with operator identity, comment and timestamp.
 
 2. Add corrected result model.
-   - Store original provider result.
-   - Store human-corrected fields.
-   - Preserve audit trail.
+   - Done in Phase 6: store original provider fields on the review task.
+   - Done in Phase 6: store human-corrected fields on the review task.
+   - Done in Phase 6: corrected fields replace the current result fields for client retrieval.
 
 3. Add review assignment and status.
-   - `Pending`, `InReview`, `Completed`, `Rejected`.
-   - Optional assignee.
+   - Done in Phase 6: `Pending`, `InReview`, `Completed`, `Rejected`.
+   - Done in Phase 6: operator identity is stored when started/completed.
 
 4. Add review metrics.
    - Review rate by profile.

@@ -22,6 +22,14 @@ internal static class ApplicationResourceText
     public static string SkillAssetTypeUnsupported(string skillName, object assetType) => Format(nameof(SkillAssetTypeUnsupported), skillName, assetType);
     public static string HumanReviewRequiredIssue => GetRequiredResource(nameof(HumanReviewRequiredIssue));
     public static string HumanReviewReason => GetRequiredResource(nameof(HumanReviewReason));
+    public static string HumanReviewTaskNotFound(Guid taskId) => Format(nameof(HumanReviewTaskNotFound), taskId);
+    public static string HumanReviewTaskCannotStart(Guid taskId, string status) => Format(nameof(HumanReviewTaskCannotStart), taskId, status);
+    public static string HumanReviewTaskCannotComplete(Guid taskId, string status) => Format(nameof(HumanReviewTaskCannotComplete), taskId, status);
+    public static string HumanReviewDecisionRequired => GetRequiredResource(nameof(HumanReviewDecisionRequired));
+    public static string HumanReviewDecisionUnsupported(string decision) => Format(nameof(HumanReviewDecisionUnsupported), decision);
+    public static string HumanReviewCorrectionsRequired => GetRequiredResource(nameof(HumanReviewCorrectionsRequired));
+    public static string HumanReviewResultMissing(Guid taskId) => Format(nameof(HumanReviewResultMissing), taskId);
+    public static string HumanReviewRejectedResult => GetRequiredResource(nameof(HumanReviewRejectedResult));
     public static string CapabilityResourceMissing(string name) => Format(nameof(CapabilityResourceMissing), name);
     public static string ClientDisplayNameRequired => GetRequiredResource(nameof(ClientDisplayNameRequired));
     public static string ClientAlreadyExists(string clientKey) => Format(nameof(ClientAlreadyExists), clientKey);

@@ -406,25 +406,54 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CorrectedFieldsJson")
+                        .HasColumnType("jsonb");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Decision")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("OperatorId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OriginalFieldsJson")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("JobId");
+
+                    b.HasIndex("Status");
 
                     b.ToTable("HumanReviewTasks");
                 });
