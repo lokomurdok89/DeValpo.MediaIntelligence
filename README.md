@@ -2,7 +2,7 @@
 
 Reusable multi-client media and document intelligence engine.
 
-This repository is intentionally separate from `C:\DeValpo\Contador`. It exposes public DTOs through `DeValpo.MediaIntelligence.Contracts` and keeps providers, storage and persistence behind Application abstractions.
+This repository is intentionally separate from the Contador repository. It exposes public DTOs through `DeValpo.MediaIntelligence.Contracts` and keeps providers, storage and persistence behind Application abstractions.
 
 ## Requirements
 
@@ -686,3 +686,4 @@ The repository also includes a reusable QA skill for future product-readiness au
 The QA review for this change is recorded in:
 
 - [QA review](docs/qa-review.md)
+- [Phase 0 base hygiene QA](docs/qa-phase-0-base-hygiene.md)

@@ -199,7 +199,7 @@ When it prints a Google URL:
 Expected final message:
 
 ```text
-Credentials saved to file: [C:\Users\HP\AppData\Roaming\gcloud\application_default_credentials.json]
+Credentials saved to file: [<application-default-credentials-path>]
 ```
 
 ## Step 5: Set The Quota Project
@@ -428,12 +428,14 @@ Expected:
 Example:
 
 ```powershell
+$pdfPath = "<path-to-your-document.pdf>"
+
 curl.exe -X POST http://localhost:8085/api/v1/analyze `
   -H "Authorization: Bearer $token" `
   -F "clientKey=generic" `
   -F "profileKey=invoice-extraction-v1" `
   -F "assetType=Document" `
-  -F "file=@C:\Users\HP\Downloads\DTE Daniel.pdf"
+  -F "file=@$pdfPath"
 ```
 
 Expected:
@@ -539,7 +541,7 @@ This means the local file path is wrong.
 Validate first:
 
 ```powershell
-Test-Path "C:\Users\HP\Downloads\DTE Daniel.pdf"
+Test-Path $pdfPath
 ```
 
 Expected:
