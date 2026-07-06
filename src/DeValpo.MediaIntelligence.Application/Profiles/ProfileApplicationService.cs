@@ -3,13 +3,11 @@ using DeValpo.MediaIntelligence.Contracts.Profiles;
 
 namespace DeValpo.MediaIntelligence.Application.Profiles;
 
-public interface IProfileApplicationService
-{
-    Task<IReadOnlyCollection<AnalysisProfileResponse>> ListAsync(CancellationToken cancellationToken);
-}
-
 public sealed class ProfileApplicationService(IAnalysisProfileResolver profileResolver) : IProfileApplicationService
 {
+    /// <summary>
+    /// Maps internal profile definitions to their contract response shape.
+    /// </summary>
     public async Task<IReadOnlyCollection<AnalysisProfileResponse>> ListAsync(CancellationToken cancellationToken)
     {
         var profiles = await profileResolver.ListAsync(cancellationToken);

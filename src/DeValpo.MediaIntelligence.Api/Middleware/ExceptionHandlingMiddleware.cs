@@ -1,3 +1,4 @@
+using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Contracts;
 
 namespace DeValpo.MediaIntelligence.Api.Middleware;
@@ -7,6 +8,9 @@ public sealed class ExceptionHandlingMiddleware(
     ILogger<ExceptionHandlingMiddleware> logger,
     IHostEnvironment environment)
 {
+    /// <summary>
+    /// Converts known application exceptions into stable JSON error responses.
+    /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -25,12 +29,15 @@ public sealed class ExceptionHandlingMiddleware(
         {
             var message = environment.IsDevelopment()
                 ? exception.Message
-                : "An unexpected error occurred.";
+                : ApiResourceText.UnexpectedError;
 
             await WriteErrorAsync(context, StatusCodes.Status500InternalServerError, "INTERNAL_ERROR", message, exception);
         }
     }
 
+    /// <summary>
+    /// Writes a structured API error response and logs the original exception.
+    /// </summary>
     private async Task WriteErrorAsync(
         HttpContext context,
         int statusCode,
@@ -38,7 +45,7 @@ public sealed class ExceptionHandlingMiddleware(
         string message,
         Exception exception)
     {
-        logger.LogError(exception, "Request failed with {ErrorCode}", code);
+        logger.LogError(exception, ApiResourceText.RequestFailedLogMessage, code);
 
         if (context.Response.HasStarted)
         {

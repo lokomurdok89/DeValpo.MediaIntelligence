@@ -2,6 +2,7 @@ using DeValpo.MediaIntelligence.Application.Models;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
+using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using DeValpo.MediaIntelligence.Infrastructure.Skills;
 using Google.Cloud.DocumentAI.V1;
 using Google.Protobuf;
@@ -17,8 +18,11 @@ public sealed class GoogleDocumentAiDocumentOcrSkill(
     public override string SkillName => nameof(GoogleDocumentAiDocumentOcrSkill);
     public override IReadOnlyCollection<MediaAssetType> SupportedAssetTypes => [MediaAssetType.Document];
     public override IReadOnlyCollection<string> RequiredCapabilities => ["OCR", "DocumentExtraction"];
-    public override string Description => "Google Document AI OCR provider boundary. It is disabled unless configured.";
+    public override string Description => InfrastructureResourceText.GoogleDocumentAiSkillDescription;
 
+    /// <summary>
+    /// Validates provider configuration and runs OCR through Google Document AI when enabled.
+    /// </summary>
     public override Task<SkillExecutionResult> ExecuteAsync(SkillExecutionContext context, CancellationToken cancellationToken)
     {
         var config = options.Value;
@@ -30,7 +34,7 @@ public sealed class GoogleDocumentAiDocumentOcrSkill(
                 0.0m,
                 issues:
                 [
-                    new("GOOGLE_DOCUMENT_AI_DISABLED", "Google Document AI is disabled by configuration.", "Warning", SkillName)
+                    new("GOOGLE_DOCUMENT_AI_DISABLED", InfrastructureResourceText.GoogleDocumentAiDisabledByConfiguration, "Warning", SkillName)
                 ]));
         }
 
@@ -50,13 +54,16 @@ public sealed class GoogleDocumentAiDocumentOcrSkill(
                 0.0m,
                 issues:
                 [
-                    new("GOOGLE_DOCUMENT_AI_NOT_CONFIGURED", $"Missing Google Document AI options: {string.Join(", ", missing)}.", "Error", SkillName)
+                    new("GOOGLE_DOCUMENT_AI_NOT_CONFIGURED", InfrastructureResourceText.MissingGoogleDocumentAiOptions(string.Join(", ", missing)), "Error", SkillName)
                 ]));
         }
 
         return ExecuteGoogleDocumentAiAsync(config, context, cancellationToken);
     }
 
+    /// <summary>
+    /// Sends the current media stream to the configured Document AI processor and maps the OCR text.
+    /// </summary>
     private async Task<SkillExecutionResult> ExecuteGoogleDocumentAiAsync(
         GoogleDocumentAiOptions config,
         SkillExecutionContext context,
@@ -108,6 +115,9 @@ public sealed class GoogleDocumentAiDocumentOcrSkill(
         }
     }
 
+    /// <summary>
+    /// Resolves the MIME type passed to Document AI from request metadata or asset type.
+    /// </summary>
     private static string ResolveMimeType(SkillExecutionContext context)
     {
         if (context.Metadata.TryGetValue("contentType", out var contentType) &&
@@ -119,28 +129,31 @@ public sealed class GoogleDocumentAiDocumentOcrSkill(
         return context.AssetType == MediaAssetType.Document ? "application/pdf" : "application/octet-stream";
     }
 
+    /// <summary>
+    /// Converts Document AI execution failures into readable analysis issues.
+    /// </summary>
     private static string ClassifyExecutionError(Exception exception)
     {
         return exception switch
         {
-            FileNotFoundException => "Google Document AI credentials file was not found.",
-            UnauthorizedAccessException => "Google Document AI credentials file cannot be read.",
-            InvalidOperationException => "Google Document AI credentials are invalid.",
+            FileNotFoundException => InfrastructureResourceText.GoogleDocumentAiCredentialsFileNotFound,
+            UnauthorizedAccessException => InfrastructureResourceText.GoogleDocumentAiCredentialsCannotBeRead,
+            InvalidOperationException => InfrastructureResourceText.GoogleDocumentAiCredentialsInvalid,
             RpcException { StatusCode: StatusCode.Unauthenticated } =>
-                "Google Document AI credentials are invalid or expired.",
+                InfrastructureResourceText.GoogleDocumentAiCredentialsInvalidOrExpired,
             RpcException { StatusCode: StatusCode.PermissionDenied } =>
-                "Google Document AI service account does not have permission for this processor.",
+                InfrastructureResourceText.GoogleDocumentAiPermissionDenied,
             RpcException { StatusCode: StatusCode.NotFound } =>
-                "Google Document AI processor was not found.",
+                InfrastructureResourceText.GoogleDocumentAiProcessorNotFound,
             RpcException { StatusCode: StatusCode.FailedPrecondition } =>
-                "Google Document AI API or billing is not available for this project.",
+                InfrastructureResourceText.GoogleDocumentAiApiOrBillingUnavailable,
             RpcException { StatusCode: StatusCode.ResourceExhausted } =>
-                "Google Document AI quota or billing limit was reached.",
+                InfrastructureResourceText.GoogleDocumentAiQuotaReached,
             RpcException { StatusCode: StatusCode.Unavailable } =>
-                "Google Document AI service is unavailable.",
+                InfrastructureResourceText.GoogleDocumentAiServiceUnavailable,
             RpcException rpcException =>
-                $"Google Document AI request failed: {rpcException.StatusCode}.",
-            _ => "Google Document AI request failed."
+                InfrastructureResourceText.GoogleDocumentAiRequestFailedWithStatus(rpcException.StatusCode),
+            _ => InfrastructureResourceText.GoogleDocumentAiRequestFailed
         };
     }
 }

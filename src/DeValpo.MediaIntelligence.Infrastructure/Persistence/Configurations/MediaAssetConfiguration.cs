@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Configurations;
 
 public sealed class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
 {
+    /// <summary>
+    /// Maps stored media assets and their relationship to analysis jobs.
+    /// </summary>
     public void Configure(EntityTypeBuilder<MediaAsset> builder)
     {
         builder.HasKey(item => item.Id);

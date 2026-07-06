@@ -1,11 +1,15 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Models;
+using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts;
 
 namespace DeValpo.MediaIntelligence.Application.Profiles;
 
 public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
 {
+    // Constructor order for each profile:
+    // profile key, client key, supported asset types, ordered skill names,
+    // minimum confidence, human-review flag, human-readable description.
     private static readonly AnalysisProfileDefinition[] Profiles =
     [
         new(
@@ -15,7 +19,7 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
             ["MockDocumentOcrSkill", "MockHandwrittenIdExtractionSkill", "MockStampDetectionSkill"],
             0.85m,
             true,
-            "Administrative evidence profile for handwritten IDs, stamps and visible text."),
+            ApplicationResourceText.ArenysmedDeliveryEvidenceDescription),
         new(
             "sports-event-clips-v1",
             "sports",
@@ -23,7 +27,7 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
             ["MockSportsBibDetectionSkill", "MockImageObjectDetectionSkill", "MockVideoClipGenerationSkill"],
             0.75m,
             true,
-            "Sports profile for bibs, objects and structural clip metadata."),
+            ApplicationResourceText.SportsEventClipsDescription),
         new(
             "generic-document-extraction-v1",
             "generic",
@@ -31,7 +35,7 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
             ["MockDocumentOcrSkill"],
             0.80m,
             true,
-            "Generic profile for document OCR and field extraction."),
+            ApplicationResourceText.GenericDocumentExtractionDescription),
         new(
             "invoice-extraction-v1",
             "generic",
@@ -39,9 +43,12 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
             ["GoogleDocumentAiDocumentOcrSkill"],
             0.85m,
             true,
-            "Document AI backed invoice/document extraction profile when Google is enabled.")
+            ApplicationResourceText.InvoiceExtractionDescription)
     ];
 
+    /// <summary>
+    /// Finds a profile definition by its stable profile key.
+    /// </summary>
     public Task<AnalysisProfileDefinition?> ResolveAsync(
         string profileKey,
         CancellationToken cancellationToken)
@@ -52,6 +59,9 @@ public sealed class StaticAnalysisProfileResolver : IAnalysisProfileResolver
         return Task.FromResult(profile);
     }
 
+    /// <summary>
+    /// Returns all configured analysis profiles available in this deployment.
+    /// </summary>
     public Task<IReadOnlyCollection<AnalysisProfileDefinition>> ListAsync(
         CancellationToken cancellationToken)
     {

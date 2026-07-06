@@ -10,6 +10,9 @@ namespace DeValpo.MediaIntelligence.Api.Auth;
 
 public sealed class DevJwtTokenService(IOptions<JwtOptions> options) : IDevJwtTokenService
 {
+    /// <summary>
+    /// Builds a short-lived development token using the configured local signing key.
+    /// </summary>
     public DevTokenResponse CreateToken(CreateDevTokenRequest request)
     {
         var config = options.Value;
@@ -38,6 +41,9 @@ public sealed class DevJwtTokenService(IOptions<JwtOptions> options) : IDevJwtTo
             expiresAt);
     }
 
+    /// <summary>
+    /// Returns a fallback claim value when the request omits one.
+    /// </summary>
     private static string DefaultIfEmpty(string? value, string fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? fallback : value;

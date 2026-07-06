@@ -16,6 +16,9 @@ public abstract class BaseMockSkill : IMediaAnalysisSkill
         SkillExecutionContext context,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Creates a skill result while normalizing optional collections to empty arrays.
+    /// </summary>
     protected static SkillExecutionResult Result(
         string skillName,
         decimal confidence,

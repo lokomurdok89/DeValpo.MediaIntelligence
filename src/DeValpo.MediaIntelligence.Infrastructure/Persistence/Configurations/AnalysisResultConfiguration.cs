@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Configurations;
 
 public sealed class AnalysisResultConfiguration : IEntityTypeConfiguration<AnalysisResult>
 {
+    /// <summary>
+    /// Maps the one-to-one relationship between an analysis job and its result.
+    /// </summary>
     public void Configure(EntityTypeBuilder<AnalysisResult> builder)
     {
         builder.HasKey(item => item.Id);

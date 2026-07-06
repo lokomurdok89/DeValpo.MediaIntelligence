@@ -1,3 +1,4 @@
+using DeValpo.MediaIntelligence.Api.Resources;
 using System.Reflection;
 using System.Resources;
 
@@ -15,9 +16,12 @@ internal static class SwaggerResourceText
     public static string Description => GetRequiredResource(nameof(Description));
     public static string EndpointName => GetRequiredResource(nameof(EndpointName));
 
+    /// <summary>
+    /// Reads a mandatory Swagger resource and fails during startup when it is missing.
+    /// </summary>
     private static string GetRequiredResource(string name)
     {
         return Resources.GetString(name)
-            ?? throw new InvalidOperationException($"Missing Swagger resource '{name}'.");
+            ?? throw new InvalidOperationException(ApiResourceText.SwaggerResourceMissing(name));
     }
 }

@@ -1,15 +1,14 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts.Skills;
 
 namespace DeValpo.MediaIntelligence.Application.Skills;
 
-public interface ISkillApplicationService
-{
-    Task<IReadOnlyCollection<SkillResponse>> ListAsync(CancellationToken cancellationToken);
-}
-
 public sealed class SkillApplicationService(IEnumerable<IMediaAnalysisSkill> skills) : ISkillApplicationService
 {
+    /// <summary>
+    /// Lists registered skills and rejects duplicate skill names before exposing them.
+    /// </summary>
     public Task<IReadOnlyCollection<SkillResponse>> ListAsync(CancellationToken cancellationToken)
     {
         var duplicateName = skills
@@ -18,7 +17,7 @@ public sealed class SkillApplicationService(IEnumerable<IMediaAnalysisSkill> ski
 
         if (duplicateName is not null)
         {
-            throw new InvalidOperationException($"Duplicate skill name registered: {duplicateName}.");
+            throw new InvalidOperationException(ApplicationResourceText.DuplicateSkillName(duplicateName));
         }
 
         var response = skills

@@ -10,6 +10,9 @@ namespace DeValpo.MediaIntelligence.Application;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registers application-layer services, profile resolution and orchestration dependencies.
+    /// </summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<ICapabilityApplicationService, CapabilityApplicationService>();

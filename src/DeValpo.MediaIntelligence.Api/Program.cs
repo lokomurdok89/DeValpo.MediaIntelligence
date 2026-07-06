@@ -2,6 +2,7 @@ using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Api.Health;
 using DeValpo.MediaIntelligence.Api.Middleware;
 using DeValpo.MediaIntelligence.Api.Options;
+using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Api.Swagger;
 using DeValpo.MediaIntelligence.Application;
 using DeValpo.MediaIntelligence.Infrastructure;
@@ -49,7 +50,7 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Name = "Authorization",
-        Description = "JWT Bearer token."
+        Description = ApiResourceText.SwaggerBearerDescription
     });
 
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
@@ -77,7 +78,7 @@ builder.Services.AddScoped<IDevJwtTokenService, DevJwtTokenService>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("MediaIntelligence")
-    ?? throw new InvalidOperationException("ConnectionStrings:MediaIntelligence is required.");
+    ?? throw new InvalidOperationException(ApiResourceText.ConnectionStringRequired);
 
 builder.Services.AddHealthChecks()
     .AddCheck<PostgresHealthCheck>("postgres")
@@ -120,13 +121,14 @@ await ApplyMigrationsIfConfiguredAsync(app);
 
 app.Run();
 
+// Configures JWT validation and the default policy that protects functional endpoints.
 static void AddJwtAuthentication(IServiceCollection services, IConfiguration configuration)
 {
     services.AddOptions<JwtOptions>()
         .Bind(configuration.GetSection("Jwt"))
-        .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), "Jwt:Issuer is required.")
-        .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), "Jwt:Audience is required.")
-        .Validate(options => Encoding.UTF8.GetByteCount(options.SigningKey) >= 32, "Jwt:SigningKey must be at least 32 bytes.")
+        .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), ApiResourceText.JwtIssuerRequired)
+        .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), ApiResourceText.JwtAudienceRequired)
+        .Validate(options => Encoding.UTF8.GetByteCount(options.SigningKey) >= 32, ApiResourceText.JwtSigningKeyMinimumLength)
         .ValidateOnStart();
 
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -160,6 +162,7 @@ static void AddJwtAuthentication(IServiceCollection services, IConfiguration con
     });
 }
 
+// Applies EF Core migrations at startup only when the database option explicitly enables it.
 static async Task ApplyMigrationsIfConfiguredAsync(WebApplication app)
 {
     var databaseOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<DatabaseOptions>>().Value;

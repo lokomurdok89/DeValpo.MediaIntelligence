@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ProfileNotFound" xml:space="preserve">
+    <value>Profile '{0}' was not found.</value>
+  </data>
+  <data name="ProfileAssetTypeUnsupported" xml:space="preserve">
+    <value>Profile '{0}' does not support asset type '{1}'.</value>
+  </data>
+  <data name="JobNotFound" xml:space="preserve">
+    <value>Job '{0}' was not found.</value>
+  </data>
+  <data name="JobCannotBeCancelled" xml:space="preserve">
+    <value>Job '{0}' cannot be cancelled from status '{1}'.</value>
+  </data>
+  <data name="ClientKeyRequired" xml:space="preserve">
+    <value>ClientKey is required.</value>
+  </data>
+  <data name="ProfileKeyRequired" xml:space="preserve">
+    <value>ProfileKey is required.</value>
+  </data>
+  <data name="AssetTypeRequired" xml:space="preserve">
+    <value>AssetType is required.</value>
+  </data>
+  <data name="DuplicateSkillName" xml:space="preserve">
+    <value>Duplicate skill name registered: {0}.</value>
+  </data>
+  <data name="SkillNotRegistered" xml:space="preserve">
+    <value>Skill '{0}' is not registered.</value>
+  </data>
+  <data name="SkillAssetTypeUnsupported" xml:space="preserve">
+    <value>Skill '{0}' does not support '{1}'.</value>
+  </data>
+  <data name="HumanReviewRequiredIssue" xml:space="preserve">
+    <value>Confidence or execution issues require human review.</value>
+  </data>
+  <data name="HumanReviewReason" xml:space="preserve">
+    <value>Result confidence below profile threshold or issues detected.</value>
+  </data>
+  <data name="CapabilityResourceMissing" xml:space="preserve">
+    <value>Missing capability resource '{0}'.</value>
+  </data>
+  <data name="ArenysmedDeliveryEvidenceDescription" xml:space="preserve">
+    <value>Administrative evidence profile for handwritten IDs, stamps and visible text.</value>
+  </data>
+  <data name="SportsEventClipsDescription" xml:space="preserve">
+    <value>Sports profile for bibs, objects and structural clip metadata.</value>
+  </data>
+  <data name="GenericDocumentExtractionDescription" xml:space="preserve">
+    <value>Generic profile for document OCR and field extraction.</value>
+  </data>
+  <data name="InvoiceExtractionDescription" xml:space="preserve">
+    <value>Document AI backed invoice/document extraction profile when Google is enabled.</value>
+  </data>
+</root>

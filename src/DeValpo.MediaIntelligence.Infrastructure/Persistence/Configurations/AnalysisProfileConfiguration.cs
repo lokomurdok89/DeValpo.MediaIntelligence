@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Configurations;
 
 public sealed class AnalysisProfileConfiguration : IEntityTypeConfiguration<AnalysisProfile>
 {
+    /// <summary>
+    /// Maps persisted profile definitions and enforces unique profile keys.
+    /// </summary>
     public void Configure(EntityTypeBuilder<AnalysisProfile> builder)
     {
         builder.HasKey(item => item.Id);

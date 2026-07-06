@@ -1,5 +1,6 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Models;
+using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
@@ -7,24 +8,15 @@ using DeValpo.MediaIntelligence.Domain.Entities;
 
 namespace DeValpo.MediaIntelligence.Application.MediaAnalysis;
 
-public interface IMediaAnalysisApplicationService
-{
-    Task<AnalysisResultResponse> AnalyzeAsync(
-        CreateAnalysisJobRequest request,
-        Stream content,
-        CancellationToken cancellationToken);
-
-    Task<AnalysisResultResponse?> GetResultAsync(
-        Guid jobId,
-        CancellationToken cancellationToken);
-}
-
 public sealed class MediaAnalysisApplicationService(
     IMediaAnalysisOrchestrator orchestrator,
     IMediaAssetStorage storage,
     IAnalysisJobRepository jobRepository,
     IUnitOfWork unitOfWork) : IMediaAnalysisApplicationService
 {
+    /// <summary>
+    /// Creates a running job, stores the asset, executes orchestration and saves extracted output.
+    /// </summary>
     public async Task<AnalysisResultResponse> AnalyzeAsync(
         CreateAnalysisJobRequest request,
         Stream content,
@@ -143,7 +135,7 @@ public sealed class MediaAnalysisApplicationService(
             job.HumanReviewTasks.Add(new HumanReviewTask
             {
                 JobId = job.Id,
-                Reason = "Result confidence below profile threshold or issues detected."
+                Reason = ApplicationResourceText.HumanReviewReason
             });
         }
 
@@ -152,12 +144,18 @@ public sealed class MediaAnalysisApplicationService(
         return MapResult(job.AnalysisResult);
     }
 
+    /// <summary>
+    /// Returns a completed analysis result for the requested job when one exists.
+    /// </summary>
     public async Task<AnalysisResultResponse?> GetResultAsync(Guid jobId, CancellationToken cancellationToken)
     {
         var job = await jobRepository.GetByIdAsync(jobId, cancellationToken);
         return job?.AnalysisResult is null ? null : MapResult(job.AnalysisResult);
     }
 
+    /// <summary>
+    /// Converts the persisted analysis result graph to its API response model.
+    /// </summary>
     private static AnalysisResultResponse MapResult(AnalysisResult result)
     {
         return new AnalysisResultResponse(

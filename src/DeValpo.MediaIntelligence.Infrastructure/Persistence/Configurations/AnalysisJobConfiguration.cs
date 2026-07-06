@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Configurations;
 
 public sealed class AnalysisJobConfiguration : IEntityTypeConfiguration<AnalysisJob>
 {
+    /// <summary>
+    /// Maps analysis job identity, status and lookup indexes.
+    /// </summary>
     public void Configure(EntityTypeBuilder<AnalysisJob> builder)
     {
         builder.HasKey(item => item.Id);

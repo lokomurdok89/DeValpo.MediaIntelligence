@@ -1,22 +1,19 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
 using DeValpo.MediaIntelligence.Domain.Entities;
 
 namespace DeValpo.MediaIntelligence.Application.AnalysisJobs;
 
-public interface IAnalysisJobApplicationService
-{
-    Task<CreateAnalysisJobResponse> CreateAsync(CreateAnalysisJobRequest request, CancellationToken cancellationToken);
-    Task<AnalysisJobResponse?> GetByIdAsync(Guid jobId, CancellationToken cancellationToken);
-    Task CancelAsync(Guid jobId, CancellationToken cancellationToken);
-}
-
 public sealed class AnalysisJobApplicationService(
     IAnalysisProfileResolver profileResolver,
     IAnalysisJobRepository jobRepository,
     IUnitOfWork unitOfWork) : IAnalysisJobApplicationService
 {
+    /// <summary>
+    /// Validates the request, resolves the profile and persists a new pending job.
+    /// </summary>
     public async Task<CreateAnalysisJobResponse> CreateAsync(
         CreateAnalysisJobRequest request,
         CancellationToken cancellationToken)
@@ -24,11 +21,11 @@ public sealed class AnalysisJobApplicationService(
         ValidateRequest(request);
 
         var profile = await profileResolver.ResolveAsync(request.ProfileKey, cancellationToken)
-            ?? throw new InvalidOperationException($"Profile '{request.ProfileKey}' was not found.");
+            ?? throw new InvalidOperationException(ApplicationResourceText.ProfileNotFound(request.ProfileKey));
 
         if (!profile.SupportedAssetTypes.Contains(request.AssetType))
         {
-            throw new InvalidOperationException($"Profile '{request.ProfileKey}' does not support asset type '{request.AssetType}'.");
+            throw new InvalidOperationException(ApplicationResourceText.ProfileAssetTypeUnsupported(request.ProfileKey, request.AssetType));
         }
 
         var job = new AnalysisJob
@@ -45,20 +42,26 @@ public sealed class AnalysisJobApplicationService(
         return new CreateAnalysisJobResponse(job.Id, job.Status, job.CreatedAt);
     }
 
+    /// <summary>
+    /// Retrieves a job and converts it to the API response contract.
+    /// </summary>
     public async Task<AnalysisJobResponse?> GetByIdAsync(Guid jobId, CancellationToken cancellationToken)
     {
         var job = await jobRepository.GetByIdAsync(jobId, cancellationToken);
         return job is null ? null : Map(job);
     }
 
+    /// <summary>
+    /// Marks a non-terminal job as cancelled and records its completion timestamp.
+    /// </summary>
     public async Task CancelAsync(Guid jobId, CancellationToken cancellationToken)
     {
         var job = await jobRepository.GetByIdAsync(jobId, cancellationToken)
-            ?? throw new InvalidOperationException($"Job '{jobId}' was not found.");
+            ?? throw new InvalidOperationException(ApplicationResourceText.JobNotFound(jobId));
 
         if (job.Status is "Completed" or "Failed")
         {
-            throw new InvalidOperationException($"Job '{jobId}' cannot be cancelled from status '{job.Status}'.");
+            throw new InvalidOperationException(ApplicationResourceText.JobCannotBeCancelled(jobId, job.Status));
         }
 
         job.Status = AnalysisJobStatus.Cancelled.ToString();
@@ -66,6 +69,9 @@ public sealed class AnalysisJobApplicationService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Converts a persisted job entity to the public job response model.
+    /// </summary>
     internal static AnalysisJobResponse Map(AnalysisJob job)
     {
         Enum.TryParse<MediaAssetType>(job.AssetType, out var assetType);
@@ -82,21 +88,24 @@ public sealed class AnalysisJobApplicationService(
             job.ErrorMessage);
     }
 
+    /// <summary>
+    /// Ensures the minimum required fields are present before a job is created.
+    /// </summary>
     private static void ValidateRequest(CreateAnalysisJobRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.ClientKey))
         {
-            throw new ArgumentException("ClientKey is required.", nameof(request));
+            throw new ArgumentException(ApplicationResourceText.ClientKeyRequired, nameof(request));
         }
 
         if (string.IsNullOrWhiteSpace(request.ProfileKey))
         {
-            throw new ArgumentException("ProfileKey is required.", nameof(request));
+            throw new ArgumentException(ApplicationResourceText.ProfileKeyRequired, nameof(request));
         }
 
         if (request.AssetType == MediaAssetType.Unknown)
         {
-            throw new ArgumentException("AssetType is required.", nameof(request));
+            throw new ArgumentException(ApplicationResourceText.AssetTypeRequired, nameof(request));
         }
     }
 }

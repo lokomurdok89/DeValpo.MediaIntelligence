@@ -1,5 +1,6 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Models;
+using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 
 namespace DeValpo.MediaIntelligence.Application.MediaAnalysis;
@@ -8,17 +9,20 @@ public sealed class MediaAnalysisOrchestrator(
     IAnalysisProfileResolver profileResolver,
     IEnumerable<IMediaAnalysisSkill> skills) : IMediaAnalysisOrchestrator
 {
+    /// <summary>
+    /// Resolves the requested profile, executes its skills in order and determines review status.
+    /// </summary>
     public async Task<AnalysisOrchestrationResult> AnalyzeAsync(
         AnalysisOrchestrationRequest request,
         Stream content,
         CancellationToken cancellationToken)
     {
         var profile = await profileResolver.ResolveAsync(request.ProfileKey, cancellationToken)
-            ?? throw new InvalidOperationException($"Profile '{request.ProfileKey}' was not found.");
+            ?? throw new InvalidOperationException(ApplicationResourceText.ProfileNotFound(request.ProfileKey));
 
         if (!profile.SupportedAssetTypes.Contains(request.AssetType))
         {
-            throw new InvalidOperationException($"Profile '{request.ProfileKey}' does not support asset type '{request.AssetType}'.");
+            throw new InvalidOperationException(ApplicationResourceText.ProfileAssetTypeUnsupported(request.ProfileKey, request.AssetType));
         }
 
         var skillsByName = skills.ToDictionary(skill => skill.SkillName, StringComparer.OrdinalIgnoreCase);
@@ -28,7 +32,7 @@ public sealed class MediaAnalysisOrchestrator(
 
         if (duplicateSkillName is not null)
         {
-            throw new InvalidOperationException($"Duplicate skill name registered: {duplicateSkillName}.");
+            throw new InvalidOperationException(ApplicationResourceText.DuplicateSkillName(duplicateSkillName));
         }
 
         var results = new List<SkillExecutionResult>();
@@ -38,13 +42,13 @@ public sealed class MediaAnalysisOrchestrator(
         {
             if (!skillsByName.TryGetValue(skillName, out var skill))
             {
-                issues.Add(new AnalysisIssueResponse("SKILL_NOT_REGISTERED", $"Skill '{skillName}' is not registered.", "Error", "Orchestrator"));
+                issues.Add(new AnalysisIssueResponse("SKILL_NOT_REGISTERED", ApplicationResourceText.SkillNotRegistered(skillName), "Error", "Orchestrator"));
                 continue;
             }
 
             if (!skill.SupportedAssetTypes.Contains(request.AssetType))
             {
-                issues.Add(new AnalysisIssueResponse("SKILL_ASSET_TYPE_UNSUPPORTED", $"Skill '{skill.SkillName}' does not support '{request.AssetType}'.", "Warning", skill.SkillName));
+                issues.Add(new AnalysisIssueResponse("SKILL_ASSET_TYPE_UNSUPPORTED", ApplicationResourceText.SkillAssetTypeUnsupported(skill.SkillName, request.AssetType), "Warning", skill.SkillName));
                 continue;
             }
 
@@ -71,7 +75,7 @@ public sealed class MediaAnalysisOrchestrator(
 
         if (requiresHumanReview)
         {
-            issues.Add(new AnalysisIssueResponse("HUMAN_REVIEW_REQUIRED", "Confidence or execution issues require human review.", "Warning", "Orchestrator"));
+            issues.Add(new AnalysisIssueResponse("HUMAN_REVIEW_REQUIRED", ApplicationResourceText.HumanReviewRequiredIssue, "Warning", "Orchestrator"));
         }
 
         return new AnalysisOrchestrationResult(confidence, requiresHumanReview, results, issues);

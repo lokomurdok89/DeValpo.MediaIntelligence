@@ -20,6 +20,9 @@ public sealed class MediaIntelligenceDbContext(DbContextOptions<MediaIntelligenc
     public DbSet<HumanReviewTask> HumanReviewTasks => Set<HumanReviewTask>();
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
 
+    /// <summary>
+    /// Applies all entity mappings declared in the infrastructure assembly.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MediaIntelligenceDbContext).Assembly);

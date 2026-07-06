@@ -1,6 +1,7 @@
 using DeValpo.MediaIntelligence.Application.Models;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
+using DeValpo.MediaIntelligence.Infrastructure.Resources;
 
 namespace DeValpo.MediaIntelligence.Infrastructure.Skills;
 
@@ -9,8 +10,11 @@ public sealed class MockVideoClipGenerationSkill : BaseMockSkill
     public override string SkillName => nameof(MockVideoClipGenerationSkill);
     public override IReadOnlyCollection<MediaAssetType> SupportedAssetTypes => [MediaAssetType.Video, MediaAssetType.LiveVideo, MediaAssetType.Image];
     public override IReadOnlyCollection<string> RequiredCapabilities => ["VideoClipGeneration"];
-    public override string Description => "Structural mock clip generation without FFmpeg.";
+    public override string Description => InfrastructureResourceText.MockVideoClipGenerationDescription;
 
+    /// <summary>
+    /// Produces deterministic clip metadata without generating real media files.
+    /// </summary>
     public override Task<SkillExecutionResult> ExecuteAsync(SkillExecutionContext context, CancellationToken cancellationToken)
     {
         return Task.FromResult(Result(

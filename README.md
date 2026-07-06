@@ -672,3 +672,17 @@ Profiles are resolved through `IAnalysisProfileResolver`. The initial implementa
 ## CI/CD status
 
 GitHub Actions validates restore, build, tests, Docker build and Docker Compose config. There is no automatic deployment in this phase.
+
+## Productization and QA
+
+The remaining work to move from MVP to product is tracked in:
+
+- [Productization plan](docs/productization-plan.md)
+
+The repository also includes a reusable QA skill for future product-readiness audits:
+
+- [DeValpo MediaIntelligence QA skill](docs/devalpo-mediaintelligence-qa/SKILL.md)
+
+The QA review for this change is recorded in:
+
+- [QA review](docs/qa-review.md)
