@@ -4,6 +4,7 @@ using DeValpo.MediaIntelligence.Api.Middleware;
 using DeValpo.MediaIntelligence.Api.Options;
 using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Api.Swagger;
+using DeValpo.MediaIntelligence.Api.Validation;
 using DeValpo.MediaIntelligence.Api.Workers;
 using DeValpo.MediaIntelligence.Application;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
@@ -79,6 +80,9 @@ builder.Services
 builder.Services.AddScoped<IDevJwtTokenService, DevJwtTokenService>();
 builder.Services.AddScoped<IClientAccessTokenService, ClientAccessTokenService>();
 builder.Services.AddScoped<IRequestClientAccessService, RequestClientAccessService>();
+builder.Services.AddScoped<IUploadedFileValidationService, UploadedFileValidationService>();
+builder.Services.AddScoped<IUploadedFileThreatScanner, NoOpUploadedFileThreatScanner>();
+builder.Services.Configure<UploadValidationOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
 builder.Services.AddHostedService<AnalysisJobWorker>();

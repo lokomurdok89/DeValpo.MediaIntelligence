@@ -104,7 +104,7 @@ Exit criteria:
 
 Objetivo: reemplazar el flujo local de token por autenticacion real para clientes.
 
-Estado: implementada en la rama `codex/phase-2-customer-access-security`; pendiente de PR, CI y merge antes de iniciar Fase 3.
+Estado: implementada y mergeada en PR #9.
 
 Implementacion:
 
@@ -143,7 +143,7 @@ Evidencia QA:
 
 Objetivo: impedir acceso cruzado entre clientes.
 
-Estado: implementada en la rama `codex/phase-3-tenant-isolation`; pendiente de PR, CI y merge antes de iniciar Fase 4.
+Estado: implementada y mergeada en PR #10.
 
 Implementacion:
 
@@ -178,7 +178,7 @@ Evidencia QA:
 
 Objetivo: convertir el analisis en flujo recuperable, auditable y seguro para documentos reales.
 
-Estado: implementada en la rama `codex/phase-4-async-jobs-worker`; pendiente de PR, CI y merge antes de iniciar Fase 5.
+Estado: implementada y mergeada en PR #11.
 
 Implementacion:
 
@@ -211,6 +211,8 @@ Evidencia QA:
 ## Fase 5: Ingestion Real De Archivos Y Normalizacion
 
 Objetivo: hacer robusto el manejo de documentos reales.
+
+Estado: en implementacion en la rama `codex/phase-5-file-ingestion-validation`; no se puede iniciar Fase 6 hasta que PR, CI, QA real y merge esten completos.
 
 Implementacion:
 

@@ -30,7 +30,7 @@ public sealed class ExtractedFieldConfiguration : IEntityTypeConfiguration<Extra
     {
         builder.HasKey(item => item.Id);
         builder.Property(item => item.Name).HasMaxLength(150).IsRequired();
-        builder.Property(item => item.Value).HasMaxLength(2000);
+        builder.Property(item => item.Value).HasColumnType("text");
         builder.Property(item => item.Confidence).HasPrecision(8, 4);
         builder.Property(item => item.SourceSkill).HasMaxLength(150).IsRequired();
         builder.HasOne(item => item.AnalysisResult).WithMany(result => result.ExtractedFields).HasForeignKey(item => item.AnalysisResultId);

@@ -30,7 +30,7 @@ Known product gaps:
 - Auth/audit events are not recorded yet.
 - Human review is persisted but has no review workflow.
 - Webhook delivery is modeled but not implemented.
-- There is no production observability, audit trail, rate limiting or tenant isolation.
+- There is no production observability, audit trail or rate limiting.
 - There is no real QA matrix using real documents and real provider calls.
 
 ## Product Definition
@@ -154,11 +154,11 @@ Work:
    - Avoid hardcoding invoice assumptions into the base engine.
 
 4. Add validation for uploaded files.
-   - Content type sniffing.
-   - Extension allowlist.
-   - Corrupt PDF handling.
-   - Empty/oversized document handling.
-   - Malware scanning hook for production.
+   - Done in Phase 5: extension allowlist by asset type.
+   - Done in Phase 5: declared content type check with binary signature sniffing.
+   - Done in Phase 5: corrupt/incomplete PDF handling.
+   - Done in Phase 5: empty and oversized document handling.
+   - Done in Phase 5: malware scanning hook with no-op local implementation.
 
 5. Add real provider health and readiness.
    - `/health` should remain lightweight.

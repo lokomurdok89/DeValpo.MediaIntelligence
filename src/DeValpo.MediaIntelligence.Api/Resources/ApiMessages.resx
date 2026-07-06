@@ -15,8 +15,29 @@
   <data name="FileRequired" xml:space="preserve">
     <value>File is required.</value>
   </data>
+  <data name="FileEmpty" xml:space="preserve">
+    <value>File is empty.</value>
+  </data>
   <data name="FileExceedsMaxSize" xml:space="preserve">
     <value>File exceeds max size of {0} bytes.</value>
+  </data>
+  <data name="FileExtensionUnsupported" xml:space="preserve">
+    <value>File extension '{0}' is not supported.</value>
+  </data>
+  <data name="FileExtensionNotSupportedForAssetType" xml:space="preserve">
+    <value>File extension '{0}' is not supported for asset type '{1}'.</value>
+  </data>
+  <data name="FileContentTypeUnsupported" xml:space="preserve">
+    <value>File content type '{0}' is not supported.</value>
+  </data>
+  <data name="FileSignatureInvalid" xml:space="preserve">
+    <value>File binary signature does not match the declared file type.</value>
+  </data>
+  <data name="PdfCorrupt" xml:space="preserve">
+    <value>PDF file is corrupt or incomplete.</value>
+  </data>
+  <data name="FileThreatDetected" xml:space="preserve">
+    <value>File did not pass the security scan.</value>
   </data>
   <data name="MetadataJsonMustBeObject" xml:space="preserve">
     <value>metadataJson must be a JSON object.</value>

@@ -11,7 +11,14 @@ internal static class ApiResourceText
         Assembly.GetExecutingAssembly());
 
     public static string FileRequired => GetRequiredResource(nameof(FileRequired));
+    public static string FileEmpty => GetRequiredResource(nameof(FileEmpty));
     public static string FileExceedsMaxSize(long maxFileSizeBytes) => Format(nameof(FileExceedsMaxSize), maxFileSizeBytes);
+    public static string FileExtensionUnsupported(string extension) => Format(nameof(FileExtensionUnsupported), extension);
+    public static string FileExtensionNotSupportedForAssetType(string extension, object assetType) => Format(nameof(FileExtensionNotSupportedForAssetType), extension, assetType);
+    public static string FileContentTypeUnsupported(string contentType) => Format(nameof(FileContentTypeUnsupported), contentType);
+    public static string FileSignatureInvalid => GetRequiredResource(nameof(FileSignatureInvalid));
+    public static string PdfCorrupt => GetRequiredResource(nameof(PdfCorrupt));
+    public static string FileThreatDetected => GetRequiredResource(nameof(FileThreatDetected));
     public static string MetadataJsonMustBeObject => GetRequiredResource(nameof(MetadataJsonMustBeObject));
     public static string MetadataJsonOnlyStringValues => GetRequiredResource(nameof(MetadataJsonOnlyStringValues));
     public static string MetadataJsonMustBeValidJson => GetRequiredResource(nameof(MetadataJsonMustBeValidJson));
