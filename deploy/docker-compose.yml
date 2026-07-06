@@ -14,6 +14,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - media_assets:/app/storage/media-assets
       - ../secrets:/run/secrets:ro

@@ -52,6 +52,8 @@ internal static class InfrastructureResourceText
     public static string MockVideoClipGenerationDescription => GetRequiredResource(nameof(MockVideoClipGenerationDescription));
     public static string MockLiveVideoBufferDescription => GetRequiredResource(nameof(MockLiveVideoBufferDescription));
     public static string LiveVideoStructuralOnly => GetRequiredResource(nameof(LiveVideoStructuralOnly));
+    public static string WebhookTargetNotLoaded => GetRequiredResource(nameof(WebhookTargetNotLoaded));
+    public static string WebhookRequestTimedOut => GetRequiredResource(nameof(WebhookRequestTimedOut));
 
     private static string GetRequiredResource(string name)
     {

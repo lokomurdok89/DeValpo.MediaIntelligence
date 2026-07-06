@@ -19,6 +19,8 @@ Already working:
 - Clients can exchange API keys for short-lived JWTs.
 - API keys can be rotated and revoked.
 - Analysis jobs, media assets, skill executions, results, issues and human review tasks are persisted.
+- Human review supports list/detail/start/complete with approve, correct and reject decisions.
+- Webhook targets and delivery attempts are implemented for completed jobs.
 - Initial EF Core migration exists.
 - Basic unit and API security tests exist.
 - Interfaces have been split from several application implementations.
@@ -28,8 +30,7 @@ Known product gaps:
 - User-facing messages must continue to be audited so new runtime text remains resource-backed.
 - Rate limiting and abuse controls are not implemented yet.
 - Auth/audit events are not recorded yet.
-- Human review is persisted but has no review workflow.
-- Webhook delivery is modeled but not implemented.
+- Webhook signing secrets are stored for local HMAC delivery and must move to managed secret storage before production.
 - There is no production observability, audit trail or rate limiting.
 - There is no real QA matrix using real documents and real provider calls.
 
@@ -211,10 +212,12 @@ Goal: deliver results to downstream systems reliably.
 Work:
 
 1. Implement webhook delivery.
-   - Register webhook targets per client.
-   - Sign webhook payloads.
-   - Retry with backoff.
-   - Store attempts and last response.
+   - Done in Phase 7: register webhook targets per client.
+   - Done in Phase 7: sign webhook payloads with HMAC-SHA256.
+   - Done in Phase 7: retry with exponential backoff.
+   - Done in Phase 7: store attempts, status, last status code and last error.
+   - Done in Phase 7: expose delivery history by client/job.
+   - Done in Phase 7: avoid OCR text, raw provider output and signing secrets in webhook payloads.
 
 2. Add result export.
    - JSON export.

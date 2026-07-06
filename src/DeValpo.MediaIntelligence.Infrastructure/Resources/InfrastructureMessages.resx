@@ -138,4 +138,10 @@
   <data name="LiveVideoStructuralOnly" xml:space="preserve">
     <value>Live video is represented structurally in the initial phase.</value>
   </data>
+  <data name="WebhookTargetNotLoaded" xml:space="preserve">
+    <value>Webhook target was not loaded.</value>
+  </data>
+  <data name="WebhookRequestTimedOut" xml:space="preserve">
+    <value>Webhook request timed out.</value>
+  </data>
 </root>

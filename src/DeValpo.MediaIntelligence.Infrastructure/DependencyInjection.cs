@@ -7,6 +7,7 @@ using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using DeValpo.MediaIntelligence.Infrastructure.Skills;
 using DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
 using DeValpo.MediaIntelligence.Infrastructure.Storage;
+using DeValpo.MediaIntelligence.Infrastructure.Webhooks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
         services.Configure<SkillRegistrationOptions>(configuration.GetSection("Skills"));
         services.Configure<AnalysisProfileOptions>(configuration.GetSection("AnalysisProfiles"));
+        services.Configure<WebhookDeliveryOptions>(configuration.GetSection("WebhookDelivery"));
 
         var connectionString = configuration.GetConnectionString("MediaIntelligence")
             ?? throw new InvalidOperationException(InfrastructureResourceText.ConnectionStringRequired);
@@ -37,6 +39,11 @@ public static class DependencyInjection
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IClientApiKeyRepository, ClientApiKeyRepository>();
         services.AddScoped<IHumanReviewTaskRepository, HumanReviewTaskRepository>();
+        services.AddScoped<IClientWebhookTargetRepository, ClientWebhookTargetRepository>();
+        services.AddScoped<IWebhookDeliveryRepository, WebhookDeliveryRepository>();
+        services.AddScoped<IWebhookSignatureService, WebhookSignatureService>();
+        services.AddScoped<IWebhookDeliveryProcessor, WebhookDeliveryProcessor>();
+        services.AddHttpClient<IWebhookDeliverySender, WebhookDeliverySender>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMediaAssetStorage, LocalMediaAssetStorage>();
         services.AddScoped<IGoogleCredentialProvider, GoogleCredentialProvider>();

@@ -5,11 +5,13 @@ using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 using DeValpo.MediaIntelligence.Contracts.HumanReview;
 using DeValpo.MediaIntelligence.Domain.Entities;
+using DeValpo.MediaIntelligence.Application.Webhooks;
 
 namespace DeValpo.MediaIntelligence.Application.HumanReview;
 
 public sealed class HumanReviewApplicationService(
     IHumanReviewTaskRepository repository,
+    IWebhookDeliveryApplicationService webhookDeliveryService,
     IUnitOfWork unitOfWork) : IHumanReviewApplicationService
 {
     private const string PendingStatus = "Pending";
@@ -61,6 +63,11 @@ public sealed class HumanReviewApplicationService(
         task.UpdatedAt = now;
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (task.Job!.Status == AnalysisJobStatus.Completed.ToString())
+        {
+            await webhookDeliveryService.EnqueueForJobAsync(task.JobId, "analysis.completed", cancellationToken);
+        }
+
         return Map(task);
     }
 

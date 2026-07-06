@@ -268,6 +268,44 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.ToTable("ClientApiKeys");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ClientWebhookTarget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SigningSecret")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("TargetKey")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId", "TargetKey")
+                        .IsUnique();
+
+                    b.ToTable("ClientWebhookTargets");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.DetectedEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -549,14 +587,44 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Property<int>("AttemptCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ClientKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("ClientWebhookTargetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("LastAttemptAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int?>("LastStatusCode")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -570,7 +638,15 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClientKey");
+
+                    b.HasIndex("ClientWebhookTargetId");
+
                     b.HasIndex("JobId");
+
+                    b.HasIndex("NextAttemptAt");
+
+                    b.HasIndex("Status");
 
                     b.ToTable("WebhookDeliveries");
                 });
@@ -601,6 +677,17 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.Client", "Client")
                         .WithMany("ApiKeys")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ClientWebhookTarget", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.Client", "Client")
+                        .WithMany("WebhookTargets")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -685,6 +772,16 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Navigation("Job");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.WebhookDelivery", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.ClientWebhookTarget", "ClientWebhookTarget")
+                        .WithMany()
+                        .HasForeignKey("ClientWebhookTargetId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ClientWebhookTarget");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.AnalysisJob", b =>
                 {
                     b.Navigation("AnalysisResult");
@@ -712,6 +809,8 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.Client", b =>
                 {
                     b.Navigation("ApiKeys");
+
+                    b.Navigation("WebhookTargets");
                 });
 #pragma warning restore 612, 618
         }

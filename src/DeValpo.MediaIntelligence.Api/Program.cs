@@ -85,7 +85,9 @@ builder.Services.AddScoped<IUploadedFileThreatScanner, NoOpUploadedFileThreatSca
 builder.Services.Configure<UploadValidationOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
+builder.Services.Configure<WebhookDeliveryOptions>(builder.Configuration.GetSection("WebhookDelivery"));
 builder.Services.AddHostedService<AnalysisJobWorker>();
+builder.Services.AddHostedService<WebhookDeliveryWorker>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("MediaIntelligence")

@@ -439,14 +439,33 @@ classDiagram
     class WebhookDelivery {
         Guid Id
         Guid JobId
+        Guid ClientWebhookTargetId
+        string ClientKey
         string TargetKey
+        string EventType
+        jsonb PayloadJson
         string Status
         int AttemptCount
         DateTimeOffset CreatedAt
+        DateTimeOffset NextAttemptAt
         DateTimeOffset LastAttemptAt
+        DateTimeOffset CompletedAt
+        int LastStatusCode
+        string LastError
+    }
+
+    class ClientWebhookTarget {
+        Guid Id
+        Guid ClientId
+        string TargetKey
+        string Url
+        string SigningSecret
+        bool IsActive
+        DateTimeOffset CreatedAt
     }
 
     Client "1" --> "many" ClientApiKey
+    Client "1" --> "many" ClientWebhookTarget
     AnalysisJob "1" --> "many" MediaAsset
     AnalysisJob "1" --> "many" SkillExecution
     AnalysisJob "1" --> "0..1" AnalysisResult
@@ -456,6 +475,7 @@ classDiagram
     AnalysisResult "1" --> "many" DetectedLabel
     AnalysisResult "1" --> "many" GeneratedClip
     AnalysisResult "1" --> "many" AnalysisIssue
+    ClientWebhookTarget "1" --> "many" WebhookDelivery
 ```
 
 ### Database Diagram
@@ -592,14 +612,33 @@ erDiagram
     WebhookDeliveries {
         uuid Id PK
         uuid JobId
+        uuid ClientWebhookTargetId FK
+        string ClientKey
         string TargetKey
+        string EventType
+        jsonb PayloadJson
         string Status
         int AttemptCount
         timestamptz CreatedAt
+        timestamptz NextAttemptAt
         timestamptz LastAttemptAt
+        timestamptz CompletedAt
+        int LastStatusCode
+        string LastError
+    }
+
+    ClientWebhookTargets {
+        uuid Id PK
+        uuid ClientId FK
+        string TargetKey
+        string Url
+        string SigningSecret
+        bool IsActive
+        timestamptz CreatedAt
     }
 
     Clients ||--o{ ClientApiKeys : owns
+    Clients ||--o{ ClientWebhookTargets : owns
     AnalysisJobs ||--o{ MediaAssets : has
     AnalysisJobs ||--o{ SkillExecutions : runs
     AnalysisJobs ||--o| AnalysisResults : produces
@@ -609,9 +648,10 @@ erDiagram
     AnalysisResults ||--o{ DetectedLabels : contains
     AnalysisResults ||--o{ GeneratedClips : contains
     AnalysisResults ||--o{ AnalysisIssues : contains
+    ClientWebhookTargets ||--o{ WebhookDeliveries : receives
 ```
 
-`WebhookDeliveries.JobId` is currently persisted as an identifier for future outbound delivery tracking. The current EF configuration does not define a navigation/FK relationship for it yet.
+`WebhookDeliveries.JobId` is persisted as an identifier for delivery history filtering. The current EF configuration does not define an `AnalysisJobs` navigation for it yet.
 
 ## Run locally
 
@@ -792,6 +832,65 @@ curl -X POST http://localhost:8085/api/v1/human-review-tasks/<taskId>/complete \
 
 Supported decisions are `Approve`, `Correct` and `Reject`. `Correct` stores the original extracted fields on the review task and writes corrected fields to the result.
 
+## Webhooks
+
+Admin tokens can register webhook targets per client. The signing secret is accepted for outbound HMAC signing and is never returned by the API:
+
+```bash
+curl -X POST http://localhost:8085/api/v1/admin/clients/<clientKey>/webhook-targets \
+  -H "Authorization: Bearer <adminAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d "{\"targetKey\":\"primary\",\"url\":\"https://example.com/webhooks/devalpo\",\"signingSecret\":\"replace-with-client-webhook-secret-min-32-chars\",\"isActive\":true}"
+```
+
+List targets:
+
+```bash
+curl http://localhost:8085/api/v1/admin/clients/<clientKey>/webhook-targets \
+  -H "Authorization: Bearer <adminAccessToken>"
+```
+
+When an analysis job reaches `Completed`, the worker enqueues one `analysis.completed` delivery per active target. The payload is intentionally minimal and does not include OCR text, raw provider output or signing secrets:
+
+```json
+{
+  "eventId": "00000000-0000-0000-0000-000000000000",
+  "eventType": "analysis.completed",
+  "jobId": "00000000-0000-0000-0000-000000000000",
+  "clientKey": "generic",
+  "profileKey": "generic-document-ocr-v1",
+  "jobStatus": "Completed",
+  "confidence": 0.89,
+  "requiresHumanReview": false,
+  "resultUrl": "/api/v1/analysis-jobs/<jobId>/result",
+  "occurredAt": "2026-07-06T00:00:00Z"
+}
+```
+
+Outbound requests include:
+
+```text
+X-DeValpo-Event-Id: <webhookDeliveryId>
+X-DeValpo-Event-Type: analysis.completed
+X-DeValpo-Timestamp: <unixSeconds>
+X-DeValpo-Signature: sha256=<hex-hmac>
+```
+
+Verify signatures with:
+
+```text
+HMACSHA256(signingSecret, X-DeValpo-Timestamp + "." + rawRequestBody)
+```
+
+Inspect delivery attempts:
+
+```bash
+curl "http://localhost:8085/api/v1/webhook-deliveries?clientKey=<clientKey>&jobId=<jobId>" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Failed deliveries move to `RetryPending` until `WebhookDelivery:MaxAttempts` is reached, then end as `Failed`.
+
 ## Add a skill
 
 1. Implement `IMediaAnalysisSkill`.
@@ -826,3 +925,6 @@ The QA review for this change is recorded in:
 - [Phase 2 customer access and security QA](docs/qa-phase-2-customer-access-security.md)
 - [Phase 3 tenant isolation QA](docs/qa-phase-3-tenant-isolation.md)
 - [Phase 4 async jobs and worker QA](docs/qa-phase-4-async-jobs-worker.md)
+- [Phase 5 file ingestion validation QA](docs/qa-phase-5-file-ingestion-validation.md)
+- [Phase 6 human review workflow QA](docs/qa-phase-6-human-review-workflow.md)
+- [Phase 7 webhook delivery QA](docs/qa-phase-7-webhook-delivery.md)

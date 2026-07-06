@@ -90,6 +90,9 @@
   <data name="AnalysisJobWorkerFailed" xml:space="preserve">
     <value>Analysis job worker failed while processing the queue.</value>
   </data>
+  <data name="WebhookDeliveryWorkerFailed" xml:space="preserve">
+    <value>Webhook delivery worker failed while processing the queue.</value>
+  </data>
   <data name="SwaggerBearerDescription" xml:space="preserve">
     <value>JWT Bearer token.</value>
   </data>

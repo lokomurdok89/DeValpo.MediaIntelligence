@@ -4,6 +4,8 @@ using DeValpo.MediaIntelligence.Application.Models;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
+using DeValpo.MediaIntelligence.Contracts.Webhooks;
+using DeValpo.MediaIntelligence.Application.Webhooks;
 using DeValpo.MediaIntelligence.Domain.Entities;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
@@ -109,6 +111,7 @@ public sealed class MediaAnalysisApplicationServiceTests
             new FakeMediaAssetStorage(),
             new FakeProfileResolver(),
             jobRepository,
+            new FakeWebhookDeliveryApplicationService(),
             new FakeUnitOfWork(),
             Options.Create(options ?? new AnalysisProcessingOptions()));
     }
@@ -276,5 +279,36 @@ public sealed class MediaAnalysisApplicationServiceTests
     private sealed class FakeUnitOfWork : IUnitOfWork
     {
         public Task SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class FakeWebhookDeliveryApplicationService : IWebhookDeliveryApplicationService
+    {
+        public Task<WebhookTargetResponse> CreateTargetAsync(
+            string clientKey,
+            CreateWebhookTargetRequest request,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyCollection<WebhookTargetResponse>> ListTargetsAsync(
+            string clientKey,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyCollection<WebhookDeliveryResponse>> ListDeliveriesAsync(
+            string? clientKey,
+            Guid? jobId,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task EnqueueForJobAsync(Guid jobId, string eventType, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 }
