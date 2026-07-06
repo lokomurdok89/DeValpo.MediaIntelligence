@@ -1,6 +1,7 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Contracts.Providers;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
+using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using Google.Cloud.DocumentAI.V1;
 using Grpc.Core;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,9 @@ public sealed class GoogleDocumentAiStatusService(
     IOptions<GoogleDocumentAiOptions> options,
     IGoogleDocumentAiClientFactory clientFactory) : IGoogleDocumentAiStatusService
 {
+    /// <summary>
+    /// Evaluates local provider settings and optionally verifies the configured processor remotely.
+    /// </summary>
     public async Task<GoogleDocumentAiStatusResponse> GetStatusAsync(
         bool checkRemote,
         CancellationToken cancellationToken)
@@ -26,7 +30,7 @@ public sealed class GoogleDocumentAiStatusService(
                 configured: false,
                 credentialFilePresent,
                 missingFields,
-                "Google Document AI is disabled.");
+                InfrastructureResourceText.GoogleDocumentAiDisabled);
         }
 
         if (missingFields.Count > 0)
@@ -36,7 +40,7 @@ public sealed class GoogleDocumentAiStatusService(
                 configured: false,
                 credentialFilePresent,
                 missingFields,
-                $"Missing Google Document AI configuration: {string.Join(", ", missingFields)}.");
+                InfrastructureResourceText.MissingGoogleDocumentAiConfiguration(string.Join(", ", missingFields)));
         }
 
         if (!string.IsNullOrWhiteSpace(config.CredentialsPath) && !credentialFilePresent)
@@ -46,7 +50,7 @@ public sealed class GoogleDocumentAiStatusService(
                 configured: false,
                 credentialFilePresent,
                 missingFields,
-                "Google Document AI credentials file was not found.");
+                InfrastructureResourceText.GoogleDocumentAiCredentialsFileNotFound);
         }
 
         if (!checkRemote)
@@ -57,8 +61,8 @@ public sealed class GoogleDocumentAiStatusService(
                 credentialFilePresent,
                 missingFields,
                 string.IsNullOrWhiteSpace(config.CredentialsPath)
-                    ? "Google Document AI local configuration is complete. Authentication will use Application Default Credentials."
-                    : "Google Document AI local configuration is complete.");
+                    ? InfrastructureResourceText.GoogleDocumentAiLocalConfigCompleteWithAdc
+                    : InfrastructureResourceText.GoogleDocumentAiLocalConfigComplete);
         }
 
         try
@@ -76,7 +80,7 @@ public sealed class GoogleDocumentAiStatusService(
                 configured: true,
                 credentialFilePresent,
                 missingFields,
-                "Google Document AI processor is reachable.");
+                InfrastructureResourceText.GoogleDocumentAiProcessorReachable);
         }
         catch (Exception exception)
         {
@@ -89,6 +93,9 @@ public sealed class GoogleDocumentAiStatusService(
         }
     }
 
+    /// <summary>
+    /// Returns the provider fields required before Document AI can run.
+    /// </summary>
     private static IReadOnlyCollection<string> GetMissingFields(GoogleDocumentAiOptions options)
     {
         var missingFields = new List<string>();
@@ -111,11 +118,17 @@ public sealed class GoogleDocumentAiStatusService(
         return missingFields;
     }
 
+    /// <summary>
+    /// Checks whether the optional configured credentials file exists.
+    /// </summary>
     private static bool IsCredentialFilePresent(GoogleDocumentAiOptions options)
     {
         return !string.IsNullOrWhiteSpace(options.CredentialsPath) && File.Exists(options.CredentialsPath);
     }
 
+    /// <summary>
+    /// Creates the status response without exposing credential content.
+    /// </summary>
     private static GoogleDocumentAiStatusResponse CreateResponse(
         GoogleDocumentAiOptions options,
         bool configured,
@@ -134,28 +147,31 @@ public sealed class GoogleDocumentAiStatusService(
             message);
     }
 
+    /// <summary>
+    /// Converts SDK, credential and filesystem failures into API-safe status messages.
+    /// </summary>
     private static string ClassifyRemoteError(Exception exception)
     {
         return exception switch
         {
-            FileNotFoundException => "Google Document AI credentials file was not found.",
-            UnauthorizedAccessException => "Google Document AI credentials file cannot be read.",
-            InvalidOperationException => "Google Document AI credentials are invalid.",
+            FileNotFoundException => InfrastructureResourceText.GoogleDocumentAiCredentialsFileNotFound,
+            UnauthorizedAccessException => InfrastructureResourceText.GoogleDocumentAiCredentialsCannotBeRead,
+            InvalidOperationException => InfrastructureResourceText.GoogleDocumentAiCredentialsInvalid,
             RpcException { StatusCode: StatusCode.Unauthenticated } =>
-                "Google Document AI credentials are invalid or expired.",
+                InfrastructureResourceText.GoogleDocumentAiCredentialsInvalidOrExpired,
             RpcException { StatusCode: StatusCode.PermissionDenied } =>
-                "Google Document AI service account does not have permission for this processor.",
+                InfrastructureResourceText.GoogleDocumentAiPermissionDenied,
             RpcException { StatusCode: StatusCode.NotFound } =>
-                "Google Document AI processor was not found.",
+                InfrastructureResourceText.GoogleDocumentAiProcessorNotFound,
             RpcException { StatusCode: StatusCode.FailedPrecondition } =>
-                "Google Document AI API or billing is not available for this project.",
+                InfrastructureResourceText.GoogleDocumentAiApiOrBillingUnavailable,
             RpcException { StatusCode: StatusCode.ResourceExhausted } =>
-                "Google Document AI quota or billing limit was reached.",
+                InfrastructureResourceText.GoogleDocumentAiQuotaReached,
             RpcException { StatusCode: StatusCode.Unavailable } =>
-                "Google Document AI service is unavailable.",
+                InfrastructureResourceText.GoogleDocumentAiServiceUnavailable,
             RpcException rpcException =>
-                $"Google Document AI remote check failed: {rpcException.StatusCode}.",
-            _ => "Google Document AI remote check failed."
+                InfrastructureResourceText.GoogleDocumentAiRemoteCheckFailedWithStatus(rpcException.StatusCode),
+            _ => InfrastructureResourceText.GoogleDocumentAiRemoteCheckFailed
         };
     }
 }

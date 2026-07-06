@@ -83,6 +83,21 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
+    public async Task SwaggerJson_IncludesEndpointDescriptions()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/swagger/v1/swagger.json");
+        var json = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        json.Should().Contain("Runs a synchronous MVP analysis against an uploaded document or image.");
+        json.Should().Contain("Remote processor validation requires authentication");
+        json.Should().Contain("Profiles define the supported asset types");
+    }
+
+    [Fact]
     public void Startup_Fails_WhenJwtSigningKeyIsMissing()
     {
         using var factory = CreateFactory(new Dictionary<string, string?>

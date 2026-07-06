@@ -1,6 +1,7 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Models;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
+using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Infrastructure.Storage;
@@ -12,6 +13,9 @@ public sealed class LocalMediaAssetStorage(IOptions<StorageOptions> options) : I
         ".pdf", ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".mp4", ".mov", ".avi", ".txt"
     };
 
+    /// <summary>
+    /// Stores an uploaded media stream under a date-partitioned local path.
+    /// </summary>
     public async Task<StoredMediaAsset> SaveAsync(
         Stream content,
         string fileName,
@@ -33,7 +37,7 @@ public sealed class LocalMediaAssetStorage(IOptions<StorageOptions> options) : I
 
         if (!fullPath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Resolved storage path is outside the configured storage root.");
+            throw new InvalidOperationException(InfrastructureResourceText.ResolvedStoragePathOutsideRoot);
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
@@ -48,6 +52,9 @@ public sealed class LocalMediaAssetStorage(IOptions<StorageOptions> options) : I
             output.Length);
     }
 
+    /// <summary>
+    /// Opens a stored asset while preventing path traversal outside the storage root.
+    /// </summary>
     public Task<Stream> OpenReadAsync(string storagePath, CancellationToken cancellationToken)
     {
         var rootPath = Path.GetFullPath(options.Value.LocalRootPath);
@@ -55,7 +62,7 @@ public sealed class LocalMediaAssetStorage(IOptions<StorageOptions> options) : I
 
         if (!fullPath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Requested storage path is outside the configured storage root.");
+            throw new InvalidOperationException(InfrastructureResourceText.RequestedStoragePathOutsideRoot);
         }
 
         Stream stream = File.OpenRead(fullPath);

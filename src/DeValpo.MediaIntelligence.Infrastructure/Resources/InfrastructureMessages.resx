@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ConnectionStringRequired" xml:space="preserve">
+    <value>ConnectionStrings:MediaIntelligence is required.</value>
+  </data>
+  <data name="StorageProviderRequired" xml:space="preserve">
+    <value>Storage:Provider is required.</value>
+  </data>
+  <data name="StorageLocalRootPathRequired" xml:space="preserve">
+    <value>Storage:LocalRootPath is required.</value>
+  </data>
+  <data name="GoogleDocumentAiRequiredOptions" xml:space="preserve">
+    <value>GoogleDocumentAi ProjectId, Location and ProcessorId are required when Enabled=true.</value>
+  </data>
+  <data name="DuplicateSkillName" xml:space="preserve">
+    <value>Duplicate skill name registered: {0}.</value>
+  </data>
+  <data name="ResolvedStoragePathOutsideRoot" xml:space="preserve">
+    <value>Resolved storage path is outside the configured storage root.</value>
+  </data>
+  <data name="RequestedStoragePathOutsideRoot" xml:space="preserve">
+    <value>Requested storage path is outside the configured storage root.</value>
+  </data>
+  <data name="GoogleDocumentAiDisabled" xml:space="preserve">
+    <value>Google Document AI is disabled.</value>
+  </data>
+  <data name="GoogleDocumentAiDisabledByConfiguration" xml:space="preserve">
+    <value>Google Document AI is disabled by configuration.</value>
+  </data>
+  <data name="MissingGoogleDocumentAiConfiguration" xml:space="preserve">
+    <value>Missing Google Document AI configuration: {0}.</value>
+  </data>
+  <data name="MissingGoogleDocumentAiOptions" xml:space="preserve">
+    <value>Missing Google Document AI options: {0}.</value>
+  </data>
+  <data name="GoogleDocumentAiCredentialsFileNotFound" xml:space="preserve">
+    <value>Google Document AI credentials file was not found.</value>
+  </data>
+  <data name="GoogleDocumentAiCredentialsCannotBeRead" xml:space="preserve">
+    <value>Google Document AI credentials file cannot be read.</value>
+  </data>
+  <data name="GoogleDocumentAiCredentialsInvalid" xml:space="preserve">
+    <value>Google Document AI credentials are invalid.</value>
+  </data>
+  <data name="GoogleDocumentAiCredentialsInvalidOrExpired" xml:space="preserve">
+    <value>Google Document AI credentials are invalid or expired.</value>
+  </data>
+  <data name="GoogleDocumentAiPermissionDenied" xml:space="preserve">
+    <value>Google Document AI service account does not have permission for this processor.</value>
+  </data>
+  <data name="GoogleDocumentAiProcessorNotFound" xml:space="preserve">
+    <value>Google Document AI processor was not found.</value>
+  </data>
+  <data name="GoogleDocumentAiApiOrBillingUnavailable" xml:space="preserve">
+    <value>Google Document AI API or billing is not available for this project.</value>
+  </data>
+  <data name="GoogleDocumentAiQuotaReached" xml:space="preserve">
+    <value>Google Document AI quota or billing limit was reached.</value>
+  </data>
+  <data name="GoogleDocumentAiServiceUnavailable" xml:space="preserve">
+    <value>Google Document AI service is unavailable.</value>
+  </data>
+  <data name="GoogleDocumentAiRemoteCheckFailedWithStatus" xml:space="preserve">
+    <value>Google Document AI remote check failed: {0}.</value>
+  </data>
+  <data name="GoogleDocumentAiRemoteCheckFailed" xml:space="preserve">
+    <value>Google Document AI remote check failed.</value>
+  </data>
+  <data name="GoogleDocumentAiRequestFailedWithStatus" xml:space="preserve">
+    <value>Google Document AI request failed: {0}.</value>
+  </data>
+  <data name="GoogleDocumentAiRequestFailed" xml:space="preserve">
+    <value>Google Document AI request failed.</value>
+  </data>
+  <data name="GoogleDocumentAiLocalConfigCompleteWithAdc" xml:space="preserve">
+    <value>Google Document AI local configuration is complete. Authentication will use Application Default Credentials.</value>
+  </data>
+  <data name="GoogleDocumentAiLocalConfigComplete" xml:space="preserve">
+    <value>Google Document AI local configuration is complete.</value>
+  </data>
+  <data name="GoogleDocumentAiProcessorReachable" xml:space="preserve">
+    <value>Google Document AI processor is reachable.</value>
+  </data>
+  <data name="GoogleDocumentAiSkillDescription" xml:space="preserve">
+    <value>Google Document AI OCR provider boundary. It is disabled unless configured.</value>
+  </data>
+  <data name="MockDocumentOcrDescription" xml:space="preserve">
+    <value>Deterministic mock OCR for documents and images.</value>
+  </data>
+  <data name="MockExtractedText" xml:space="preserve">
+    <value>Mock extracted text</value>
+  </data>
+  <data name="MockHandwrittenIdDescription" xml:space="preserve">
+    <value>Deterministic mock extraction of a handwritten ID.</value>
+  </data>
+  <data name="MockStampDetectionDescription" xml:space="preserve">
+    <value>Deterministic mock stamp detection.</value>
+  </data>
+  <data name="MockImageObjectDetectionDescription" xml:space="preserve">
+    <value>Deterministic mock object and person detection.</value>
+  </data>
+  <data name="MockSportsBibDetectionDescription" xml:space="preserve">
+    <value>Deterministic mock bib number detection.</value>
+  </data>
+  <data name="MockFaceDetectionDescription" xml:space="preserve">
+    <value>Structural mock for future consent-based face detection.</value>
+  </data>
+  <data name="FaceDetectionDisabled" xml:space="preserve">
+    <value>Real face detection is intentionally disabled in the initial phase.</value>
+  </data>
+  <data name="MockVideoClipGenerationDescription" xml:space="preserve">
+    <value>Structural mock clip generation without FFmpeg.</value>
+  </data>
+  <data name="MockLiveVideoBufferDescription" xml:space="preserve">
+    <value>Structural mock for future buffered live video analysis.</value>
+  </data>
+  <data name="LiveVideoStructuralOnly" xml:space="preserve">
+    <value>Live video is represented structurally in the initial phase.</value>
+  </data>
+</root>

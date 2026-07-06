@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Configurations;
 
 public sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
 {
+    /// <summary>
+    /// Maps API clients and enforces unique client keys.
+    /// </summary>
     public void Configure(EntityTypeBuilder<Client> builder)
     {
         builder.HasKey(item => item.Id);

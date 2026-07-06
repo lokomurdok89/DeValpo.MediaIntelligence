@@ -1,7 +1,9 @@
 using System.Text.Json;
+using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
+using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeValpo.MediaIntelligence.Api.Controllers;
@@ -12,9 +14,27 @@ public sealed class AnalyzeController(
     IMediaAnalysisApplicationService service,
     IConfiguration configuration) : ControllerBase
 {
+    /// <summary>
+    /// Accepts a media file, stores it and runs the configured analysis profile.
+    /// </summary>
+    /// <remarks>
+    /// Runs a synchronous MVP analysis against an uploaded document or image. Use this for real end-to-end document processing with a valid JWT.
+    /// </remarks>
+    /// <param name="clientKey">Client integration key that owns the analysis request.</param>
+    /// <param name="profileKey">Analysis profile key that selects the skill pipeline to execute.</param>
+    /// <param name="assetType">Type of media being uploaded.</param>
+    /// <param name="file">Binary media file to analyze.</param>
+    /// <param name="metadataJson">Optional flat JSON object with string metadata values.</param>
+    /// <param name="cancellationToken">Request cancellation token.</param>
+    /// <response code="200">Returns the extracted fields, labels, entities, clips, issues and confidence.</response>
+    /// <response code="400">The request is invalid or the file cannot be processed.</response>
+    /// <response code="401">A valid bearer token was not provided.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(104_857_600)]
+    [ProducesResponseType(typeof(AnalysisResultResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Analyze(
         [FromForm] string clientKey,
         [FromForm] string profileKey,
@@ -25,13 +45,13 @@ public sealed class AnalyzeController(
     {
         if (file.Length == 0)
         {
-            return BadRequest(new ApiErrorResponse("INVALID_REQUEST", "File is required.", HttpContext.TraceIdentifier));
+            return BadRequest(new ApiErrorResponse("INVALID_REQUEST", ApiResourceText.FileRequired, HttpContext.TraceIdentifier));
         }
 
         var maxFileSizeBytes = configuration.GetValue<long>("MediaAnalysis:MaxFileSizeBytes", 104_857_600);
         if (file.Length > maxFileSizeBytes)
         {
-            return BadRequest(new ApiErrorResponse("INVALID_REQUEST", $"File exceeds max size of {maxFileSizeBytes} bytes.", HttpContext.TraceIdentifier));
+            return BadRequest(new ApiErrorResponse("INVALID_REQUEST", ApiResourceText.FileExceedsMaxSize(maxFileSizeBytes), HttpContext.TraceIdentifier));
         }
 
         var metadata = ParseMetadata(metadataJson);
@@ -45,6 +65,9 @@ public sealed class AnalyzeController(
         return Ok(response);
     }
 
+    /// <summary>
+    /// Parses optional multipart metadata as a flat string dictionary.
+    /// </summary>
     private static Dictionary<string, string>? ParseMetadata(string? metadataJson)
     {
         if (string.IsNullOrWhiteSpace(metadataJson))
@@ -57,7 +80,7 @@ public sealed class AnalyzeController(
             using var document = JsonDocument.Parse(metadataJson);
             if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
-                throw new ArgumentException("metadataJson must be a JSON object.");
+                throw new ArgumentException(ApiResourceText.MetadataJsonMustBeObject);
             }
 
             var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -65,7 +88,7 @@ public sealed class AnalyzeController(
             {
                 if (property.Value.ValueKind != JsonValueKind.String)
                 {
-                    throw new ArgumentException("metadataJson only supports string values.");
+                    throw new ArgumentException(ApiResourceText.MetadataJsonOnlyStringValues);
                 }
 
                 metadata[property.Name] = property.Value.GetString() ?? string.Empty;
@@ -75,7 +98,7 @@ public sealed class AnalyzeController(
         }
         catch (JsonException exception)
         {
-            throw new ArgumentException("metadataJson must be valid JSON.", exception);
+            throw new ArgumentException(ApiResourceText.MetadataJsonMustBeValidJson, exception);
         }
     }
 }

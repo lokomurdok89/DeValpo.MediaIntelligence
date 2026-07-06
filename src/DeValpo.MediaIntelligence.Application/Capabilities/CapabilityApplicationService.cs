@@ -1,13 +1,9 @@
 using DeValpo.MediaIntelligence.Contracts.Capabilities;
+using DeValpo.MediaIntelligence.Application.Resources;
 using System.Reflection;
 using System.Resources;
 
 namespace DeValpo.MediaIntelligence.Application.Capabilities;
-
-public interface ICapabilityApplicationService
-{
-    Task<IReadOnlyCollection<CapabilityResponse>> ListAsync(CancellationToken cancellationToken);
-}
 
 public sealed class CapabilityApplicationService : ICapabilityApplicationService
 {
@@ -28,9 +24,12 @@ public sealed class CapabilityApplicationService : ICapabilityApplicationService
         return Task.FromResult<IReadOnlyCollection<CapabilityResponse>>(capabilities);
     }
 
+    /// <summary>
+    /// Reads a mandatory localized capability resource and fails fast when it is missing.
+    /// </summary>
     private static string GetRequiredResource(string name)
     {
         return Resources.GetString(name)
-            ?? throw new InvalidOperationException($"Missing capability resource '{name}'.");
+            ?? throw new InvalidOperationException(ApplicationResourceText.CapabilityResourceMissing(name));
     }
 }

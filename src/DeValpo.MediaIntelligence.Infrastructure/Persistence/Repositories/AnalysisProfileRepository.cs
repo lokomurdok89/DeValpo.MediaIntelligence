@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Repositories;
 
 public sealed class AnalysisProfileRepository(MediaIntelligenceDbContext dbContext) : IAnalysisProfileRepository
 {
+    /// <summary>
+    /// Reads persisted profiles ordered by profile key.
+    /// </summary>
     public async Task<IReadOnlyCollection<AnalysisProfile>> ListAsync(CancellationToken cancellationToken)
     {
         return await dbContext.AnalysisProfiles

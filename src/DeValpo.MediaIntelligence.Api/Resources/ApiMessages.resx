@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FileRequired" xml:space="preserve">
+    <value>File is required.</value>
+  </data>
+  <data name="FileExceedsMaxSize" xml:space="preserve">
+    <value>File exceeds max size of {0} bytes.</value>
+  </data>
+  <data name="MetadataJsonMustBeObject" xml:space="preserve">
+    <value>metadataJson must be a JSON object.</value>
+  </data>
+  <data name="MetadataJsonOnlyStringValues" xml:space="preserve">
+    <value>metadataJson only supports string values.</value>
+  </data>
+  <data name="MetadataJsonMustBeValidJson" xml:space="preserve">
+    <value>metadataJson must be valid JSON.</value>
+  </data>
+  <data name="HealthStatusHealthy" xml:space="preserve">
+    <value>Healthy</value>
+  </data>
+  <data name="LocalStorageHealthy" xml:space="preserve">
+    <value>Local storage is writable.</value>
+  </data>
+  <data name="LocalStorageUnhealthy" xml:space="preserve">
+    <value>Local storage is not writable.</value>
+  </data>
+  <data name="PostgresHealthy" xml:space="preserve">
+    <value>PostgreSQL is reachable.</value>
+  </data>
+  <data name="PostgresUnhealthy" xml:space="preserve">
+    <value>PostgreSQL is not reachable.</value>
+  </data>
+  <data name="ConnectionStringRequired" xml:space="preserve">
+    <value>ConnectionStrings:MediaIntelligence is required.</value>
+  </data>
+  <data name="RequestFailedLogMessage" xml:space="preserve">
+    <value>Request failed with {ErrorCode}</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="JwtIssuerRequired" xml:space="preserve">
+    <value>Jwt:Issuer is required.</value>
+  </data>
+  <data name="JwtAudienceRequired" xml:space="preserve">
+    <value>Jwt:Audience is required.</value>
+  </data>
+  <data name="JwtSigningKeyMinimumLength" xml:space="preserve">
+    <value>Jwt:SigningKey must be at least 32 bytes.</value>
+  </data>
+  <data name="SwaggerBearerDescription" xml:space="preserve">
+    <value>JWT Bearer token.</value>
+  </data>
+  <data name="SwaggerResourceMissing" xml:space="preserve">
+    <value>Missing Swagger resource '{0}'.</value>
+  </data>
+</root>

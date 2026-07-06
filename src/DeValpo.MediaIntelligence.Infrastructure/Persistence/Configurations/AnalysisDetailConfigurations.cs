@@ -6,6 +6,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Configurations;
 
 public sealed class SkillExecutionConfiguration : IEntityTypeConfiguration<SkillExecution>
 {
+    /// <summary>
+    /// Maps skill execution audit rows and their relationship to analysis jobs.
+    /// </summary>
     public void Configure(EntityTypeBuilder<SkillExecution> builder)
     {
         builder.HasKey(item => item.Id);
@@ -20,6 +23,9 @@ public sealed class SkillExecutionConfiguration : IEntityTypeConfiguration<Skill
 
 public sealed class ExtractedFieldConfiguration : IEntityTypeConfiguration<ExtractedField>
 {
+    /// <summary>
+    /// Maps extracted fields produced by analysis skills.
+    /// </summary>
     public void Configure(EntityTypeBuilder<ExtractedField> builder)
     {
         builder.HasKey(item => item.Id);
@@ -33,6 +39,9 @@ public sealed class ExtractedFieldConfiguration : IEntityTypeConfiguration<Extra
 
 public sealed class DetectedEntityConfiguration : IEntityTypeConfiguration<DetectedEntity>
 {
+    /// <summary>
+    /// Maps named entities detected during analysis.
+    /// </summary>
     public void Configure(EntityTypeBuilder<DetectedEntity> builder)
     {
         builder.HasKey(item => item.Id);
@@ -46,6 +55,9 @@ public sealed class DetectedEntityConfiguration : IEntityTypeConfiguration<Detec
 
 public sealed class DetectedLabelConfiguration : IEntityTypeConfiguration<DetectedLabel>
 {
+    /// <summary>
+    /// Maps labels detected during media analysis.
+    /// </summary>
     public void Configure(EntityTypeBuilder<DetectedLabel> builder)
     {
         builder.HasKey(item => item.Id);
@@ -58,6 +70,9 @@ public sealed class DetectedLabelConfiguration : IEntityTypeConfiguration<Detect
 
 public sealed class GeneratedClipConfiguration : IEntityTypeConfiguration<GeneratedClip>
 {
+    /// <summary>
+    /// Maps generated clip metadata linked to an analysis result.
+    /// </summary>
     public void Configure(EntityTypeBuilder<GeneratedClip> builder)
     {
         builder.HasKey(item => item.Id);
@@ -71,6 +86,9 @@ public sealed class GeneratedClipConfiguration : IEntityTypeConfiguration<Genera
 
 public sealed class AnalysisIssueConfiguration : IEntityTypeConfiguration<AnalysisIssue>
 {
+    /// <summary>
+    /// Maps issues raised by skills or orchestration.
+    /// </summary>
     public void Configure(EntityTypeBuilder<AnalysisIssue> builder)
     {
         builder.HasKey(item => item.Id);
@@ -84,6 +102,9 @@ public sealed class AnalysisIssueConfiguration : IEntityTypeConfiguration<Analys
 
 public sealed class HumanReviewTaskConfiguration : IEntityTypeConfiguration<HumanReviewTask>
 {
+    /// <summary>
+    /// Maps review tasks opened when analysis confidence or issues require human validation.
+    /// </summary>
     public void Configure(EntityTypeBuilder<HumanReviewTask> builder)
     {
         builder.HasKey(item => item.Id);
@@ -96,6 +117,9 @@ public sealed class HumanReviewTaskConfiguration : IEntityTypeConfiguration<Huma
 
 public sealed class WebhookDeliveryConfiguration : IEntityTypeConfiguration<WebhookDelivery>
 {
+    /// <summary>
+    /// Maps webhook delivery attempts for downstream integrations.
+    /// </summary>
     public void Configure(EntityTypeBuilder<WebhookDelivery> builder)
     {
         builder.HasKey(item => item.Id);
