@@ -80,11 +80,12 @@ Intentionally left as code constants:
 ```powershell
 dotnet build
 dotnet test
-python C:\Users\HP\.codex\skills\.system\skill-creator\scripts\quick_validate.py docs\devalpo-mediaintelligence-qa
+Test-Path docs\devalpo-mediaintelligence-qa\SKILL.md
+Test-Path docs\devalpo-mediaintelligence-qa\references\quality-gates.md
 ```
 
 Expected result:
 
 - Build passes with zero warnings.
 - Tests pass.
-- QA skill validates successfully.
+- QA skill and quality gates are present inside the repository.
