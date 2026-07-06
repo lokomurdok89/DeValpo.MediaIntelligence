@@ -10,6 +10,530 @@ This repository is intentionally separate from `C:\DeValpo\Contador`. It exposes
 - Docker Desktop
 - PostgreSQL 17 when running outside Docker
 
+## Architecture Overview
+
+The system is a reusable media and document intelligence engine. The API receives assets, validates JWT access, stores the input file, runs the configured analysis profile, persists the normalized result and exposes the job/result through HTTP endpoints.
+
+### End-To-End Flow
+
+```mermaid
+flowchart TD
+    A["User or client app"] --> B["POST /api/v1/dev/token<br/>Development only"]
+    B --> C["JWT accessToken"]
+    C --> D["POST /api/v1/analyze<br/>Bearer token + multipart file"]
+    D --> E["API validation<br/>file size, asset type, metadata"]
+    E --> F["Create AnalysisJob<br/>status Running"]
+    F --> G["Save MediaAsset<br/>local Docker volume"]
+    G --> H["Resolve analysis profile"]
+    H --> I["Run profile skills"]
+    I --> J{"Google Document AI enabled?"}
+    J -- "yes" --> K["GoogleDocumentAiDocumentOcrSkill"]
+    K --> L["Document AI OCR processor"]
+    J -- "no or not configured" --> M["Return provider issue<br/>requires review when needed"]
+    L --> N["SkillExecutionResult<br/>fields, labels, entities, issues"]
+    M --> N
+    N --> O["Persist AnalysisResult<br/>fields, issues, confidence"]
+    O --> P{"Confidence or errors require review?"}
+    P -- "yes" --> Q["Create HumanReviewTask"]
+    P -- "no" --> R["Complete job"]
+    Q --> R
+    R --> S["Return AnalysisResultResponse"]
+```
+
+### Runtime Components
+
+```mermaid
+flowchart LR
+    subgraph LocalDocker["Docker local"]
+        Api["DeValpo.MediaIntelligence.Api<br/>ASP.NET Core"]
+        Pg["PostgreSQL 17"]
+        Storage["media_assets volume<br/>/app/storage/media-assets"]
+        Secrets["secrets bind mount<br/>/run/secrets:ro"]
+    end
+
+    subgraph AppLayer["Application layer"]
+        AnalyzeSvc["MediaAnalysisApplicationService"]
+        Orchestrator["MediaAnalysisOrchestrator"]
+        ProfileResolver["IAnalysisProfileResolver"]
+        Skills["IMediaAnalysisSkill implementations"]
+    end
+
+    subgraph InfraLayer["Infrastructure layer"]
+        DbContext["MediaIntelligenceDbContext"]
+        Repos["Repositories + UnitOfWork"]
+        AssetStorage["LocalMediaAssetStorage"]
+        GoogleFactory["GoogleDocumentAiClientFactory"]
+        GoogleStatus["GoogleDocumentAiStatusService"]
+    end
+
+    Google["Google Document AI<br/>OCR_PROCESSOR"]
+
+    Api --> AnalyzeSvc
+    AnalyzeSvc --> Orchestrator
+    AnalyzeSvc --> AssetStorage
+    AnalyzeSvc --> Repos
+    Repos --> DbContext
+    DbContext --> Pg
+    AssetStorage --> Storage
+    Orchestrator --> ProfileResolver
+    Orchestrator --> Skills
+    Skills --> GoogleFactory
+    GoogleStatus --> GoogleFactory
+    GoogleFactory --> Secrets
+    GoogleFactory --> Google
+```
+
+### Analyze Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Swagger as Swagger/curl
+    participant Api as ASP.NET API
+    participant Auth as JWT Bearer
+    participant App as MediaAnalysisApplicationService
+    participant Storage as LocalMediaAssetStorage
+    participant Orch as MediaAnalysisOrchestrator
+    participant Skill as GoogleDocumentAiDocumentOcrSkill
+    participant Google as Google Document AI
+    participant Db as PostgreSQL
+
+    User->>Swagger: Request dev token
+    Swagger->>Api: POST /api/v1/dev/token
+    Api-->>Swagger: accessToken
+    User->>Swagger: Upload document with Bearer token
+    Swagger->>Api: POST /api/v1/analyze
+    Api->>Auth: Validate JWT
+    Auth-->>Api: Authenticated
+    Api->>App: AnalyzeAsync(request, file stream)
+    App->>Db: Insert AnalysisJob Running
+    App->>Storage: Save uploaded file
+    Storage-->>App: StoredMediaAsset
+    App->>Orch: AnalyzeAsync(profile, asset stream)
+    Orch->>Skill: ExecuteAsync(context)
+    Skill->>Google: ProcessDocument
+    Google-->>Skill: OCR document text
+    Skill-->>Orch: SkillExecutionResult
+    Orch-->>App: AnalysisOrchestrationResult
+    App->>Db: Persist MediaAsset, SkillExecution, AnalysisResult
+    App-->>Api: AnalysisResultResponse
+    Api-->>Swagger: 200 OK + extracted fields
+```
+
+### Google Provider Status Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Api as API
+    participant Auth as JWT Bearer
+    participant Status as GoogleDocumentAiStatusService
+    participant Factory as GoogleDocumentAiClientFactory
+    participant Secret as ADC JSON in /run/secrets
+    participant Google as Google Document AI
+
+    User->>Api: GET /api/v1/providers/google-document-ai/status
+    Api->>Status: GetStatusAsync(checkRemote=false)
+    Status-->>Api: Local configuration status
+    Api-->>User: enabled, configured, credentialFilePresent
+
+    User->>Api: GET /status?checkRemote=true + Bearer
+    Api->>Auth: Validate JWT
+    Auth-->>Api: Authenticated
+    Api->>Status: GetStatusAsync(checkRemote=true)
+    Status->>Factory: Create Document AI client
+    Factory->>Secret: Load ADC credential JSON
+    Factory-->>Status: DocumentProcessorServiceClient
+    Status->>Google: GetProcessor
+    Google-->>Status: Processor metadata
+    Status-->>Api: Processor reachable
+    Api-->>User: configured=true
+```
+
+### Main Class Diagram
+
+```mermaid
+classDiagram
+    class AnalyzeController {
+        +Analyze(clientKey, profileKey, assetType, file, metadataJson)
+    }
+
+    class AnalysisJobsController {
+        +Create(request)
+        +GetById(jobId)
+        +GetResult(jobId)
+        +Cancel(jobId)
+    }
+
+    class GoogleDocumentAiProviderController {
+        +Status(checkRemote)
+    }
+
+    class IMediaAnalysisApplicationService {
+        <<interface>>
+        +AnalyzeAsync(request, content)
+        +GetResultAsync(jobId)
+    }
+
+    class MediaAnalysisApplicationService {
+        +AnalyzeAsync(request, content)
+        +GetResultAsync(jobId)
+    }
+
+    class IMediaAnalysisOrchestrator {
+        <<interface>>
+        +AnalyzeAsync(request, content)
+    }
+
+    class MediaAnalysisOrchestrator {
+        +AnalyzeAsync(request, content)
+    }
+
+    class IAnalysisProfileResolver {
+        <<interface>>
+        +ResolveAsync(profileKey)
+        +ListAsync()
+    }
+
+    class StaticAnalysisProfileResolver {
+        +ResolveAsync(profileKey)
+        +ListAsync()
+    }
+
+    class IMediaAnalysisSkill {
+        <<interface>>
+        +SkillName
+        +SupportedAssetTypes
+        +ExecuteAsync(context)
+    }
+
+    class GoogleDocumentAiDocumentOcrSkill {
+        +SkillName
+        +ExecuteAsync(context)
+    }
+
+    class IGoogleDocumentAiClientFactory {
+        <<interface>>
+        +CreateAsync(options)
+        +CreateProcessorName(options)
+    }
+
+    class GoogleDocumentAiClientFactory {
+        +CreateAsync(options)
+        +CreateProcessorName(options)
+    }
+
+    class IGoogleDocumentAiStatusService {
+        <<interface>>
+        +GetStatusAsync(checkRemote)
+    }
+
+    class GoogleDocumentAiStatusService {
+        +GetStatusAsync(checkRemote)
+    }
+
+    class IAnalysisJobRepository {
+        <<interface>>
+    }
+
+    class IMediaAssetStorage {
+        <<interface>>
+    }
+
+    AnalyzeController --> IMediaAnalysisApplicationService
+    AnalysisJobsController --> IMediaAnalysisApplicationService
+    GoogleDocumentAiProviderController --> IGoogleDocumentAiStatusService
+    IMediaAnalysisApplicationService <|.. MediaAnalysisApplicationService
+    MediaAnalysisApplicationService --> IMediaAnalysisOrchestrator
+    MediaAnalysisApplicationService --> IAnalysisJobRepository
+    MediaAnalysisApplicationService --> IMediaAssetStorage
+    IMediaAnalysisOrchestrator <|.. MediaAnalysisOrchestrator
+    MediaAnalysisOrchestrator --> IAnalysisProfileResolver
+    MediaAnalysisOrchestrator --> IMediaAnalysisSkill
+    IAnalysisProfileResolver <|.. StaticAnalysisProfileResolver
+    IMediaAnalysisSkill <|.. GoogleDocumentAiDocumentOcrSkill
+    GoogleDocumentAiDocumentOcrSkill --> IGoogleDocumentAiClientFactory
+    IGoogleDocumentAiClientFactory <|.. GoogleDocumentAiClientFactory
+    IGoogleDocumentAiStatusService <|.. GoogleDocumentAiStatusService
+    GoogleDocumentAiStatusService --> IGoogleDocumentAiClientFactory
+```
+
+### Domain Class Diagram
+
+```mermaid
+classDiagram
+    class Client {
+        Guid Id
+        string ClientKey
+        string DisplayName
+        bool IsActive
+        DateTimeOffset CreatedAt
+    }
+
+    class AnalysisProfile {
+        Guid Id
+        string ProfileKey
+        string ClientKey
+        string Description
+        string DefinitionJson
+        bool IsActive
+        DateTimeOffset CreatedAt
+    }
+
+    class AnalysisJob {
+        Guid Id
+        string ClientKey
+        string ProfileKey
+        string AssetType
+        string Status
+        string ErrorMessage
+        DateTimeOffset CreatedAt
+        DateTimeOffset CompletedAt
+    }
+
+    class MediaAsset {
+        Guid Id
+        Guid JobId
+        string AssetType
+        string OriginalFileName
+        string StoragePath
+        string ContentType
+        long SizeInBytes
+        DateTimeOffset CreatedAt
+    }
+
+    class SkillExecution {
+        Guid Id
+        Guid JobId
+        string SkillName
+        string Status
+        decimal Confidence
+        DateTimeOffset StartedAt
+        DateTimeOffset CompletedAt
+        string ErrorMessage
+    }
+
+    class AnalysisResult {
+        Guid Id
+        Guid JobId
+        decimal Confidence
+        bool RequiresHumanReview
+        DateTimeOffset CreatedAt
+    }
+
+    class ExtractedField {
+        Guid Id
+        Guid AnalysisResultId
+        string Name
+        string Value
+        decimal Confidence
+        string SourceSkill
+    }
+
+    class DetectedEntity {
+        Guid Id
+        Guid AnalysisResultId
+        string EntityType
+        string Value
+        decimal Confidence
+        string SourceSkill
+    }
+
+    class DetectedLabel {
+        Guid Id
+        Guid AnalysisResultId
+        string Label
+        decimal Confidence
+        string SourceSkill
+    }
+
+    class GeneratedClip {
+        Guid Id
+        Guid AnalysisResultId
+        string ClipKey
+        string StoragePath
+        decimal Confidence
+        string SourceSkill
+    }
+
+    class AnalysisIssue {
+        Guid Id
+        Guid AnalysisResultId
+        string Code
+        string Message
+        string Severity
+        string SourceSkill
+    }
+
+    class HumanReviewTask {
+        Guid Id
+        Guid JobId
+        string Status
+        string Reason
+        DateTimeOffset CreatedAt
+    }
+
+    class WebhookDelivery {
+        Guid Id
+        Guid JobId
+        string TargetKey
+        string Status
+        int AttemptCount
+        DateTimeOffset CreatedAt
+        DateTimeOffset LastAttemptAt
+    }
+
+    AnalysisJob "1" --> "many" MediaAsset
+    AnalysisJob "1" --> "many" SkillExecution
+    AnalysisJob "1" --> "0..1" AnalysisResult
+    AnalysisJob "1" --> "many" HumanReviewTask
+    AnalysisResult "1" --> "many" ExtractedField
+    AnalysisResult "1" --> "many" DetectedEntity
+    AnalysisResult "1" --> "many" DetectedLabel
+    AnalysisResult "1" --> "many" GeneratedClip
+    AnalysisResult "1" --> "many" AnalysisIssue
+```
+
+### Database Diagram
+
+```mermaid
+erDiagram
+    Clients {
+        uuid Id PK
+        string ClientKey UK
+        string DisplayName
+        bool IsActive
+        timestamptz CreatedAt
+    }
+
+    AnalysisProfiles {
+        uuid Id PK
+        string ProfileKey UK
+        string ClientKey
+        string Description
+        jsonb DefinitionJson
+        bool IsActive
+        timestamptz CreatedAt
+    }
+
+    AnalysisJobs {
+        uuid Id PK
+        string ClientKey
+        string ProfileKey
+        string AssetType
+        string Status
+        string ErrorMessage
+        timestamptz CreatedAt
+        timestamptz CompletedAt
+    }
+
+    MediaAssets {
+        uuid Id PK
+        uuid JobId FK
+        string AssetType
+        string OriginalFileName
+        string StoragePath
+        string ContentType
+        bigint SizeInBytes
+        timestamptz CreatedAt
+    }
+
+    SkillExecutions {
+        uuid Id PK
+        uuid JobId FK
+        string SkillName
+        string Status
+        decimal Confidence
+        timestamptz StartedAt
+        timestamptz CompletedAt
+        string ErrorMessage
+    }
+
+    AnalysisResults {
+        uuid Id PK
+        uuid JobId FK, UK
+        decimal Confidence
+        bool RequiresHumanReview
+        timestamptz CreatedAt
+    }
+
+    ExtractedFields {
+        uuid Id PK
+        uuid AnalysisResultId FK
+        string Name
+        string Value
+        decimal Confidence
+        string SourceSkill
+    }
+
+    DetectedEntities {
+        uuid Id PK
+        uuid AnalysisResultId FK
+        string EntityType
+        string Value
+        decimal Confidence
+        string SourceSkill
+    }
+
+    DetectedLabels {
+        uuid Id PK
+        uuid AnalysisResultId FK
+        string Label
+        decimal Confidence
+        string SourceSkill
+    }
+
+    GeneratedClips {
+        uuid Id PK
+        uuid AnalysisResultId FK
+        string ClipKey
+        string StoragePath
+        decimal Confidence
+        string SourceSkill
+    }
+
+    AnalysisIssues {
+        uuid Id PK
+        uuid AnalysisResultId FK
+        string Code
+        string Message
+        string Severity
+        string SourceSkill
+    }
+
+    HumanReviewTasks {
+        uuid Id PK
+        uuid JobId FK
+        string Status
+        string Reason
+        timestamptz CreatedAt
+    }
+
+    WebhookDeliveries {
+        uuid Id PK
+        uuid JobId
+        string TargetKey
+        string Status
+        int AttemptCount
+        timestamptz CreatedAt
+        timestamptz LastAttemptAt
+    }
+
+    AnalysisJobs ||--o{ MediaAssets : has
+    AnalysisJobs ||--o{ SkillExecutions : runs
+    AnalysisJobs ||--o| AnalysisResults : produces
+    AnalysisJobs ||--o{ HumanReviewTasks : may_require
+    AnalysisResults ||--o{ ExtractedFields : contains
+    AnalysisResults ||--o{ DetectedEntities : contains
+    AnalysisResults ||--o{ DetectedLabels : contains
+    AnalysisResults ||--o{ GeneratedClips : contains
+    AnalysisResults ||--o{ AnalysisIssues : contains
+```
+
+`WebhookDeliveries.JobId` is currently persisted as an identifier for future outbound delivery tracking. The current EF configuration does not define a navigation/FK relationship for it yet.
+
 ## Run locally
 
 ```bash
