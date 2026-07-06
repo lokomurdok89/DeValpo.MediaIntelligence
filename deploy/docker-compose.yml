@@ -7,12 +7,16 @@ services:
     ports:
       - "8085:8080"
     env_file:
-      - .env.example
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - media_assets:/app/storage/media-assets
+      - ../secrets:/run/secrets:ro
 
   postgres:
     image: postgres:17-alpine

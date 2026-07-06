@@ -1,14 +1,20 @@
+using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Api.Health;
 using DeValpo.MediaIntelligence.Api.Middleware;
+using DeValpo.MediaIntelligence.Api.Options;
 using DeValpo.MediaIntelligence.Api.Swagger;
 using DeValpo.MediaIntelligence.Application;
 using DeValpo.MediaIntelligence.Infrastructure;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +41,21 @@ builder.Services.AddSwaggerGen(options =>
     {
         options.IncludeXmlComments(xmlPath);
     }
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "JWT Bearer token."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document, null)] = []
+    });
 });
 
 builder.Services.AddCors(options =>
@@ -51,6 +72,9 @@ builder.Services.AddCors(options =>
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
+
+builder.Services.AddScoped<IDevJwtTokenService, DevJwtTokenService>();
+AddJwtAuthentication(builder.Services, builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("MediaIntelligence")
     ?? throw new InvalidOperationException("ConnectionStrings:MediaIntelligence is required.");
@@ -76,7 +100,9 @@ if (swaggerEnabled)
         options.RoutePrefix = "swagger";
     });
 
-    app.MapGet("/", () => Results.Redirect("/swagger"));
+    app.MapGet("/", () => Results.Redirect("/swagger"))
+        .AllowAnonymous()
+        .ExcludeFromDescription();
 }
 
 if (app.Environment.IsDevelopment())
@@ -85,13 +111,54 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymous();
 
 await ApplyMigrationsIfConfiguredAsync(app);
 
 app.Run();
+
+static void AddJwtAuthentication(IServiceCollection services, IConfiguration configuration)
+{
+    services.AddOptions<JwtOptions>()
+        .Bind(configuration.GetSection("Jwt"))
+        .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), "Jwt:Issuer is required.")
+        .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), "Jwt:Audience is required.")
+        .Validate(options => Encoding.UTF8.GetByteCount(options.SigningKey) >= 32, "Jwt:SigningKey must be at least 32 bytes.")
+        .ValidateOnStart();
+
+    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer();
+
+    services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+        .Configure<Microsoft.Extensions.Options.IOptions<JwtOptions>>((options, jwtOptionsAccessor) =>
+        {
+            var jwtOptions = jwtOptionsAccessor.Value;
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
+
+            options.RequireHttpsMetadata = jwtOptions.RequireHttpsMetadata;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtOptions.Issuer,
+                ValidateAudience = true,
+                ValidAudience = jwtOptions.Audience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+        });
+
+    services.AddAuthorization(options =>
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    });
+}
 
 static async Task ApplyMigrationsIfConfiguredAsync(WebApplication app)
 {
@@ -106,3 +173,5 @@ static async Task ApplyMigrationsIfConfiguredAsync(WebApplication app)
     var dbContext = scope.ServiceProvider.GetRequiredService<MediaIntelligenceDbContext>();
     await dbContext.Database.MigrateAsync();
 }
+
+public partial class Program;

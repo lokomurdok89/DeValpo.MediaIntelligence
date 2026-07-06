@@ -5,6 +5,8 @@ obj/
 *.user
 *.suo
 .env
+deploy/.env
+secrets/*.json
 *.db
 /storage/
 TestResults/
