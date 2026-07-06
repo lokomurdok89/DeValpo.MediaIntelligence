@@ -64,15 +64,27 @@ Docker path:
 /run/secrets/google-application-default-credentials.json
 ```
 
-### 2. Local JWT Token
+### 2. Local Admin JWT Token
 
-This lets you call protected API endpoints.
+This lets an operator create API clients in local Docker Development.
 
 You generate it from:
 
 ```text
 POST http://localhost:8085/api/v1/dev/token
 ```
+
+This endpoint is only for Development. Do not use it as the customer auth flow.
+
+### 3. Client API Key And JWT Token
+
+This is the real client access flow.
+
+1. An operator creates a client through `POST /api/v1/admin/clients`.
+2. The API returns the raw API key once.
+3. The platform stores only the API key hash.
+4. The client exchanges the API key through `POST /api/v1/auth/token`.
+5. The API returns a short-lived JWT.
 
 Use it as:
 
@@ -330,16 +342,74 @@ Expected:
 
 The exact response can include extra health details.
 
-## Step 11: Generate A Local JWT Token
+## Step 11: Generate A Local Admin Token
 
 Run:
 
 ```powershell
-$tokenJson = curl.exe -s -X POST http://localhost:8085/api/v1/dev/token `
-  -H "Content-Type: application/json" `
-  -d "{}"
+$adminTokenResponse = Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8085/api/v1/dev/token `
+  -ContentType "application/json" `
+  -Body (@{
+    subject = "local-admin"
+    clientKey = "admin"
+    scope = "admin media-intelligence:admin"
+  } | ConvertTo-Json -Compress)
 
-$token = ($tokenJson | ConvertFrom-Json).accessToken
+$adminToken = $adminTokenResponse.accessToken
+```
+
+Validate:
+
+```powershell
+$adminToken.Length
+```
+
+Expected: a number greater than `100`.
+
+## Step 12: Create A Client API Key And JWT
+
+Create a client:
+
+```powershell
+$clientKey = "local-client-" + (Get-Date -Format "yyyyMMddHHmmss")
+
+$clientResponse = Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8085/api/v1/admin/clients `
+  -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $adminToken" } `
+  -Body (@{
+    clientKey = $clientKey
+    displayName = "Local Client"
+    contactEmail = "ops@example.com"
+    allowedProfileKeys = @("generic-document-ocr-v1")
+    keyName = "primary"
+    scope = "media-intelligence:client"
+    expiresAt = $null
+  } | ConvertTo-Json -Compress)
+```
+
+Important:
+
+- `$clientResponse.apiKey` is shown once.
+- Store it in a secure client-side secret store.
+- The database stores only a hash, not this raw value.
+
+Exchange the API key for a client JWT:
+
+```powershell
+$tokenResponse = Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8085/api/v1/auth/token `
+  -ContentType "application/json" `
+  -Body (@{
+    clientKey = $clientKey
+    apiKey = $clientResponse.apiKey
+  } | ConvertTo-Json -Compress)
+
+$token = $tokenResponse.accessToken
 ```
 
 Validate:
@@ -350,7 +420,7 @@ $token.Length
 
 Expected: a number greater than `100`.
 
-## Step 12: Confirm Protected Endpoints Require JWT
+## Step 13: Confirm Protected Endpoints Require JWT
 
 Without token:
 
@@ -378,7 +448,7 @@ Expected:
 200
 ```
 
-## Step 13: Validate Google Document AI Local Status
+## Step 14: Validate Google Document AI Local Status
 
 Run:
 
@@ -400,7 +470,7 @@ Expected:
 }
 ```
 
-## Step 14: Validate Google Document AI Remote Status
+## Step 15: Validate Google Document AI Remote Status
 
 Run:
 
@@ -424,7 +494,7 @@ Expected:
 }
 ```
 
-## Step 15: Analyze A Real PDF
+## Step 16: Analyze A Real PDF
 
 Example:
 
@@ -433,7 +503,7 @@ $pdfPath = "<path-to-your-document.pdf>"
 
 curl.exe -X POST http://localhost:8085/api/v1/analyze `
   -H "Authorization: Bearer $token" `
-  -F "clientKey=generic" `
+  -F "clientKey=$clientKey" `
   -F "profileKey=generic-document-ocr-v1" `
   -F "assetType=Document" `
   -F "file=@$pdfPath"
@@ -564,8 +634,10 @@ Before saying the local MVP base works, all checks must pass:
 [ ] docker compose ps shows API up and PostgreSQL healthy
 [ ] /health returns 200
 [ ] /api/v1/capabilities returns 401 without token
-[ ] /api/v1/dev/token returns accessToken
-[ ] /api/v1/capabilities returns 200 with token
+[ ] /api/v1/dev/token returns local admin accessToken in Development
+[ ] /api/v1/admin/clients returns one-time apiKey with admin token
+[ ] /api/v1/auth/token exchanges apiKey for client accessToken
+[ ] /api/v1/capabilities returns 200 with client token
 [ ] /api/v1/providers/google-document-ai/status?checkRemote=true says processor is reachable
 [ ] /api/v1/analyze returns extracted text from a real PDF
 ```

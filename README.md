@@ -12,13 +12,13 @@ This repository is intentionally separate from the Contador repository. It expos
 
 ## Architecture Overview
 
-The system is a reusable media and document intelligence engine. The API receives assets, validates JWT access, stores the input file, runs the configured analysis profile, persists the normalized result and exposes the job/result through HTTP endpoints.
+The system is a reusable media and document intelligence engine. The API receives assets, validates JWT access issued from client API keys, stores the input file, runs the configured analysis profile, persists the normalized result and exposes the job/result through HTTP endpoints.
 
 ### End-To-End Flow
 
 ```mermaid
 flowchart TD
-    A["User or client app"] --> B["POST /api/v1/dev/token<br/>Development only"]
+    A["Client app"] --> B["POST /api/v1/auth/token<br/>clientKey + API key"]
     B --> C["JWT accessToken"]
     C --> D["POST /api/v1/analyze<br/>Bearer token + multipart file"]
     D --> E["API validation<br/>file size, asset type, metadata"]
@@ -83,6 +83,28 @@ flowchart LR
     GoogleFactory --> GoogleCredentials
     GoogleCredentials --> Secrets
     GoogleFactory --> Google
+```
+
+### API Key And JWT Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Operator
+    participant Admin as Admin API
+    participant Db as PostgreSQL
+    actor Client
+    participant Auth as Auth API
+    participant Api as Protected API
+
+    Operator->>Admin: POST /api/v1/admin/clients
+    Admin->>Db: Store client + API key hash
+    Admin-->>Operator: Raw API key returned once
+    Client->>Auth: POST /api/v1/auth/token
+    Auth->>Db: Find API key by hash
+    Auth-->>Client: Short-lived Bearer JWT
+    Client->>Api: Request with Authorization header
+    Api-->>Client: Protected response
 ```
 
 ### Analyze Sequence
@@ -281,8 +303,23 @@ classDiagram
         Guid Id
         string ClientKey
         string DisplayName
+        string ContactEmail
+        string AllowedProfileKeysJson
         bool IsActive
         DateTimeOffset CreatedAt
+    }
+
+    class ClientApiKey {
+        Guid Id
+        Guid ClientId
+        string Name
+        string KeyPrefix
+        string KeyHash
+        string Scope
+        DateTimeOffset CreatedAt
+        DateTimeOffset ExpiresAt
+        DateTimeOffset RevokedAt
+        DateTimeOffset LastUsedAt
     }
 
     class AnalysisProfile {
@@ -398,6 +435,7 @@ classDiagram
         DateTimeOffset LastAttemptAt
     }
 
+    Client "1" --> "many" ClientApiKey
     AnalysisJob "1" --> "many" MediaAsset
     AnalysisJob "1" --> "many" SkillExecution
     AnalysisJob "1" --> "0..1" AnalysisResult
@@ -417,8 +455,24 @@ erDiagram
         uuid Id PK
         string ClientKey UK
         string DisplayName
+        string ContactEmail
+        jsonb AllowedProfileKeysJson
         bool IsActive
         timestamptz CreatedAt
+    }
+
+    ClientApiKeys {
+        uuid Id PK
+        uuid ClientId FK
+        string Name
+        string KeyPrefix
+        string KeyHash UK
+        string Scope
+        timestamptz CreatedAt
+        timestamptz ExpiresAt
+        timestamptz RevokedAt
+        timestamptz LastUsedAt
+        uuid RotatedFromKeyId
     }
 
     AnalysisProfiles {
@@ -534,6 +588,7 @@ erDiagram
         timestamptz LastAttemptAt
     }
 
+    Clients ||--o{ ClientApiKeys : owns
     AnalysisJobs ||--o{ MediaAssets : has
     AnalysisJobs ||--o{ SkillExecutions : runs
     AnalysisJobs ||--o| AnalysisResults : produces
@@ -606,12 +661,29 @@ In Docker, migrations run automatically on API startup because `deploy/.env.exam
 
 The API listens on `http://localhost:8085`, Swagger is available at `http://localhost:8085/swagger`, and health is exposed at `/health`.
 
-Functional endpoints require JWT Bearer. In Development/Docker local, generate a token with:
+Functional endpoints require JWT Bearer. For real client access, an operator first creates an API client using an admin-scoped token. In Development/Docker local, generate the admin token with:
 
 ```bash
 curl -X POST http://localhost:8085/api/v1/dev/token \
   -H "Content-Type: application/json" \
-  -d "{\"subject\":\"local-dev-user\",\"clientKey\":\"local-dev-client\",\"scope\":\"media-intelligence:mvp\"}"
+  -d "{\"subject\":\"local-admin\",\"clientKey\":\"admin\",\"scope\":\"admin media-intelligence:admin\"}"
+```
+
+Create a client and copy the returned `apiKey` immediately. The platform stores only its hash:
+
+```bash
+curl -X POST http://localhost:8085/api/v1/admin/clients \
+  -H "Authorization: Bearer <adminAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d "{\"clientKey\":\"my-client\",\"displayName\":\"My Client\",\"contactEmail\":\"ops@example.com\",\"allowedProfileKeys\":[\"generic-document-ocr-v1\"],\"keyName\":\"primary\",\"scope\":\"media-intelligence:client\"}"
+```
+
+Exchange that API key for a short-lived JWT:
+
+```bash
+curl -X POST http://localhost:8085/api/v1/auth/token \
+  -H "Content-Type: application/json" \
+  -d "{\"clientKey\":\"my-client\",\"apiKey\":\"<one-time-api-key>\"}"
 ```
 
 Use the returned `accessToken` in Swagger Authorize or with:
@@ -703,3 +775,4 @@ The QA review for this change is recorded in:
 - [QA review](docs/qa-review.md)
 - [Phase 0 base hygiene QA](docs/qa-phase-0-base-hygiene.md)
 - [Phase 1 foundation hardening QA](docs/qa-phase-1-foundation-hardening.md)
+- [Phase 2 customer access and security QA](docs/qa-phase-2-customer-access-security.md)

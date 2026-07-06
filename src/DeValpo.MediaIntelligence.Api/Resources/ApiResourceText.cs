@@ -26,6 +26,8 @@ internal static class ApiResourceText
     public static string JwtIssuerRequired => GetRequiredResource(nameof(JwtIssuerRequired));
     public static string JwtAudienceRequired => GetRequiredResource(nameof(JwtAudienceRequired));
     public static string JwtSigningKeyMinimumLength => GetRequiredResource(nameof(JwtSigningKeyMinimumLength));
+    public static string JwtAccessTokenMinutesRequired => GetRequiredResource(nameof(JwtAccessTokenMinutesRequired));
+    public static string InvalidClientCredentials => GetRequiredResource(nameof(InvalidClientCredentials));
     public static string SwaggerBearerDescription => GetRequiredResource(nameof(SwaggerBearerDescription));
     public static string SwaggerResourceMissing(string name) => Format(nameof(SwaggerResourceMissing), name);
 

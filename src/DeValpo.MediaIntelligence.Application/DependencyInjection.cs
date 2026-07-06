@@ -1,4 +1,5 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.Auth;
 using DeValpo.MediaIntelligence.Application.AnalysisJobs;
 using DeValpo.MediaIntelligence.Application.Capabilities;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
@@ -16,6 +17,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddOptions<AnalysisProfileOptions>();
+        services.AddSingleton<IApiKeySecretGenerator, ApiKeySecretGenerator>();
+        services.AddSingleton<IApiKeyHasher, ApiKeyHasher>();
+        services.AddScoped<IClientAccessApplicationService, ClientAccessApplicationService>();
         services.AddScoped<ICapabilityApplicationService, CapabilityApplicationService>();
         services.AddScoped<ISkillApplicationService, SkillApplicationService>();
         services.AddScoped<IProfileApplicationService, ProfileApplicationService>();

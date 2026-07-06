@@ -23,6 +23,11 @@ internal static class ApplicationResourceText
     public static string HumanReviewRequiredIssue => GetRequiredResource(nameof(HumanReviewRequiredIssue));
     public static string HumanReviewReason => GetRequiredResource(nameof(HumanReviewReason));
     public static string CapabilityResourceMissing(string name) => Format(nameof(CapabilityResourceMissing), name);
+    public static string ClientDisplayNameRequired => GetRequiredResource(nameof(ClientDisplayNameRequired));
+    public static string ClientAlreadyExists(string clientKey) => Format(nameof(ClientAlreadyExists), clientKey);
+    public static string ApiKeyNotFound(Guid apiKeyId) => Format(nameof(ApiKeyNotFound), apiKeyId);
+    public static string ApiKeyClientMismatch => GetRequiredResource(nameof(ApiKeyClientMismatch));
+    public static string ApiKeyAlreadyRevoked => GetRequiredResource(nameof(ApiKeyAlreadyRevoked));
     public static string ArenysmedDeliveryEvidenceDescription => GetRequiredResource(nameof(ArenysmedDeliveryEvidenceDescription));
     public static string SportsEventClipsDescription => GetRequiredResource(nameof(SportsEventClipsDescription));
     public static string GenericDocumentExtractionDescription => GetRequiredResource(nameof(GenericDocumentExtractionDescription));

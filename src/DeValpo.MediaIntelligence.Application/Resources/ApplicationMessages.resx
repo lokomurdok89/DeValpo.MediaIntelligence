@@ -27,6 +27,21 @@
   <data name="ClientKeyRequired" xml:space="preserve">
     <value>ClientKey is required.</value>
   </data>
+  <data name="ClientDisplayNameRequired" xml:space="preserve">
+    <value>Client display name is required.</value>
+  </data>
+  <data name="ClientAlreadyExists" xml:space="preserve">
+    <value>Client '{0}' already exists.</value>
+  </data>
+  <data name="ApiKeyNotFound" xml:space="preserve">
+    <value>API key '{0}' was not found.</value>
+  </data>
+  <data name="ApiKeyClientMismatch" xml:space="preserve">
+    <value>API key does not belong to the requested client.</value>
+  </data>
+  <data name="ApiKeyAlreadyRevoked" xml:space="preserve">
+    <value>API key is already revoked.</value>
+  </data>
   <data name="ProfileKeyRequired" xml:space="preserve">
     <value>ProfileKey is required.</value>
   </data>

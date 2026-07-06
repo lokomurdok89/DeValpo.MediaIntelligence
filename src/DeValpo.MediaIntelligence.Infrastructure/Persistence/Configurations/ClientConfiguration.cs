@@ -14,6 +14,8 @@ public sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.HasKey(item => item.Id);
         builder.Property(item => item.ClientKey).HasMaxLength(100).IsRequired();
         builder.Property(item => item.DisplayName).HasMaxLength(200).IsRequired();
+        builder.Property(item => item.ContactEmail).HasMaxLength(320);
+        builder.Property(item => item.AllowedProfileKeysJson).HasColumnType("jsonb").HasDefaultValue("[]").IsRequired();
         builder.HasIndex(item => item.ClientKey).IsUnique();
     }
 }

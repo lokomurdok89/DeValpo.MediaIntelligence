@@ -14,6 +14,10 @@ Already working:
 - The real product document OCR profile is `generic-document-ocr-v1`.
 - `invoice-extraction-v1` remains as a temporary compatibility alias.
 - Mock skills and mock profiles are gated by explicit configuration and are disabled by default.
+- API clients can be created by an admin-scoped token.
+- API keys are returned once and stored only as hashes.
+- Clients can exchange API keys for short-lived JWTs.
+- API keys can be rotated and revoked.
 - Analysis jobs, media assets, skill executions, results, issues and human review tasks are persisted.
 - Initial EF Core migration exists.
 - Basic unit and API security tests exist.
@@ -22,8 +26,9 @@ Already working:
 Known product gaps:
 
 - User-facing messages must continue to be audited so new runtime text remains resource-backed.
-- Local JWT is not a real customer auth workflow.
-- There is no API key/customer onboarding workflow yet.
+- Tenant/profile authorization is not fully enforced yet.
+- Rate limiting and abuse controls are not implemented yet.
+- Auth/audit events are not recorded yet.
 - Jobs run synchronously during `/api/v1/analyze`.
 - Human review is persisted but has no review workflow.
 - Webhook delivery is modeled but not implemented.
@@ -97,14 +102,14 @@ Goal: replace local JWT assumptions with a product access model.
 Work:
 
 1. Introduce API clients.
-   - Store client records with status, display name, contact metadata and allowed profiles.
-   - Add client key lifecycle: create, rotate, revoke, expire.
-   - Never store raw API keys. Store hashes only.
+   - Done in Phase 2: store client records with status, display name, contact metadata and allowed profiles.
+   - Done in Phase 2: add client key lifecycle for create, rotate, revoke and expire.
+   - Done in Phase 2: never store raw API keys. Store hashes only.
 
 2. Add token issuance workflow.
-   - Clients authenticate with API key or client credentials.
-   - API issues short-lived JWTs with `sub`, `client_key`, `scope`, `jti`, `iat`, `exp`.
-   - Development token endpoint remains Development-only.
+   - Done in Phase 2: clients authenticate with API key.
+   - Done in Phase 2: API issues short-lived JWTs with `sub`, `client_key`, `scope`, `jti`, `iat`, `exp`.
+   - Done in Phase 2: Development token endpoint remains Development-only.
 
 3. Enforce tenant/profile authorization.
    - `clientKey` from request must match authenticated client.
@@ -112,7 +117,8 @@ Work:
    - Results/jobs must only be readable by the owning client or operator role.
 
 4. Add authorization policies.
-   - Separate client, operator and admin scopes.
+   - Done in Phase 2: admin scope protects API client management.
+   - Pending: separate client, operator and admin scopes across all operational endpoints.
    - Protect Google remote status behind operator/admin or authenticated diagnostic scope.
 
 5. Add rate limiting and abuse controls.

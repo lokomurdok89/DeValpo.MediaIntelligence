@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IAnalysisJobRepository, AnalysisJobRepository>();
         services.AddScoped<IAnalysisProfileRepository, AnalysisProfileRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
+        services.AddScoped<IClientApiKeyRepository, ClientApiKeyRepository>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMediaAssetStorage, LocalMediaAssetStorage>();
         services.AddScoped<IGoogleCredentialProvider, GoogleCredentialProvider>();
