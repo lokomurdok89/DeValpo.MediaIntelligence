@@ -70,6 +70,19 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
+    public async Task SwaggerJson_DoesNotDocumentRootRedirect()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/swagger/v1/swagger.json");
+        var json = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        json.Should().NotContain("\"/\":");
+    }
+
+    [Fact]
     public void Startup_Fails_WhenJwtSigningKeyIsMissing()
     {
         using var factory = CreateFactory(new Dictionary<string, string?>

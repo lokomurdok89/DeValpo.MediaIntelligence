@@ -96,6 +96,10 @@ Automatic migration execution is controlled by `Database:ApplyMigrationsOnStartu
 
 ## Google Document AI
 
+For the complete local setup, including Google ADC, Docker secrets and JWT tokens, follow:
+
+- [Local tokens and Google secrets setup](docs/local-tokens-and-google-secrets.md)
+
 Set these values through environment variables or appsettings:
 
 ```text

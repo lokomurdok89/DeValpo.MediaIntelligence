@@ -100,7 +100,9 @@ if (swaggerEnabled)
         options.RoutePrefix = "swagger";
     });
 
-    app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
+    app.MapGet("/", () => Results.Redirect("/swagger"))
+        .AllowAnonymous()
+        .ExcludeFromDescription();
 }
 
 if (app.Environment.IsDevelopment())
