@@ -143,6 +143,8 @@ Evidencia QA:
 
 Objetivo: impedir acceso cruzado entre clientes.
 
+Estado: implementada en la rama `codex/phase-3-tenant-isolation`; pendiente de PR, CI y merge antes de iniciar Fase 4.
+
 Implementacion:
 
 - Enlazar jobs, assets, results, review tasks y webhooks a client/tenant.
@@ -167,6 +169,10 @@ Exit criteria:
 - No existe ejecucion de perfiles no autorizados.
 - Policies documentadas en Swagger.
 - QA no tiene Blockers/Criticals.
+
+Evidencia QA:
+
+- `docs/qa-phase-3-tenant-isolation.md`
 
 ## Fase 4: Jobs Asincronos Y Worker
 

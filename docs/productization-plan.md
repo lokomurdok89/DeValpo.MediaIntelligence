@@ -26,7 +26,6 @@ Already working:
 Known product gaps:
 
 - User-facing messages must continue to be audited so new runtime text remains resource-backed.
-- Tenant/profile authorization is not fully enforced yet.
 - Rate limiting and abuse controls are not implemented yet.
 - Auth/audit events are not recorded yet.
 - Jobs run synchronously during `/api/v1/analyze`.
@@ -112,14 +111,13 @@ Work:
    - Done in Phase 2: Development token endpoint remains Development-only.
 
 3. Enforce tenant/profile authorization.
-   - `clientKey` from request must match authenticated client.
-   - Client can only execute assigned profiles.
-   - Results/jobs must only be readable by the owning client or operator role.
+   - Done in Phase 3: `clientKey` from request must match authenticated client.
+   - Done in Phase 3: client can only execute assigned profiles.
+   - Done in Phase 3: results/jobs are readable by the owning client or operator/admin role.
 
 4. Add authorization policies.
    - Done in Phase 2: admin scope protects API client management.
-   - Pending: separate client, operator and admin scopes across all operational endpoints.
-   - Protect Google remote status behind operator/admin or authenticated diagnostic scope.
+   - Done in Phase 3: client, operator and admin scopes are enforced for submission, resource access and Google remote diagnostics.
 
 5. Add rate limiting and abuse controls.
    - Per-client request limits.
