@@ -92,15 +92,16 @@ public sealed class GoogleDocumentAiDocumentOcrSkill(
                 cancellationToken);
 
             var text = response.Document?.Text ?? string.Empty;
+            var confidence = string.IsNullOrWhiteSpace(text) ? 0.50m : 0.89m;
 
             return Result(
                 SkillName,
-                0.89m,
+                confidence,
                 fields:
                 [
                     new("provider", "google-document-ai", 1.00m, SkillName),
-                    new("processor_id", config.ProcessorId, 0.89m, SkillName),
-                    new("text", text, string.IsNullOrWhiteSpace(text) ? 0.50m : 0.89m, SkillName)
+                    new("processor_id", config.ProcessorId, confidence, SkillName),
+                    new("text", text, confidence, SkillName)
                 ]);
         }
         catch (Exception exception)

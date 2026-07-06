@@ -63,6 +63,30 @@
   <data name="HumanReviewReason" xml:space="preserve">
     <value>Result confidence below profile threshold or issues detected.</value>
   </data>
+  <data name="HumanReviewTaskNotFound" xml:space="preserve">
+    <value>Human review task '{0}' was not found.</value>
+  </data>
+  <data name="HumanReviewTaskCannotStart" xml:space="preserve">
+    <value>Human review task '{0}' cannot be started from status '{1}'.</value>
+  </data>
+  <data name="HumanReviewTaskCannotComplete" xml:space="preserve">
+    <value>Human review task '{0}' cannot be completed from status '{1}'.</value>
+  </data>
+  <data name="HumanReviewDecisionRequired" xml:space="preserve">
+    <value>Review decision is required.</value>
+  </data>
+  <data name="HumanReviewDecisionUnsupported" xml:space="preserve">
+    <value>Review decision '{0}' is not supported.</value>
+  </data>
+  <data name="HumanReviewCorrectionsRequired" xml:space="preserve">
+    <value>Corrected fields are required when the review decision is Correct.</value>
+  </data>
+  <data name="HumanReviewResultMissing" xml:space="preserve">
+    <value>Human review task '{0}' does not have a persisted analysis result.</value>
+  </data>
+  <data name="HumanReviewRejectedResult" xml:space="preserve">
+    <value>Human review rejected the analysis result.</value>
+  </data>
   <data name="CapabilityResourceMissing" xml:space="preserve">
     <value>Missing capability resource '{0}'.</value>
   </data>

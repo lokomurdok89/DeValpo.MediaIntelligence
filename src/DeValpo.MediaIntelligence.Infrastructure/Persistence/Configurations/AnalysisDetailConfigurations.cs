@@ -110,7 +110,13 @@ public sealed class HumanReviewTaskConfiguration : IEntityTypeConfiguration<Huma
         builder.HasKey(item => item.Id);
         builder.Property(item => item.Status).HasMaxLength(50).IsRequired();
         builder.Property(item => item.Reason).HasMaxLength(1000).IsRequired();
+        builder.Property(item => item.OperatorId).HasMaxLength(200);
+        builder.Property(item => item.Decision).HasMaxLength(50);
+        builder.Property(item => item.Comment).HasMaxLength(2000);
+        builder.Property(item => item.OriginalFieldsJson).HasColumnType("jsonb");
+        builder.Property(item => item.CorrectedFieldsJson).HasColumnType("jsonb");
         builder.HasIndex(item => item.JobId);
+        builder.HasIndex(item => item.Status);
         builder.HasOne(item => item.Job).WithMany(job => job.HumanReviewTasks).HasForeignKey(item => item.JobId);
     }
 }
