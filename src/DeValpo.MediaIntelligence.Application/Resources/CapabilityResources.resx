@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CapabilityList" xml:space="preserve">
+    <value>OCR|HandwritingRecognition|StampDetection|ObjectDetection|FaceDetection|PersonDetection|BibNumberDetection|VideoClipGeneration|LiveVideoBuffering|DocumentExtraction|ExternalWebhookDelivery|HumanReview</value>
+  </data>
+  <data name="OCR_Name" xml:space="preserve">
+    <value>OCR</value>
+  </data>
+  <data name="OCR_Description" xml:space="preserve">
+    <value>Extract visible text from documents and images.</value>
+  </data>
+  <data name="HandwritingRecognition_Name" xml:space="preserve">
+    <value>Handwriting recognition</value>
+  </data>
+  <data name="HandwritingRecognition_Description" xml:space="preserve">
+    <value>Extract handwritten identifiers or text.</value>
+  </data>
+  <data name="StampDetection_Name" xml:space="preserve">
+    <value>Stamp detection</value>
+  </data>
+  <data name="StampDetection_Description" xml:space="preserve">
+    <value>Detect administrative stamps and status marks.</value>
+  </data>
+  <data name="ObjectDetection_Name" xml:space="preserve">
+    <value>Object detection</value>
+  </data>
+  <data name="ObjectDetection_Description" xml:space="preserve">
+    <value>Detect objects or visual labels in images.</value>
+  </data>
+  <data name="FaceDetection_Name" xml:space="preserve">
+    <value>Face detection</value>
+  </data>
+  <data name="FaceDetection_Description" xml:space="preserve">
+    <value>Structural support for future consent-based face detection.</value>
+  </data>
+  <data name="PersonDetection_Name" xml:space="preserve">
+    <value>Person detection</value>
+  </data>
+  <data name="PersonDetection_Description" xml:space="preserve">
+    <value>Detect people in image or video assets.</value>
+  </data>
+  <data name="BibNumberDetection_Name" xml:space="preserve">
+    <value>Bib number detection</value>
+  </data>
+  <data name="BibNumberDetection_Description" xml:space="preserve">
+    <value>Detect sports bib numbers.</value>
+  </data>
+  <data name="VideoClipGeneration_Name" xml:space="preserve">
+    <value>Video clip generation</value>
+  </data>
+  <data name="VideoClipGeneration_Description" xml:space="preserve">
+    <value>Generate structural clip metadata.</value>
+  </data>
+  <data name="LiveVideoBuffering_Name" xml:space="preserve">
+    <value>Live video buffering</value>
+  </data>
+  <data name="LiveVideoBuffering_Description" xml:space="preserve">
+    <value>Analyze buffered live video windows.</value>
+  </data>
+  <data name="DocumentExtraction_Name" xml:space="preserve">
+    <value>Document extraction</value>
+  </data>
+  <data name="DocumentExtraction_Description" xml:space="preserve">
+    <value>Extract structured document fields.</value>
+  </data>
+  <data name="ExternalWebhookDelivery_Name" xml:space="preserve">
+    <value>External webhook delivery</value>
+  </data>
+  <data name="ExternalWebhookDelivery_Description" xml:space="preserve">
+    <value>Prepare future webhook delivery.</value>
+  </data>
+  <data name="HumanReview_Name" xml:space="preserve">
+    <value>Human review</value>
+  </data>
+  <data name="HumanReview_Description" xml:space="preserve">
+    <value>Create review tasks for low confidence results.</value>
+  </data>
+</root>

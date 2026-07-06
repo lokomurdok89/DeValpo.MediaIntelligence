@@ -1,4 +1,6 @@
 using DeValpo.MediaIntelligence.Contracts.Capabilities;
+using System.Reflection;
+using System.Resources;
 
 namespace DeValpo.MediaIntelligence.Application.Capabilities;
 
@@ -9,24 +11,26 @@ public interface ICapabilityApplicationService
 
 public sealed class CapabilityApplicationService : ICapabilityApplicationService
 {
-    private static readonly CapabilityResponse[] Capabilities =
-    [
-        new("OCR", "OCR", "Extract visible text from documents and images."),
-        new("HandwritingRecognition", "Handwriting recognition", "Extract handwritten identifiers or text."),
-        new("StampDetection", "Stamp detection", "Detect administrative stamps and status marks."),
-        new("ObjectDetection", "Object detection", "Detect objects or visual labels in images."),
-        new("FaceDetection", "Face detection", "Structural support for future consent-based face detection."),
-        new("PersonDetection", "Person detection", "Detect people in image or video assets."),
-        new("BibNumberDetection", "Bib number detection", "Detect sports bib numbers."),
-        new("VideoClipGeneration", "Video clip generation", "Generate structural clip metadata."),
-        new("LiveVideoBuffering", "Live video buffering", "Analyze buffered live video windows."),
-        new("DocumentExtraction", "Document extraction", "Extract structured document fields."),
-        new("ExternalWebhookDelivery", "External webhook delivery", "Prepare future webhook delivery."),
-        new("HumanReview", "Human review", "Create review tasks for low confidence results.")
-    ];
+    private static readonly ResourceManager Resources = new(
+        "DeValpo.MediaIntelligence.Application.Resources.CapabilityResources",
+        Assembly.GetExecutingAssembly());
 
     public Task<IReadOnlyCollection<CapabilityResponse>> ListAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<IReadOnlyCollection<CapabilityResponse>>(Capabilities);
+        var capabilities = GetRequiredResource("CapabilityList")
+            .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(capabilityKey => new CapabilityResponse(
+                capabilityKey,
+                GetRequiredResource($"{capabilityKey}_Name"),
+                GetRequiredResource($"{capabilityKey}_Description")))
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyCollection<CapabilityResponse>>(capabilities);
+    }
+
+    private static string GetRequiredResource(string name)
+    {
+        return Resources.GetString(name)
+            ?? throw new InvalidOperationException($"Missing capability resource '{name}'.");
     }
 }
