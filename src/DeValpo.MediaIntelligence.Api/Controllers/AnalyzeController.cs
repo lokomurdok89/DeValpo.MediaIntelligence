@@ -19,7 +19,7 @@ public sealed class AnalyzeController(
         [FromForm] string clientKey,
         [FromForm] string profileKey,
         [FromForm] MediaAssetType assetType,
-        [FromForm] IFormFile file,
+        IFormFile file,
         [FromForm] string? metadataJson,
         CancellationToken cancellationToken)
     {

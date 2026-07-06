@@ -1,11 +1,14 @@
 using DeValpo.MediaIntelligence.Api.Health;
 using DeValpo.MediaIntelligence.Api.Middleware;
+using DeValpo.MediaIntelligence.Api.Swagger;
 using DeValpo.MediaIntelligence.Application;
 using DeValpo.MediaIntelligence.Infrastructure;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Serilog;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +21,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new()
+    options.SwaggerDoc(SwaggerResourceText.DocumentName, new OpenApiInfo
     {
-        Title = "DeValpo Media Intelligence Engine",
-        Version = "v1",
-        Description = "Reusable multi-client media and document intelligence API."
+        Title = SwaggerResourceText.Title,
+        Version = SwaggerResourceText.Version,
+        Description = SwaggerResourceText.Description
     });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
 });
 
 builder.Services.AddCors(options =>
@@ -57,7 +68,15 @@ var swaggerEnabled = app.Configuration.GetValue("Swagger:Enabled", app.Environme
 if (swaggerEnabled)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            $"/swagger/{SwaggerResourceText.DocumentName}/swagger.json",
+            SwaggerResourceText.EndpointName);
+        options.RoutePrefix = "swagger";
+    });
+
+    app.MapGet("/", () => Results.Redirect("/swagger"));
 }
 
 if (app.Environment.IsDevelopment())
