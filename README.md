@@ -29,7 +29,14 @@ docker compose -f deploy/docker-compose.yml config
 docker compose -f deploy/docker-compose.yml up --build
 ```
 
-The API listens on `http://localhost:8085` and health is exposed at `/health`.
+This single Compose file starts both components:
+
+- `postgres`: PostgreSQL database on host port `5435`.
+- `media-intelligence-api`: API on host port `8085`.
+
+In Docker, migrations run automatically on API startup because `deploy/.env.example` sets `Database__ApplyMigrationsOnStartup=true`.
+
+The API listens on `http://localhost:8085`, Swagger is available at `http://localhost:8085/swagger`, and health is exposed at `/health`.
 
 ## Database migrations
 
@@ -40,7 +47,7 @@ dotnet tool restore
 dotnet dotnet-ef database update --project src/DeValpo.MediaIntelligence.Infrastructure --startup-project src/DeValpo.MediaIntelligence.Api
 ```
 
-Automatic migration execution is controlled by `Database:ApplyMigrationsOnStartup` and defaults to `false`.
+Automatic migration execution is controlled by `Database:ApplyMigrationsOnStartup`. It defaults to `false` in local appsettings and is enabled in Docker through `deploy/.env.example`.
 
 ## Google Document AI
 
