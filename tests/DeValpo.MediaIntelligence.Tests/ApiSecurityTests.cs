@@ -92,7 +92,7 @@ public sealed class ApiSecurityTests
         var json = await response.Content.ReadAsStringAsync();
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        json.Should().Contain("Runs a synchronous MVP analysis against an uploaded document or image.");
+        json.Should().Contain("Queues a document or image for background processing.");
         json.Should().Contain("Remote processor validation requires authentication");
         json.Should().Contain("Profiles define the supported asset types");
     }
@@ -128,7 +128,8 @@ public sealed class ApiSecurityTests
                         ["Jwt:Issuer"] = "DeValpo.MediaIntelligence",
                         ["Jwt:Audience"] = "DeValpo.MediaIntelligence.Api",
                         ["Jwt:SigningKey"] = "test-only-jwt-signing-key-with-32-chars",
-                        ["Jwt:RequireHttpsMetadata"] = "false"
+                        ["Jwt:RequireHttpsMetadata"] = "false",
+                        ["AnalysisWorker:Enabled"] = "false"
                     };
 
                     if (overrides is not null)

@@ -84,6 +84,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<int>("ProcessingAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ProfileKey")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -179,8 +182,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("AllowedProfileKeysJson")
                         .IsRequired()
-                        .HasDefaultValue("[]")
-                        .HasColumnType("jsonb");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("[]");
 
                     b.Property<string>("ClientKey")
                         .IsRequired()

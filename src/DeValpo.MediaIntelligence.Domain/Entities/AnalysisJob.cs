@@ -8,6 +8,7 @@ public sealed class AnalysisJob
     public string AssetType { get; set; } = "Unknown";
     public string Status { get; set; } = "Pending";
     public string? ErrorMessage { get; set; }
+    public int ProcessingAttempts { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? CompletedAt { get; set; }
     public List<MediaAsset> MediaAssets { get; set; } = [];

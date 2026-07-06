@@ -12,7 +12,7 @@ This repository is intentionally separate from the Contador repository. It expos
 
 ## Architecture Overview
 
-The system is a reusable media and document intelligence engine. The API receives assets, validates JWT access issued from client API keys, stores the input file, runs the configured analysis profile, persists the normalized result and exposes the job/result through HTTP endpoints.
+The system is a reusable media and document intelligence engine. The API receives assets, validates JWT access issued from client API keys, stores the input file, queues background analysis, persists the normalized result and exposes the job/result through HTTP endpoints.
 
 ### End-To-End Flow
 
@@ -22,22 +22,24 @@ flowchart TD
     B --> C["JWT accessToken"]
     C --> D["POST /api/v1/analyze<br/>Bearer token + multipart file"]
     D --> E["API validation<br/>file size, asset type, metadata"]
-    E --> F["Create AnalysisJob<br/>status Running"]
+    E --> F["Create AnalysisJob<br/>status Pending"]
     F --> G["Save MediaAsset<br/>local Docker volume"]
-    G --> H["Resolve analysis profile"]
-    H --> I["Run profile skills"]
-    I --> J{"Google Document AI enabled?"}
-    J -- "yes" --> K["GoogleDocumentAiDocumentOcrSkill"]
-    K --> L["Document AI OCR processor"]
-    J -- "no or not configured" --> M["Return provider issue<br/>requires review when needed"]
-    L --> N["SkillExecutionResult<br/>fields, labels, entities, issues"]
-    M --> N
-    N --> O["Persist AnalysisResult<br/>fields, issues, confidence"]
-    O --> P{"Confidence or errors require review?"}
-    P -- "yes" --> Q["Create HumanReviewTask"]
-    P -- "no" --> R["Complete job"]
-    Q --> R
-    R --> S["Return AnalysisResultResponse"]
+    G --> H["Return 202 Accepted<br/>jobId"]
+    H --> I["Background worker claims job<br/>status Running"]
+    I --> J["Resolve analysis profile"]
+    J --> K["Run profile skills"]
+    K --> L{"Google Document AI enabled?"}
+    L -- "yes" --> M["GoogleDocumentAiDocumentOcrSkill"]
+    M --> N["Document AI OCR processor"]
+    L -- "no or not configured" --> O["Return provider issue<br/>requires review when needed"]
+    N --> P["SkillExecutionResult<br/>fields, labels, entities, issues"]
+    O --> P
+    P --> Q["Persist AnalysisResult<br/>fields, issues, confidence"]
+    Q --> R{"Confidence or errors require review?"}
+    R -- "yes" --> S["Create HumanReviewTask<br/>status RequiresReview"]
+    R -- "no" --> T["Complete job"]
+    S --> U["Client polls result endpoint"]
+    T --> U
 ```
 
 ### Runtime Components
@@ -46,6 +48,7 @@ flowchart TD
 flowchart LR
     subgraph LocalDocker["Docker local"]
         Api["DeValpo.MediaIntelligence.Api<br/>ASP.NET Core"]
+        Worker["AnalysisJobWorker<br/>background polling"]
         Pg["PostgreSQL 17"]
         Storage["media_assets volume<br/>/app/storage/media-assets"]
         Secrets["secrets bind mount<br/>/run/secrets:ro"]
@@ -70,6 +73,7 @@ flowchart LR
     Google["Google Document AI<br/>OCR_PROCESSOR"]
 
     Api --> AnalyzeSvc
+    Worker --> AnalyzeSvc
     AnalyzeSvc --> Orchestrator
     AnalyzeSvc --> AssetStorage
     AnalyzeSvc --> Repos
@@ -131,9 +135,15 @@ sequenceDiagram
     Api->>Auth: Validate JWT
     Auth-->>Api: Authenticated
     Api->>App: AnalyzeAsync(request, file stream)
-    App->>Db: Insert AnalysisJob Running
+    App->>Db: Insert AnalysisJob Pending
     App->>Storage: Save uploaded file
     Storage-->>App: StoredMediaAsset
+    App-->>Api: CreateAnalysisJobResponse
+    Api-->>Swagger: 202 Accepted + job id
+    loop Worker polling
+        App->>Db: Claim Pending job as Running
+    end
+    App->>Storage: Open stored asset
     App->>Orch: AnalyzeAsync(profile, asset stream)
     Orch->>Skill: ExecuteAsync(context)
     Skill->>Google: ProcessDocument
@@ -141,8 +151,9 @@ sequenceDiagram
     Skill-->>Orch: SkillExecutionResult
     Orch-->>App: AnalysisOrchestrationResult
     App->>Db: Persist MediaAsset, SkillExecution, AnalysisResult
-    App-->>Api: AnalysisResultResponse
-    Api-->>Swagger: 200 OK + extracted fields
+    App->>Db: Mark Completed or RequiresReview
+    Swagger->>Api: GET /api/v1/analysis-jobs/{jobId}/result
+    Api-->>Swagger: 200 OK + extracted fields when ready
 ```
 
 ### Google Provider Status Sequence
@@ -727,7 +738,7 @@ Check provider readiness:
 ```bash
 curl http://localhost:8085/api/v1/providers/google-document-ai/status
 curl "http://localhost:8085/api/v1/providers/google-document-ai/status?checkRemote=true" \
-  -H "Authorization: Bearer <accessToken>"
+  -H "Authorization: Bearer <adminOrOperatorAccessToken>"
 ```
 
 The basic status endpoint checks local configuration and credential file presence. `checkRemote=true` validates the configured processor against Google and requires a Bearer token.
@@ -737,11 +748,25 @@ The basic status endpoint checks local configuration and credential file presenc
 ```bash
 curl -X POST http://localhost:8085/api/v1/analyze \
   -H "Authorization: Bearer <accessToken>" \
-  -F "clientKey=generic" \
+  -F "clientKey=<clientKey>" \
   -F "profileKey=generic-document-ocr-v1" \
   -F "assetType=Document" \
   -F "metadataJson={\"source\":\"manual-test\"}" \
   -F "file=@sample.pdf"
+```
+
+The response is `202 Accepted` with a `jobId`. Poll the job until it reaches `Completed` or `RequiresReview`:
+
+```bash
+curl http://localhost:8085/api/v1/analysis-jobs/<jobId> \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Then retrieve the result:
+
+```bash
+curl http://localhost:8085/api/v1/analysis-jobs/<jobId>/result \
+  -H "Authorization: Bearer <accessToken>"
 ```
 
 ## Add a skill
@@ -777,3 +802,4 @@ The QA review for this change is recorded in:
 - [Phase 1 foundation hardening QA](docs/qa-phase-1-foundation-hardening.md)
 - [Phase 2 customer access and security QA](docs/qa-phase-2-customer-access-security.md)
 - [Phase 3 tenant isolation QA](docs/qa-phase-3-tenant-isolation.md)
+- [Phase 4 async jobs and worker QA](docs/qa-phase-4-async-jobs-worker.md)

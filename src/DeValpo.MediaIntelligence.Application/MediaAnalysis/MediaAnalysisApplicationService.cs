@@ -5,29 +5,34 @@ using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 using DeValpo.MediaIntelligence.Domain.Entities;
+using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Application.MediaAnalysis;
 
 public sealed class MediaAnalysisApplicationService(
     IMediaAnalysisOrchestrator orchestrator,
     IMediaAssetStorage storage,
+    IAnalysisProfileResolver profileResolver,
     IAnalysisJobRepository jobRepository,
-    IUnitOfWork unitOfWork) : IMediaAnalysisApplicationService
+    IUnitOfWork unitOfWork,
+    IOptions<AnalysisProcessingOptions> processingOptions) : IMediaAnalysisApplicationService
 {
     /// <summary>
-    /// Creates a running job, stores the asset, executes orchestration and saves extracted output.
+    /// Stores the asset and creates a pending job for the background worker.
     /// </summary>
-    public async Task<AnalysisResultResponse> AnalyzeAsync(
+    public async Task<CreateAnalysisJobResponse> EnqueueAsync(
         CreateAnalysisJobRequest request,
         Stream content,
         CancellationToken cancellationToken)
     {
+        await ValidateRequestAsync(request, cancellationToken);
+
         var job = new AnalysisJob
         {
             ClientKey = request.ClientKey.Trim(),
             ProfileKey = request.ProfileKey.Trim(),
             AssetType = request.AssetType.ToString(),
-            Status = AnalysisJobStatus.Running.ToString()
+            Status = AnalysisJobStatus.Pending.ToString()
         };
 
         await jobRepository.AddAsync(job, cancellationToken);
@@ -48,26 +53,97 @@ public sealed class MediaAnalysisApplicationService(
             SizeInBytes = storedAsset.SizeInBytes
         });
 
-        await using var storedContent = await storage.OpenReadAsync(storedAsset.StoragePath, cancellationToken);
-        var metadata = new Dictionary<string, string>(request.Metadata ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-        if (!string.IsNullOrWhiteSpace(request.ContentType))
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return new CreateAnalysisJobResponse(job.Id, job.Status, job.ProcessingAttempts, job.CreatedAt);
+    }
+
+    /// <summary>
+    /// Processes the next queued job with stored media, persisting every state transition.
+    /// </summary>
+    public async Task<bool> ProcessNextPendingAsync(CancellationToken cancellationToken)
+    {
+        var job = await jobRepository.GetNextPendingWithAssetAsync(cancellationToken);
+        if (job is null)
         {
-            metadata["contentType"] = request.ContentType;
+            return false;
         }
+
+        var attempt = job.ProcessingAttempts + 1;
+        var claimed = await jobRepository.MarkRunningAsync(job.Id, cancellationToken);
+        if (!claimed)
+        {
+            return true;
+        }
+
+        try
+        {
+            await ProcessJobAsync(job, cancellationToken);
+        }
+        catch (Exception exception) when (attempt < processingOptions.Value.MaxProcessingAttempts)
+        {
+            await jobRepository.SetProcessingFailureAsync(
+                job.Id,
+                AnalysisJobStatus.Pending.ToString(),
+                exception.Message,
+                completedAt: null,
+                cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            await jobRepository.SetProcessingFailureAsync(
+                job.Id,
+                AnalysisJobStatus.Failed.ToString(),
+                exception.Message,
+                DateTimeOffset.UtcNow,
+                cancellationToken);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns interrupted running jobs to Pending so they can be retried.
+    /// </summary>
+    public Task<int> ResetRunningJobsAsync(CancellationToken cancellationToken)
+    {
+        return jobRepository.ResetRunningAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Returns a completed analysis result for the requested job when one exists.
+    /// </summary>
+    public async Task<AnalysisResultResponse?> GetResultAsync(Guid jobId, CancellationToken cancellationToken)
+    {
+        var job = await jobRepository.GetByIdAsync(jobId, cancellationToken);
+        return job?.AnalysisResult is null ? null : MapResult(job.AnalysisResult);
+    }
+
+    private async Task ProcessJobAsync(AnalysisJob job, CancellationToken cancellationToken)
+    {
+        var asset = job.MediaAssets.OrderBy(item => item.CreatedAt).First();
+        await using var storedContent = await storage.OpenReadAsync(asset.StoragePath, cancellationToken);
+
+        Enum.TryParse<MediaAssetType>(job.AssetType, out var assetType);
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["contentType"] = asset.ContentType
+        };
 
         var orchestrationResult = await orchestrator.AnalyzeAsync(
             new AnalysisOrchestrationRequest(
                 job.Id,
-                request.ClientKey,
-                request.ProfileKey,
-                request.AssetType,
+                job.ClientKey,
+                job.ProfileKey,
+                assetType,
                 metadata),
             storedContent,
             cancellationToken);
 
+        var skillExecutions = new List<SkillExecution>();
         foreach (var skillResult in orchestrationResult.SkillResults)
         {
-            job.SkillExecutions.Add(new SkillExecution
+            skillExecutions.Add(new SkillExecution
             {
                 JobId = job.Id,
                 SkillName = skillResult.SkillName,
@@ -126,31 +202,55 @@ public sealed class MediaAnalysisApplicationService(
             SourceSkill = item.SourceSkill
         }));
 
-        job.AnalysisResult = result;
-        job.Status = AnalysisJobStatus.Completed.ToString();
-        job.CompletedAt = DateTimeOffset.UtcNow;
+        var status = orchestrationResult.RequiresHumanReview
+            ? AnalysisJobStatus.RequiresReview.ToString()
+            : AnalysisJobStatus.Completed.ToString();
+        var completedAt = DateTimeOffset.UtcNow;
+        var reviewTasks = new List<HumanReviewTask>();
 
         if (orchestrationResult.RequiresHumanReview)
         {
-            job.HumanReviewTasks.Add(new HumanReviewTask
+            reviewTasks.Add(new HumanReviewTask
             {
                 JobId = job.Id,
                 Reason = ApplicationResourceText.HumanReviewReason
             });
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return MapResult(job.AnalysisResult);
+        await jobRepository.CompleteProcessingAsync(
+            job.Id,
+            status,
+            result,
+            skillExecutions,
+            reviewTasks,
+            completedAt,
+            cancellationToken);
     }
 
-    /// <summary>
-    /// Returns a completed analysis result for the requested job when one exists.
-    /// </summary>
-    public async Task<AnalysisResultResponse?> GetResultAsync(Guid jobId, CancellationToken cancellationToken)
+    private async Task ValidateRequestAsync(CreateAnalysisJobRequest request, CancellationToken cancellationToken)
     {
-        var job = await jobRepository.GetByIdAsync(jobId, cancellationToken);
-        return job?.AnalysisResult is null ? null : MapResult(job.AnalysisResult);
+        if (string.IsNullOrWhiteSpace(request.ClientKey))
+        {
+            throw new ArgumentException(ApplicationResourceText.ClientKeyRequired, nameof(request));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.ProfileKey))
+        {
+            throw new ArgumentException(ApplicationResourceText.ProfileKeyRequired, nameof(request));
+        }
+
+        if (request.AssetType == MediaAssetType.Unknown)
+        {
+            throw new ArgumentException(ApplicationResourceText.AssetTypeRequired, nameof(request));
+        }
+
+        var profile = await profileResolver.ResolveAsync(request.ProfileKey, cancellationToken)
+            ?? throw new InvalidOperationException(ApplicationResourceText.ProfileNotFound(request.ProfileKey));
+
+        if (!profile.SupportedAssetTypes.Contains(request.AssetType))
+        {
+            throw new InvalidOperationException(ApplicationResourceText.ProfileAssetTypeUnsupported(request.ProfileKey, request.AssetType));
+        }
     }
 
     /// <summary>

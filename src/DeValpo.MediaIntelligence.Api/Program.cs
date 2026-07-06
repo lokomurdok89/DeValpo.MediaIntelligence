@@ -4,7 +4,9 @@ using DeValpo.MediaIntelligence.Api.Middleware;
 using DeValpo.MediaIntelligence.Api.Options;
 using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Api.Swagger;
+using DeValpo.MediaIntelligence.Api.Workers;
 using DeValpo.MediaIntelligence.Application;
+using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Infrastructure;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
@@ -77,6 +79,9 @@ builder.Services
 builder.Services.AddScoped<IDevJwtTokenService, DevJwtTokenService>();
 builder.Services.AddScoped<IClientAccessTokenService, ClientAccessTokenService>();
 builder.Services.AddScoped<IRequestClientAccessService, RequestClientAccessService>();
+builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
+builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
+builder.Services.AddHostedService<AnalysisJobWorker>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("MediaIntelligence")

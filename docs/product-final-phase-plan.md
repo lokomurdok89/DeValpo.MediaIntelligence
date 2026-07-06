@@ -178,6 +178,8 @@ Evidencia QA:
 
 Objetivo: convertir el analisis en flujo recuperable, auditable y seguro para documentos reales.
 
+Estado: implementada en la rama `codex/phase-4-async-jobs-worker`; pendiente de PR, CI y merge antes de iniciar Fase 5.
+
 Implementacion:
 
 - Cambiar `/api/v1/analyze` para encolar y responder `202 Accepted`, o definir modo sync explicito.
@@ -201,6 +203,10 @@ Exit criteria:
 - Estados son consistentes.
 - Fallos de proveedor no dejan jobs colgados.
 - QA no tiene Blockers/Criticals.
+
+Evidencia QA:
+
+- `docs/qa-phase-4-async-jobs-worker.md`
 
 ## Fase 5: Ingestion Real De Archivos Y Normalizacion
 
