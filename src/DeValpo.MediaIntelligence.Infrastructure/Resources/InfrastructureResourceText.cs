@@ -15,6 +15,8 @@ internal static class InfrastructureResourceText
     public static string StorageLocalRootPathRequired => GetRequiredResource(nameof(StorageLocalRootPathRequired));
     public static string GoogleDocumentAiRequiredOptions => GetRequiredResource(nameof(GoogleDocumentAiRequiredOptions));
     public static string DuplicateSkillName(string skillName) => Format(nameof(DuplicateSkillName), skillName);
+    public static string ProfileReferencesUnregisteredSkill(string profileKey, string skillName) => Format(nameof(ProfileReferencesUnregisteredSkill), profileKey, skillName);
+    public static string ProductionProfileReferencesMockSkill(string profileKey, string skillName) => Format(nameof(ProductionProfileReferencesMockSkill), profileKey, skillName);
     public static string ResolvedStoragePathOutsideRoot => GetRequiredResource(nameof(ResolvedStoragePathOutsideRoot));
     public static string RequestedStoragePathOutsideRoot => GetRequiredResource(nameof(RequestedStoragePathOutsideRoot));
     public static string GoogleDocumentAiDisabled => GetRequiredResource(nameof(GoogleDocumentAiDisabled));
@@ -24,6 +26,7 @@ internal static class InfrastructureResourceText
     public static string GoogleDocumentAiCredentialsFileNotFound => GetRequiredResource(nameof(GoogleDocumentAiCredentialsFileNotFound));
     public static string GoogleDocumentAiCredentialsCannotBeRead => GetRequiredResource(nameof(GoogleDocumentAiCredentialsCannotBeRead));
     public static string GoogleDocumentAiCredentialsInvalid => GetRequiredResource(nameof(GoogleDocumentAiCredentialsInvalid));
+    public static string GoogleDocumentAiUserCredentialsNotAllowed => GetRequiredResource(nameof(GoogleDocumentAiUserCredentialsNotAllowed));
     public static string GoogleDocumentAiCredentialsInvalidOrExpired => GetRequiredResource(nameof(GoogleDocumentAiCredentialsInvalidOrExpired));
     public static string GoogleDocumentAiPermissionDenied => GetRequiredResource(nameof(GoogleDocumentAiPermissionDenied));
     public static string GoogleDocumentAiProcessorNotFound => GetRequiredResource(nameof(GoogleDocumentAiProcessorNotFound));

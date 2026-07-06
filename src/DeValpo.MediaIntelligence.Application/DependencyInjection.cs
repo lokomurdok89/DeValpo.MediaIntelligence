@@ -15,6 +15,7 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddOptions<AnalysisProfileOptions>();
         services.AddScoped<ICapabilityApplicationService, CapabilityApplicationService>();
         services.AddScoped<ISkillApplicationService, SkillApplicationService>();
         services.AddScoped<IProfileApplicationService, ProfileApplicationService>();

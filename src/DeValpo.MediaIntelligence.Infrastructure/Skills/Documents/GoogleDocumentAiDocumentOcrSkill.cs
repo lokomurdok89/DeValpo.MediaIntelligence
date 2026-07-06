@@ -13,7 +13,7 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
 
 public sealed class GoogleDocumentAiDocumentOcrSkill(
     IOptions<GoogleDocumentAiOptions> options,
-    IGoogleDocumentAiClientFactory clientFactory) : BaseMockSkill
+    IGoogleDocumentAiClientFactory clientFactory) : BaseMediaAnalysisSkill
 {
     public override string SkillName => nameof(GoogleDocumentAiDocumentOcrSkill);
     public override IReadOnlyCollection<MediaAssetType> SupportedAssetTypes => [MediaAssetType.Document];

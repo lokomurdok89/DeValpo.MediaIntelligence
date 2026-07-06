@@ -60,7 +60,10 @@
   <data name="GenericDocumentExtractionDescription" xml:space="preserve">
     <value>Generic profile for document OCR and field extraction.</value>
   </data>
+  <data name="GenericDocumentOcrDescription" xml:space="preserve">
+    <value>Generic Document AI backed OCR profile for real document/PDF processing.</value>
+  </data>
   <data name="InvoiceExtractionDescription" xml:space="preserve">
-    <value>Document AI backed invoice/document extraction profile when Google is enabled.</value>
+    <value>Compatibility alias for the generic Document AI OCR profile.</value>
   </data>
 </root>

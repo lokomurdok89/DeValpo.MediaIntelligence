@@ -1,4 +1,5 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence.Repositories;
@@ -23,6 +24,8 @@ public static class DependencyInjection
         services.Configure<StorageOptions>(configuration.GetSection("Storage"));
         services.Configure<GoogleDocumentAiOptions>(configuration.GetSection("GoogleDocumentAi"));
         services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+        services.Configure<SkillRegistrationOptions>(configuration.GetSection("Skills"));
+        services.Configure<AnalysisProfileOptions>(configuration.GetSection("AnalysisProfiles"));
 
         var connectionString = configuration.GetConnectionString("MediaIntelligence")
             ?? throw new InvalidOperationException(InfrastructureResourceText.ConnectionStringRequired);
@@ -34,17 +37,17 @@ public static class DependencyInjection
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMediaAssetStorage, LocalMediaAssetStorage>();
+        services.AddScoped<IGoogleCredentialProvider, GoogleCredentialProvider>();
         services.AddScoped<IGoogleDocumentAiClientFactory, GoogleDocumentAiClientFactory>();
         services.AddScoped<IGoogleDocumentAiStatusService, GoogleDocumentAiStatusService>();
 
-        services.AddScoped<IMediaAnalysisSkill, MockDocumentOcrSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockHandwrittenIdExtractionSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockStampDetectionSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockImageObjectDetectionSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockSportsBibDetectionSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockFaceDetectionSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockVideoClipGenerationSkill>();
-        services.AddScoped<IMediaAnalysisSkill, MockLiveVideoBufferAnalysisSkill>();
+        var skillRegistrationOptions = configuration.GetSection("Skills").Get<SkillRegistrationOptions>() ?? new SkillRegistrationOptions();
+
+        if (skillRegistrationOptions.EnableMockSkills)
+        {
+            RegisterMockSkills(services);
+        }
+
         services.AddScoped<IMediaAnalysisSkill, GoogleDocumentAiDocumentOcrSkill>();
 
         services.AddOptions<StorageOptions>()
@@ -66,10 +69,23 @@ public static class DependencyInjection
 
         return services;
     }
+
+    private static void RegisterMockSkills(IServiceCollection services)
+    {
+        services.AddScoped<IMediaAnalysisSkill, MockDocumentOcrSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockHandwrittenIdExtractionSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockStampDetectionSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockImageObjectDetectionSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockSportsBibDetectionSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockFaceDetectionSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockVideoClipGenerationSkill>();
+        services.AddScoped<IMediaAnalysisSkill, MockLiveVideoBufferAnalysisSkill>();
+    }
 }
 
 internal sealed class SkillRegistryValidationHostedService(
-    IServiceProvider serviceProvider) : Microsoft.Extensions.Hosting.IHostedService
+    IServiceProvider serviceProvider,
+    IOptions<SkillRegistrationOptions> skillRegistrationOptions) : Microsoft.Extensions.Hosting.IHostedService
 {
     /// <summary>
     /// Validates at startup that every registered skill has a unique name.
@@ -78,6 +94,7 @@ internal sealed class SkillRegistryValidationHostedService(
     {
         using var scope = serviceProvider.CreateScope();
         var skills = scope.ServiceProvider.GetRequiredService<IEnumerable<IMediaAnalysisSkill>>();
+        var profileResolver = scope.ServiceProvider.GetRequiredService<IAnalysisProfileResolver>();
         var duplicateName = skills
             .GroupBy(skill => skill.SkillName, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(group => group.Count() > 1)?.Key;
@@ -85,6 +102,26 @@ internal sealed class SkillRegistryValidationHostedService(
         if (duplicateName is not null)
         {
             throw new InvalidOperationException(InfrastructureResourceText.DuplicateSkillName(duplicateName));
+        }
+
+        var skillsByName = skills.ToDictionary(skill => skill.SkillName, StringComparer.OrdinalIgnoreCase);
+        var profiles = profileResolver.ListAsync(cancellationToken).GetAwaiter().GetResult();
+
+        foreach (var profile in profiles)
+        {
+            foreach (var skillName in profile.SkillNames)
+            {
+                if (!skillsByName.ContainsKey(skillName))
+                {
+                    throw new InvalidOperationException(InfrastructureResourceText.ProfileReferencesUnregisteredSkill(profile.ProfileKey, skillName));
+                }
+
+                if (!skillRegistrationOptions.Value.EnableMockSkills &&
+                    skillName.StartsWith("Mock", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(InfrastructureResourceText.ProductionProfileReferencesMockSkill(profile.ProfileKey, skillName));
+                }
+            }
         }
 
         return Task.CompletedTask;

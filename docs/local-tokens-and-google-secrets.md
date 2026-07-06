@@ -277,6 +277,7 @@ GoogleDocumentAi__ProjectId=primeval-wind-499515-k6
 GoogleDocumentAi__Location=us
 GoogleDocumentAi__ProcessorId=44b3274ce1e84552
 GoogleDocumentAi__CredentialsPath=/run/secrets/google-application-default-credentials.json
+GoogleDocumentAi__AllowUserCredentials=true
 
 Jwt__Issuer=DeValpo.MediaIntelligence
 Jwt__Audience=DeValpo.MediaIntelligence.Api
@@ -433,7 +434,7 @@ $pdfPath = "<path-to-your-document.pdf>"
 curl.exe -X POST http://localhost:8085/api/v1/analyze `
   -H "Authorization: Bearer $token" `
   -F "clientKey=generic" `
-  -F "profileKey=invoice-extraction-v1" `
+  -F "profileKey=generic-document-ocr-v1" `
   -F "assetType=Document" `
   -F "file=@$pdfPath"
 ```
@@ -503,6 +504,7 @@ Check that `deploy\.env` has:
 
 ```text
 GoogleDocumentAi__CredentialsPath=/run/secrets/google-application-default-credentials.json
+GoogleDocumentAi__AllowUserCredentials=true
 ```
 
 Then check the local file exists:
