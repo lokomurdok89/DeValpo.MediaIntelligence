@@ -24,6 +24,36 @@ Swagger is enabled by `Swagger:Enabled` and is available at `/swagger`.
 
 ## Run with Docker
 
+Create a local environment file and keep it out of git:
+
+```bash
+cp deploy/.env.example deploy/.env
+```
+
+Google Document AI supports Application Default Credentials (ADC). For Docker local, create ADC with `gcloud` and copy the generated local credential into the ignored `secrets` folder:
+
+```bash
+gcloud auth application-default login
+gcloud auth application-default set-quota-project primeval-wind-499515-k6
+```
+
+On Windows:
+
+```powershell
+Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\google-application-default-credentials.json
+```
+
+Then set these values in `deploy/.env` when you want to use the real provider in Docker:
+
+```text
+GoogleDocumentAi__Enabled=true
+GoogleDocumentAi__ProjectId=primeval-wind-499515-k6
+GoogleDocumentAi__Location=us
+GoogleDocumentAi__ProcessorId=44b3274ce1e84552
+GoogleDocumentAi__CredentialsPath=/run/secrets/google-application-default-credentials.json
+Jwt__SigningKey=replace-with-local-dev-secret-min-32-chars
+```
+
 ```bash
 docker compose -f deploy/docker-compose.yml config
 docker compose -f deploy/docker-compose.yml up --build
@@ -37,6 +67,21 @@ This single Compose file starts both components:
 In Docker, migrations run automatically on API startup because `deploy/.env.example` sets `Database__ApplyMigrationsOnStartup=true`.
 
 The API listens on `http://localhost:8085`, Swagger is available at `http://localhost:8085/swagger`, and health is exposed at `/health`.
+
+Functional endpoints require JWT Bearer. In Development/Docker local, generate a token with:
+
+```bash
+curl -X POST http://localhost:8085/api/v1/dev/token \
+  -H "Content-Type: application/json" \
+  -d "{\"subject\":\"local-dev-user\",\"clientKey\":\"local-dev-client\",\"scope\":\"media-intelligence:mvp\"}"
+```
+
+Use the returned `accessToken` in Swagger Authorize or with:
+
+```bash
+curl http://localhost:8085/api/v1/capabilities \
+  -H "Authorization: Bearer <accessToken>"
+```
 
 ## Database migrations
 
@@ -58,15 +103,26 @@ GoogleDocumentAi__Enabled=true
 GoogleDocumentAi__ProjectId=your-project
 GoogleDocumentAi__Location=us
 GoogleDocumentAi__ProcessorId=your-processor
-GoogleDocumentAi__CredentialsPath=/secure/path/service-account.json
+GoogleDocumentAi__CredentialsPath=
 ```
 
-Do not commit service account JSON files.
+If `GoogleDocumentAi__CredentialsPath` is empty, the Google SDK uses Application Default Credentials. If you run inside Docker, set it to the mounted ADC file under `/run/secrets`. Do not commit Google credential JSON files.
+
+Check provider readiness:
+
+```bash
+curl http://localhost:8085/api/v1/providers/google-document-ai/status
+curl "http://localhost:8085/api/v1/providers/google-document-ai/status?checkRemote=true" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+The basic status endpoint checks local configuration and credential file presence. `checkRemote=true` validates the configured processor against Google and requires a Bearer token.
 
 ## Analyze an asset
 
 ```bash
 curl -X POST http://localhost:8085/api/v1/analyze \
+  -H "Authorization: Bearer <accessToken>" \
   -F "clientKey=arenysmed" \
   -F "profileKey=arenysmed-delivery-evidence-v1" \
   -F "assetType=Image" \

@@ -30,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMediaAssetStorage, LocalMediaAssetStorage>();
+        services.AddScoped<IGoogleDocumentAiClientFactory, GoogleDocumentAiClientFactory>();
+        services.AddScoped<IGoogleDocumentAiStatusService, GoogleDocumentAiStatusService>();
 
         services.AddScoped<IMediaAnalysisSkill, MockDocumentOcrSkill>();
         services.AddScoped<IMediaAnalysisSkill, MockHandwrittenIdExtractionSkill>();
