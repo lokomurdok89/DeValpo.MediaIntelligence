@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Contracts;
@@ -12,6 +13,7 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [Route("api/v1/analyze")]
 public sealed class AnalyzeController(
     IMediaAnalysisApplicationService service,
+    IRequestClientAccessService accessService,
     IConfiguration configuration) : ControllerBase
 {
     /// <summary>
@@ -29,12 +31,14 @@ public sealed class AnalyzeController(
     /// <response code="200">Returns the extracted fields, labels, entities, clips, issues and confidence.</response>
     /// <response code="400">The request is invalid or the file cannot be processed.</response>
     /// <response code="401">A valid bearer token was not provided.</response>
+    /// <response code="403">The token cannot submit work for the requested client or profile.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(104_857_600)]
     [ProducesResponseType(typeof(AnalysisResultResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Analyze(
         [FromForm] string clientKey,
         [FromForm] string profileKey,
@@ -46,6 +50,11 @@ public sealed class AnalyzeController(
         if (file.Length == 0)
         {
             return BadRequest(new ApiErrorResponse("INVALID_REQUEST", ApiResourceText.FileRequired, HttpContext.TraceIdentifier));
+        }
+
+        if (!await accessService.CanSubmitAsync(User, clientKey, profileKey, cancellationToken))
+        {
+            return Forbid();
         }
 
         var maxFileSizeBytes = configuration.GetValue<long>("MediaAnalysis:MaxFileSizeBytes", 104_857_600);

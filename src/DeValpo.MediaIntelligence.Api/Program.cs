@@ -76,6 +76,7 @@ builder.Services
 
 builder.Services.AddScoped<IDevJwtTokenService, DevJwtTokenService>();
 builder.Services.AddScoped<IClientAccessTokenService, ClientAccessTokenService>();
+builder.Services.AddScoped<IRequestClientAccessService, RequestClientAccessService>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("MediaIntelligence")

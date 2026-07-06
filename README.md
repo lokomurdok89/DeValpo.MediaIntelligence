@@ -776,3 +776,4 @@ The QA review for this change is recorded in:
 - [Phase 0 base hygiene QA](docs/qa-phase-0-base-hygiene.md)
 - [Phase 1 foundation hardening QA](docs/qa-phase-1-foundation-hardening.md)
 - [Phase 2 customer access and security QA](docs/qa-phase-2-customer-access-security.md)
+- [Phase 3 tenant isolation QA](docs/qa-phase-3-tenant-isolation.md)

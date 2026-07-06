@@ -1,3 +1,4 @@
+using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Contracts.Providers;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,8 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [AllowAnonymous]
 [Route("api/v1/providers/google-document-ai")]
 public sealed class GoogleDocumentAiProviderController(
-    IGoogleDocumentAiStatusService statusService) : ControllerBase
+    IGoogleDocumentAiStatusService statusService,
+    IRequestClientAccessService accessService) : ControllerBase
 {
     /// <summary>
     /// Reports Google Document AI configuration status and optionally checks the remote processor.
@@ -21,9 +23,11 @@ public sealed class GoogleDocumentAiProviderController(
     /// <param name="cancellationToken">Request cancellation token.</param>
     /// <response code="200">Returns local configuration status and optional remote validation result.</response>
     /// <response code="401">Remote validation was requested without a valid bearer token.</response>
+    /// <response code="403">Remote validation was requested without operator or admin scope.</response>
     [HttpGet("status")]
     [ProducesResponseType(typeof(GoogleDocumentAiStatusResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Status(
         [FromQuery] bool checkRemote = false,
         CancellationToken cancellationToken = default)
@@ -31,6 +35,11 @@ public sealed class GoogleDocumentAiProviderController(
         if (checkRemote && User.Identity?.IsAuthenticated != true)
         {
             return Unauthorized();
+        }
+
+        if (checkRemote && !accessService.HasOperationalAccess(User))
+        {
+            return Forbid();
         }
 
         return Ok(await statusService.GetStatusAsync(checkRemote, cancellationToken));

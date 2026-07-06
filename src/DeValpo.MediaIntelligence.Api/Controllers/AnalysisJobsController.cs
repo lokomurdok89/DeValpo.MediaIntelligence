@@ -1,3 +1,4 @@
+using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Application.AnalysisJobs;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Contracts;
@@ -11,6 +12,7 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [Route("api/v1/analysis-jobs")]
 public sealed class AnalysisJobsController(
     IAnalysisJobApplicationService jobService,
+    IRequestClientAccessService accessService,
     IMediaAnalysisApplicationService analysisService) : ControllerBase
 {
     /// <summary>
@@ -24,14 +26,21 @@ public sealed class AnalysisJobsController(
     /// <response code="201">Returns the created job identifier and initial status.</response>
     /// <response code="400">The request is invalid or references an unsupported profile.</response>
     /// <response code="401">A valid bearer token was not provided.</response>
+    /// <response code="403">The token cannot create work for the requested client or profile.</response>
     [HttpPost]
     [ProducesResponseType(typeof(CreateAnalysisJobResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create(
         [FromBody] CreateAnalysisJobRequest request,
         CancellationToken cancellationToken)
     {
+        if (!await accessService.CanSubmitAsync(User, request.ClientKey, request.ProfileKey, cancellationToken))
+        {
+            return Forbid();
+        }
+
         var response = await jobService.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { jobId = response.JobId }, response);
     }
@@ -54,7 +63,12 @@ public sealed class AnalysisJobsController(
     public async Task<IActionResult> GetById(Guid jobId, CancellationToken cancellationToken)
     {
         var response = await jobService.GetByIdAsync(jobId, cancellationToken);
-        return response is null ? NotFound() : Ok(response);
+        if (response is null || !accessService.CanAccessClientResource(User, response.ClientKey))
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
     }
 
     /// <summary>
@@ -74,6 +88,12 @@ public sealed class AnalysisJobsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetResult(Guid jobId, CancellationToken cancellationToken)
     {
+        var job = await jobService.GetByIdAsync(jobId, cancellationToken);
+        if (job is null || !accessService.CanAccessClientResource(User, job.ClientKey))
+        {
+            return NotFound();
+        }
+
         var response = await analysisService.GetResultAsync(jobId, cancellationToken);
         return response is null ? NotFound() : Ok(response);
     }
@@ -89,12 +109,20 @@ public sealed class AnalysisJobsController(
     /// <response code="204">The job was cancelled.</response>
     /// <response code="400">The job cannot be cancelled from its current status.</response>
     /// <response code="401">A valid bearer token was not provided.</response>
+    /// <response code="404">The job was not found or is not owned by the authenticated client.</response>
     [HttpPost("{jobId:guid}/cancel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Cancel(Guid jobId, CancellationToken cancellationToken)
     {
+        var job = await jobService.GetByIdAsync(jobId, cancellationToken);
+        if (job is null || !accessService.CanAccessClientResource(User, job.ClientKey))
+        {
+            return NotFound();
+        }
+
         await jobService.CancelAsync(jobId, cancellationToken);
         return NoContent();
     }
