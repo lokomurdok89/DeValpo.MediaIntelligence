@@ -8,6 +8,7 @@ public sealed record AnalysisJobResponse(
     string ProfileKey,
     MediaAssetType AssetType,
     AnalysisJobStatus Status,
+    int ProcessingAttempts,
     DateTimeOffset CreatedAt,
     DateTimeOffset? CompletedAt,
     string? ErrorMessage);

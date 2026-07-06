@@ -28,7 +28,6 @@ Known product gaps:
 - User-facing messages must continue to be audited so new runtime text remains resource-backed.
 - Rate limiting and abuse controls are not implemented yet.
 - Auth/audit events are not recorded yet.
-- Jobs run synchronously during `/api/v1/analyze`.
 - Human review is persisted but has no review workflow.
 - Webhook delivery is modeled but not implemented.
 - There is no production observability, audit trail, rate limiting or tenant isolation.
@@ -138,10 +137,10 @@ Goal: make analysis reliable for real documents and operationally safe.
 Work:
 
 1. Convert analysis execution to asynchronous jobs.
-   - `/api/v1/analyze` should enqueue and return `202 Accepted` or support a clear synchronous mode.
-   - Add background worker for queued jobs.
-   - Add retry policy for transient provider errors.
-   - Track `Pending`, `Running`, `Completed`, `Failed`, `Cancelled`, `RequiresReview`.
+   - Done in Phase 4: `/api/v1/analyze` enqueues and returns `202 Accepted`.
+   - Done in Phase 4: background worker processes queued jobs.
+   - Done in Phase 4: retry policy handles transient provider errors up to the configured attempt count.
+   - Done in Phase 4: tracks `Pending`, `Running`, `Completed`, `Failed`, `Cancelled`, `RequiresReview`.
 
 2. Improve provider output normalization.
    - Store raw provider metadata safely when useful.

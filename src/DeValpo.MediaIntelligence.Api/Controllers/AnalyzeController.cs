@@ -17,10 +17,10 @@ public sealed class AnalyzeController(
     IConfiguration configuration) : ControllerBase
 {
     /// <summary>
-    /// Accepts a media file, stores it and runs the configured analysis profile.
+    /// Accepts a media file, stores it and queues the configured analysis profile.
     /// </summary>
     /// <remarks>
-    /// Runs a synchronous MVP analysis against an uploaded document or image. Use this for real end-to-end document processing with a valid JWT.
+    /// Queues a document or image for background processing. Poll the job endpoint and then the result endpoint with a valid JWT.
     /// </remarks>
     /// <param name="clientKey">Client integration key that owns the analysis request.</param>
     /// <param name="profileKey">Analysis profile key that selects the skill pipeline to execute.</param>
@@ -28,14 +28,14 @@ public sealed class AnalyzeController(
     /// <param name="file">Binary media file to analyze.</param>
     /// <param name="metadataJson">Optional flat JSON object with string metadata values.</param>
     /// <param name="cancellationToken">Request cancellation token.</param>
-    /// <response code="200">Returns the extracted fields, labels, entities, clips, issues and confidence.</response>
+    /// <response code="202">Returns the queued job identifier. Poll the job and result endpoints for completion.</response>
     /// <response code="400">The request is invalid or the file cannot be processed.</response>
     /// <response code="401">A valid bearer token was not provided.</response>
     /// <response code="403">The token cannot submit work for the requested client or profile.</response>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(104_857_600)]
-    [ProducesResponseType(typeof(AnalysisResultResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreateAnalysisJobResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -66,12 +66,12 @@ public sealed class AnalyzeController(
         var metadata = ParseMetadata(metadataJson);
         await using var stream = file.OpenReadStream();
 
-        var response = await service.AnalyzeAsync(
+        var response = await service.EnqueueAsync(
             new CreateAnalysisJobRequest(clientKey, profileKey, assetType, file.FileName, file.ContentType, metadata),
             stream,
             cancellationToken);
 
-        return Ok(response);
+        return Accepted($"/api/v1/analysis-jobs/{response.JobId}", response);
     }
 
     /// <summary>

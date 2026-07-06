@@ -476,7 +476,7 @@ Run:
 
 ```powershell
 curl.exe "http://localhost:8085/api/v1/providers/google-document-ai/status?checkRemote=true" `
-  -H "Authorization: Bearer $token"
+  -H "Authorization: Bearer $adminToken"
 ```
 
 Expected:
@@ -501,15 +501,43 @@ Example:
 ```powershell
 $pdfPath = "<path-to-your-document.pdf>"
 
-curl.exe -X POST http://localhost:8085/api/v1/analyze `
+$analyzeJson = curl.exe -s -X POST http://localhost:8085/api/v1/analyze `
   -H "Authorization: Bearer $token" `
   -F "clientKey=$clientKey" `
   -F "profileKey=generic-document-ocr-v1" `
   -F "assetType=Document" `
   -F "file=@$pdfPath"
+
+$queuedJob = $analyzeJson | ConvertFrom-Json
+$jobId = $queuedJob.jobId
 ```
 
 Expected:
+
+```json
+{
+  "jobId": "...",
+  "status": "Pending",
+  "processingAttempts": 0,
+  "createdAt": "..."
+}
+```
+
+Poll until the job reaches `Completed` or `RequiresReview`:
+
+```powershell
+curl.exe "http://localhost:8085/api/v1/analysis-jobs/$jobId" `
+  -H "Authorization: Bearer $token"
+```
+
+Then read the result:
+
+```powershell
+curl.exe "http://localhost:8085/api/v1/analysis-jobs/$jobId/result" `
+  -H "Authorization: Bearer $token"
+```
+
+Expected result shape:
 
 ```json
 {
@@ -638,6 +666,8 @@ Before saying the local MVP base works, all checks must pass:
 [ ] /api/v1/admin/clients returns one-time apiKey with admin token
 [ ] /api/v1/auth/token exchanges apiKey for client accessToken
 [ ] /api/v1/capabilities returns 200 with client token
-[ ] /api/v1/providers/google-document-ai/status?checkRemote=true says processor is reachable
-[ ] /api/v1/analyze returns extracted text from a real PDF
+[ ] /api/v1/providers/google-document-ai/status?checkRemote=true says processor is reachable with admin token
+[ ] /api/v1/analyze returns 202 and jobId from a real PDF
+[ ] /api/v1/analysis-jobs/{jobId} reaches Completed or RequiresReview
+[ ] /api/v1/analysis-jobs/{jobId}/result returns extracted text from a real PDF
 ```

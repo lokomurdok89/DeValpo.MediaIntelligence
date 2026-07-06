@@ -39,7 +39,7 @@ public sealed class AnalysisJobApplicationService(
         await jobRepository.AddAsync(job, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new CreateAnalysisJobResponse(job.Id, job.Status, job.CreatedAt);
+        return new CreateAnalysisJobResponse(job.Id, job.Status, job.ProcessingAttempts, job.CreatedAt);
     }
 
     /// <summary>
@@ -83,6 +83,7 @@ public sealed class AnalysisJobApplicationService(
             job.ProfileKey,
             assetType,
             status,
+            job.ProcessingAttempts,
             job.CreatedAt,
             job.CompletedAt,
             job.ErrorMessage);

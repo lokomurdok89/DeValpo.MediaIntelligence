@@ -17,6 +17,7 @@ public sealed class AnalysisJobConfiguration : IEntityTypeConfiguration<Analysis
         builder.Property(item => item.AssetType).HasMaxLength(50).IsRequired();
         builder.Property(item => item.Status).HasMaxLength(50).IsRequired();
         builder.Property(item => item.ErrorMessage).HasMaxLength(2000);
+        builder.Property(item => item.ProcessingAttempts).IsRequired();
         builder.HasIndex(item => item.ClientKey);
         builder.HasIndex(item => item.ProfileKey);
         builder.HasIndex(item => item.Status);
