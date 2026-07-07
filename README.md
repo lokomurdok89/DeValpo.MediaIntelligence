@@ -15,6 +15,7 @@ GitHub Pages is not currently published for this repository because it is privat
 | --- | --- |
 | Start from the documentation home | [docs/index.md](docs/index.md) |
 | Run the product locally | [docs/getting-started.md](docs/getting-started.md) |
+| Generate Google credentials and tokens | [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md) |
 | Implement the application end-to-end | [docs/implementation-guide.md](docs/implementation-guide.md) |
 | See endpoint flows and sequence diagrams | [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md) |
 | Understand the API | [docs/api.md](docs/api.md) |
@@ -71,6 +72,8 @@ flowchart LR
     E --> F["Poll job"]
     F --> G["Read result"]
 ```
+
+Google CLI, ADC credential generation and Document AI validation are documented in [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md).
 
 ## Repository Map
 

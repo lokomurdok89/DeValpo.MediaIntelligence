@@ -37,6 +37,8 @@ Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\goo
 
 More detail: [local tokens and Google secrets](local-tokens-and-google-secrets.md).
 
+That document explains the full path from installing Google Cloud CLI to obtaining the ADC credential this API uses to call Document AI.
+
 ## 3. Start Docker
 
 ```powershell

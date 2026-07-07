@@ -92,6 +92,8 @@ gcloud auth application-default set-quota-project <project-id>
 Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\google-application-default-credentials.json
 ```
 
+The complete Google CLI, ADC, temporary Google token, processor validation and Docker mount implementation is documented in [local tokens and Google secrets](local-tokens-and-google-secrets.md).
+
 Start services:
 
 ```powershell
