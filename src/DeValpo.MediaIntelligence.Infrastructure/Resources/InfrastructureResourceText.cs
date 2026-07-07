@@ -70,6 +70,8 @@ internal static class InfrastructureResourceText
     public static string GoogleVideoIntelligenceRemoteCheckFailed => GetRequiredResource(nameof(GoogleVideoIntelligenceRemoteCheckFailed));
     public static string GoogleVideoIntelligenceRequestFailedWithStatus(object statusCode) => Format(nameof(GoogleVideoIntelligenceRequestFailedWithStatus), statusCode);
     public static string GoogleVideoIntelligenceRequestFailed => GetRequiredResource(nameof(GoogleVideoIntelligenceRequestFailed));
+    public static string GoogleVideoIntelligenceRemoteOperationTimedOut => GetRequiredResource(nameof(GoogleVideoIntelligenceRemoteOperationTimedOut));
+    public static string GoogleVideoIntelligenceRemoteOperationTimeoutRequired => GetRequiredResource(nameof(GoogleVideoIntelligenceRemoteOperationTimeoutRequired));
     public static string GoogleVideoIntelligenceLocalConfigComplete => GetRequiredResource(nameof(GoogleVideoIntelligenceLocalConfigComplete));
     public static string GoogleVideoIntelligenceBucketReachable => GetRequiredResource(nameof(GoogleVideoIntelligenceBucketReachable));
     public static string AwsRekognitionDisabled => GetRequiredResource(nameof(AwsRekognitionDisabled));
@@ -78,11 +80,18 @@ internal static class InfrastructureResourceText
     public static string AwsRekognitionLocalConfigComplete => GetRequiredResource(nameof(AwsRekognitionLocalConfigComplete));
     public static string AwsRekognitionRemoteResourcesReachable => GetRequiredResource(nameof(AwsRekognitionRemoteResourcesReachable));
     public static string AwsRekognitionCredentialsUnavailable => GetRequiredResource(nameof(AwsRekognitionCredentialsUnavailable));
+    public static string AwsRekognitionCredentialsFileNotFound => GetRequiredResource(nameof(AwsRekognitionCredentialsFileNotFound));
+    public static string AwsRekognitionCredentialsInvalid => GetRequiredResource(nameof(AwsRekognitionCredentialsInvalid));
     public static string AwsRekognitionPermissionDenied => GetRequiredResource(nameof(AwsRekognitionPermissionDenied));
     public static string AwsRekognitionBucketNotFound => GetRequiredResource(nameof(AwsRekognitionBucketNotFound));
     public static string AwsRekognitionCollectionNotFound => GetRequiredResource(nameof(AwsRekognitionCollectionNotFound));
     public static string AwsRekognitionRemoteCheckFailedWithStatus(object statusCode) => Format(nameof(AwsRekognitionRemoteCheckFailedWithStatus), statusCode);
     public static string AwsRekognitionRemoteCheckFailed => GetRequiredResource(nameof(AwsRekognitionRemoteCheckFailed));
+    public static string AwsRekognitionAnalysisDisabled => GetRequiredResource(nameof(AwsRekognitionAnalysisDisabled));
+    public static string AwsRekognitionReferenceFaceNotIndexed(string referenceImageKey) => Format(nameof(AwsRekognitionReferenceFaceNotIndexed), referenceImageKey);
+    public static string AwsRekognitionFaceSearchFailed => GetRequiredResource(nameof(AwsRekognitionFaceSearchFailed));
+    public static string AwsRekognitionFaceSearchTimedOut => GetRequiredResource(nameof(AwsRekognitionFaceSearchTimedOut));
+    public static string AwsRekognitionCleanupFailed => GetRequiredResource(nameof(AwsRekognitionCleanupFailed));
     public static string WebhookTargetNotLoaded => GetRequiredResource(nameof(WebhookTargetNotLoaded));
     public static string WebhookRequestTimedOut => GetRequiredResource(nameof(WebhookRequestTimedOut));
     public static string ClientNotFound(string clientKey) => Format(nameof(ClientNotFound), clientKey);

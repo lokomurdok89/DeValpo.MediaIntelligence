@@ -53,7 +53,7 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
 
             try
             {
-                var response = await AnnotateVideoAsync(videoClient, inputUri, request, cancellationToken);
+                var response = await AnnotateVideoAsync(videoClient, inputUri, request, config, cancellationToken);
                 MapResponse(asset, response, textOccurrences, faceOccurrences, videoDurations);
             }
             catch (Exception exception)
@@ -93,6 +93,7 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
         VideoIntelligenceServiceClient client,
         string inputUri,
         VideoSearchProviderRequest request,
+        GoogleVideoIntelligenceOptions config,
         CancellationToken cancellationToken)
     {
         var annotateRequest = new AnnotateVideoRequest
@@ -119,8 +120,19 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
         }
 
         var operation = await client.AnnotateVideoAsync(annotateRequest, cancellationToken);
-        var completed = await operation.PollUntilCompletedAsync();
-        return completed.Result;
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(config.RemoteOperationTimeoutSeconds, 1)));
+
+        try
+        {
+            var completed = await operation.PollUntilCompletedAsync(
+                callSettings: global::Google.Api.Gax.Grpc.CallSettings.FromCancellationToken(timeoutCts.Token));
+            return completed.Result;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException(InfrastructureResourceText.GoogleVideoIntelligenceRemoteOperationTimedOut);
+        }
     }
 
     private static void MapResponse(
@@ -198,6 +210,7 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
                 InfrastructureResourceText.GoogleVideoIntelligenceServiceUnavailable,
             RpcException rpcException =>
                 InfrastructureResourceText.GoogleVideoIntelligenceRequestFailedWithStatus(rpcException.StatusCode),
+            TimeoutException => InfrastructureResourceText.GoogleVideoIntelligenceRemoteOperationTimedOut,
             _ => InfrastructureResourceText.GoogleVideoIntelligenceRequestFailed
         };
     }

@@ -13,16 +13,16 @@ Referencias oficiales:
 
 ## Estado Actual
 
-Hoy la API puede operar sin credenciales AWS. Expone status local, mantiene AWS apagado por defecto y no publica endpoints de jobs faciales.
+Hoy la API puede operar sin credenciales AWS. Expone status local, mantiene AWS apagado por defecto y oculta los endpoints de jobs faciales mientras `AwsRekognition__FaceSearchEnabled=false`.
 
 | Pieza | Estado |
 | --- | --- |
 | `GET /api/v1/providers/aws-rekognition/status` | Implementado |
 | `GET /api/v1/providers/aws-rekognition/status?checkRemote=true` | Implementado, requiere JWT operator/admin |
-| `POST /api/v1/face-search-jobs` | No implementado |
-| Worker AWS face search | No implementado |
-| S3 staging real | Pendiente de credenciales |
-| Rekognition collection real | Pendiente de credenciales |
+| `POST /api/v1/face-search-jobs` | Implementado, oculto por feature flag |
+| Worker AWS face search | Implementado, no se registra si el flag esta apagado |
+| S3 staging real | Implementado, requiere credenciales reales |
+| Rekognition collection real | Implementado, requiere credenciales reales |
 | Resultados simulados | Prohibidos |
 
 ## Modo Sin Credenciales
@@ -37,6 +37,10 @@ AwsRekognition__BucketName=
 AwsRekognition__CollectionId=
 AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
+AwsRekognition__PollingIntervalSeconds=5
+AwsRekognition__PollingTimeoutSeconds=900
+AwsRekognition__StagingPrefix=face-search
+AwsRekognition__DeleteStagedObjectsAfterProcessing=true
 AwsRekognition__SnsTopicArn=
 AwsRekognition__RoleArn=
 ```

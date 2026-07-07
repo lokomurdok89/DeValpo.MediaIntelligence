@@ -96,7 +96,7 @@ Review date: 2026-07-07
 
 Branch: `agent/aws-rekognition-disabled-architecture`
 
-Commit: `becaefb`
+Commit: pending after conflict remediation
 
 Skill used:
 
@@ -109,7 +109,7 @@ This review validated the AWS Rekognition disabled-mode architecture, provider s
 
 ### Findings And Remediation
 
-No Blocker, Critical or Major findings were found in this QA pass.
+No Blocker or Critical findings were found in this QA pass.
 
 **[Minor] Local Docker emitted HTTPS redirect warning**
 
@@ -118,6 +118,14 @@ Evidence: `docker logs media-intelligence-api --tail 120` included `Failed to de
 Impact: local log noise only. It did not block `/health`, provider status, Swagger or video result retrieval.
 
 Fix: HTTPS redirection now remains enabled outside Development, but local Development Docker no longer attempts HTTPS redirection when only HTTP is exposed.
+
+**[Major] Google Video remote operations could run for hours without a bounded timeout**
+
+Evidence: real job `cdecf8d6-8643-4ccc-9577-f473171d449b` stayed `Running` for multiple hours and completed only after Google returned an internal provider error.
+
+Impact: a worker could remain tied to a single large video without an explicit operation limit or clear timeout issue.
+
+Fix: added `GoogleVideoIntelligence__RemoteOperationTimeoutSeconds`, resource-backed timeout messages and provider classification so long Google operations finish with an explicit issue instead of waiting indefinitely.
 
 ### Runtime Evidence
 
@@ -133,8 +141,10 @@ Fix: HTTPS redirection now remains enabled outside Development, but local Develo
 | Google Video remote status | `configured=true`, staging bucket reachable |
 | Swagger | `/swagger/v1/swagger.json` contains `/api/v1/providers/aws-rekognition/status` |
 | Existing real video job | `00cf5f09-6e1d-4c0c-a9f5-5bd3a9ff2740` returned `Completed` |
-| Existing video result | target `participant-428`, visible number `428`, `60` matches, `2819` generic face occurrences, `0` issues |
-| Runtime log check after remediation | `0` HTTPS redirect warnings and `0` recent errors |
+| Existing video result | target group `participant-428`, visible number `428`, `60` match segments, `2819` generic face occurrences, `0` issues |
+| New long-running Google job | `cdecf8d6-8643-4ccc-9577-f473171d449b` completed with provider issue `Google Video Intelligence request failed with status Internal.` |
+| Timeout remediation | Google remote operation now has configurable `RemoteOperationTimeoutSeconds` defaulting to `7200` |
+| Runtime log check after remediation | no recent application errors; only expected local DataProtection warnings in Development Docker |
 
 ### Validation Commands
 

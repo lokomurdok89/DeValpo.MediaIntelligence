@@ -150,6 +150,9 @@
   <data name="EventVideoTargetSearchDescription" xml:space="preserve">
     <value>Video target search profile for visible participant numbers and generic face occurrence timestamps.</value>
   </data>
+  <data name="EventFaceSearchDescription" xml:space="preserve">
+    <value>AWS Rekognition face search profile for consented reference image matching in videos.</value>
+  </data>
   <data name="VideoSearchProfileRequired" xml:space="preserve">
     <value>Video search requires profile '{0}'.</value>
   </data>
@@ -209,5 +212,59 @@
   </data>
   <data name="VideoSearchJobProcessingCompletedLogMessage" xml:space="preserve">
     <value>Video search job processing completed.</value>
+  </data>
+  <data name="FaceSearchProfileRequired" xml:space="preserve">
+    <value>Face search requires profile '{0}'.</value>
+  </data>
+  <data name="FaceSearchVideosRequired" xml:space="preserve">
+    <value>At least one source video is required for face search.</value>
+  </data>
+  <data name="FaceSearchReferenceImagesRequired" xml:space="preserve">
+    <value>At least one reference image is required for face search.</value>
+  </data>
+  <data name="FaceSearchConsentReferenceRequired" xml:space="preserve">
+    <value>consentReferenceId is required.</value>
+  </data>
+  <data name="FaceSearchManifestRequired" xml:space="preserve">
+    <value>manifestJson is required.</value>
+  </data>
+  <data name="FaceSearchManifestMustBeObject" xml:space="preserve">
+    <value>manifestJson must be a JSON object.</value>
+  </data>
+  <data name="FaceSearchManifestPropertyUnsupported" xml:space="preserve">
+    <value>manifestJson property '{0}' is not supported.</value>
+  </data>
+  <data name="FaceSearchPersonalDataNotAllowed" xml:space="preserve">
+    <value>manifestJson cannot include personal data property '{0}'. Use opaque target keys only.</value>
+  </data>
+  <data name="FaceSearchMinSimilarityInvalid" xml:space="preserve">
+    <value>minSimilarity must be between 0 and 100.</value>
+  </data>
+  <data name="FaceSearchTargetsRequired" xml:space="preserve">
+    <value>At least one face search target is required.</value>
+  </data>
+  <data name="FaceSearchTargetMustBeObject" xml:space="preserve">
+    <value>Each face search target must be a JSON object.</value>
+  </data>
+  <data name="FaceSearchTargetKeyRequired" xml:space="preserve">
+    <value>targetKey is required.</value>
+  </data>
+  <data name="FaceSearchReferenceImageKeyRequired" xml:space="preserve">
+    <value>referenceImageKey is required.</value>
+  </data>
+  <data name="FaceSearchTargetReferenceImageMissing" xml:space="preserve">
+    <value>referenceImageKey '{0}' does not match an uploaded reference image.</value>
+  </data>
+  <data name="FaceSearchJobQueuedLogMessage" xml:space="preserve">
+    <value>Face search job queued.</value>
+  </data>
+  <data name="FaceSearchJobProcessingRetryLogMessage" xml:space="preserve">
+    <value>Face search job processing failed and will be retried.</value>
+  </data>
+  <data name="FaceSearchJobProcessingFailedLogMessage" xml:space="preserve">
+    <value>Face search job processing failed permanently.</value>
+  </data>
+  <data name="FaceSearchJobProcessingCompletedLogMessage" xml:space="preserve">
+    <value>Face search job processing completed.</value>
   </data>
 </root>

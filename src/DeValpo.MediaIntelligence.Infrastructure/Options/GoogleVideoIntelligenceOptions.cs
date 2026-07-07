@@ -6,4 +6,5 @@ public sealed class GoogleVideoIntelligenceOptions
     public string CredentialsPath { get; init; } = string.Empty;
     public string BucketName { get; init; } = string.Empty;
     public bool AllowUserCredentials { get; init; }
+    public int RemoteOperationTimeoutSeconds { get; init; } = 7200;
 }

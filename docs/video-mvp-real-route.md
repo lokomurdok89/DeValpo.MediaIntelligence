@@ -77,6 +77,7 @@ GoogleVideoIntelligence__Enabled=true
 GoogleVideoIntelligence__CredentialsPath=/run/secrets/google-application-default-credentials.json
 GoogleVideoIntelligence__BucketName=<unique-video-staging-bucket>
 GoogleVideoIntelligence__AllowUserCredentials=true
+GoogleVideoIntelligence__RemoteOperationTimeoutSeconds=7200
 
 Skills__EnableMockSkills=false
 AnalysisProfiles__EnableMockProfiles=false
@@ -89,6 +90,8 @@ VideoAnalysis__DefaultMinConfidence=0.7
 VideoAnalysis__DefaultMergeGapSeconds=2
 VideoAnalysis__FaceMatchingEnabled=false
 ```
+
+`GoogleVideoIntelligence__RemoteOperationTimeoutSeconds` evita que un job quede esperando a Google indefinidamente. Para videos grandes, partir con 7200 segundos; si se reduce para pruebas, el job terminara con issue de timeout cuando Google no responda dentro del limite.
 
 El archivo de credenciales debe quedar fuera del repo:
 

@@ -111,6 +111,7 @@ GoogleVideoIntelligence__Enabled=true
 GoogleVideoIntelligence__CredentialsPath=/run/secrets/google-application-default-credentials.json
 GoogleVideoIntelligence__BucketName=<gcs-staging-bucket>
 GoogleVideoIntelligence__AllowUserCredentials=true
+GoogleVideoIntelligence__RemoteOperationTimeoutSeconds=7200
 VideoAnalysis__MaxVideosPerJob=5
 VideoAnalysis__MaxVideoSizeBytes=1073741824
 VideoAnalysis__MaxDurationSeconds=3600

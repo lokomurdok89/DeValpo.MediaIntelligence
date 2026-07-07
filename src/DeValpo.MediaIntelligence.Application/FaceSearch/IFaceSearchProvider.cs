@@ -3,7 +3,9 @@ namespace DeValpo.MediaIntelligence.Application.FaceSearch;
 public interface IFaceSearchProvider
 {
     /// <summary>
-    /// Reserved for the future provider that will compare consented reference images against video faces.
+    /// Compares consented reference images against faces detected in source videos.
     /// </summary>
-    Task<bool> IsAvailableAsync(CancellationToken cancellationToken);
+    Task<FaceSearchProviderResult> AnalyzeAsync(
+        FaceSearchProviderRequest request,
+        CancellationToken cancellationToken);
 }

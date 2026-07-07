@@ -1,4 +1,5 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
@@ -52,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditEventRepository, AuditEventRepository>();
         services.AddScoped<IRetentionRepository, RetentionRepository>();
         services.AddScoped<IVideoSearchJobRepository, VideoSearchJobRepository>();
+        services.AddScoped<IFaceSearchJobRepository, FaceSearchJobRepository>();
         services.AddScoped<IWebhookSignatureService, WebhookSignatureService>();
         services.AddScoped<IWebhookDeliveryProcessor, WebhookDeliveryProcessor>();
         services.AddHttpClient<IWebhookDeliverySender, WebhookDeliverySender>();
@@ -61,7 +63,10 @@ public static class DependencyInjection
         services.AddScoped<IGoogleDocumentAiClientFactory, GoogleDocumentAiClientFactory>();
         services.AddScoped<IGoogleDocumentAiStatusService, GoogleDocumentAiStatusService>();
         services.AddScoped<IGoogleVideoIntelligenceStatusService, GoogleVideoIntelligenceStatusService>();
+        services.AddScoped<IAwsCredentialProvider, AwsCredentialProvider>();
+        services.AddScoped<IAwsRekognitionClientFactory, AwsRekognitionClientFactory>();
         services.AddScoped<IAwsRekognitionStatusService, AwsRekognitionStatusService>();
+        services.AddScoped<IFaceSearchProvider, AwsRekognitionFaceSearchProvider>();
         services.AddScoped<IVideoSearchProvider, GoogleVideoIntelligenceSearchProvider>();
 
         var skillRegistrationOptions = configuration.GetSection("Skills").Get<SkillRegistrationOptions>() ?? new SkillRegistrationOptions();
@@ -92,6 +97,18 @@ public static class DependencyInjection
             .Bind(configuration.GetSection("GoogleVideoIntelligence"))
             .Validate(options => !options.Enabled || !string.IsNullOrWhiteSpace(options.BucketName),
                 InfrastructureResourceText.GoogleVideoIntelligenceRequiredOptions)
+            .Validate(options => options.RemoteOperationTimeoutSeconds > 0,
+                InfrastructureResourceText.GoogleVideoIntelligenceRemoteOperationTimeoutRequired)
+            .ValidateOnStart();
+
+        services.AddOptions<AwsRekognitionOptions>()
+            .Bind(configuration.GetSection("AwsRekognition"))
+            .Validate(options => !options.Enabled || !options.FaceSearchEnabled ||
+                (!string.IsNullOrWhiteSpace(options.Region) &&
+                 !string.IsNullOrWhiteSpace(options.BucketName) &&
+                 !string.IsNullOrWhiteSpace(options.CollectionId) &&
+                 options.MinSimilarity is > 0m and <= 100m),
+                InfrastructureResourceText.MissingAwsRekognitionConfiguration("Region, BucketName, CollectionId, MinSimilarity"))
             .ValidateOnStart();
 
         services.AddHostedService<SkillRegistryValidationHostedService>();
