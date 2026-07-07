@@ -309,7 +309,7 @@ Exit criteria:
 
 Objetivo: hacer diagnosticable el sistema sin leer codigo.
 
-Estado: en implementacion en la rama `codex/phase-8-observability-readiness`; no se puede iniciar Fase 9 hasta que PR, CI, QA real y merge esten completos.
+Estado: implementada y mergeada en PR #15.
 
 Implementacion:
 
