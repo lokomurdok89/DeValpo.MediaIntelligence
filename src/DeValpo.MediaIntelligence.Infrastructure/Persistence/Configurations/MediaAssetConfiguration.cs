@@ -17,6 +17,7 @@ public sealed class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsse
         builder.Property(item => item.StoragePath).HasMaxLength(500).IsRequired();
         builder.Property(item => item.ContentType).HasMaxLength(150).IsRequired();
         builder.HasIndex(item => item.JobId);
+        builder.HasIndex(item => item.DeletedAt);
         builder.HasOne(item => item.Job)
             .WithMany(job => job.MediaAssets)
             .HasForeignKey(item => item.JobId)

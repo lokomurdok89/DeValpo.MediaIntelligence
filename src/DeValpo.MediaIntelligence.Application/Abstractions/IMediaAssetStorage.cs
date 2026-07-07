@@ -19,4 +19,11 @@ public interface IMediaAssetStorage
     Task<Stream> OpenReadAsync(
         string storagePath,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes a stored media asset when it exists.
+    /// </summary>
+    Task<bool> DeleteAsync(
+        string storagePath,
+        CancellationToken cancellationToken);
 }

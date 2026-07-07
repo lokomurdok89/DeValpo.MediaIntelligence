@@ -1,3 +1,5 @@
+using DeValpo.MediaIntelligence.Api.Audit;
+using DeValpo.MediaIntelligence.Application.Audit;
 using DeValpo.MediaIntelligence.Application.Webhooks;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.Webhooks;
@@ -9,7 +11,9 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [ApiController]
 [Authorize(Policy = "AdminScope")]
 [Route("api/v1/admin/clients/{clientKey}/webhook-targets")]
-public sealed class AdminWebhookTargetsController(IWebhookDeliveryApplicationService service) : ControllerBase
+public sealed class AdminWebhookTargetsController(
+    IWebhookDeliveryApplicationService service,
+    IAuditApplicationService auditService) : ControllerBase
 {
     /// <summary>
     /// Registers a webhook target for a client.
@@ -35,6 +39,16 @@ public sealed class AdminWebhookTargetsController(IWebhookDeliveryApplicationSer
         CancellationToken cancellationToken)
     {
         var response = await service.CreateTargetAsync(clientKey, request, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.WebhookTargetCreated,
+                "WebhookTarget",
+                response.TargetId.ToString(),
+                clientKey,
+                AuditOutcome.Success,
+                new Dictionary<string, string> { ["targetKey"] = response.TargetKey }),
+            cancellationToken);
         return Created($"/api/v1/admin/clients/{clientKey}/webhook-targets/{response.TargetId}", response);
     }
 

@@ -44,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<IClientWebhookTargetRepository, ClientWebhookTargetRepository>();
         services.AddScoped<IWebhookDeliveryRepository, WebhookDeliveryRepository>();
         services.AddScoped<IOperationalMetricsRepository, OperationalMetricsRepository>();
+        services.AddScoped<IAuditEventRepository, AuditEventRepository>();
+        services.AddScoped<IRetentionRepository, RetentionRepository>();
         services.AddScoped<IWebhookSignatureService, WebhookSignatureService>();
         services.AddScoped<IWebhookDeliveryProcessor, WebhookDeliveryProcessor>();
         services.AddHttpClient<IWebhookDeliverySender, WebhookDeliverySender>();

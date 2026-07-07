@@ -35,3 +35,20 @@ public sealed class ClientWebhookTargetConfiguration : IEntityTypeConfiguration<
         builder.HasOne(item => item.Client).WithMany(client => client.WebhookTargets).HasForeignKey(item => item.ClientId);
     }
 }
+
+public sealed class ClientRetentionPolicyConfiguration : IEntityTypeConfiguration<ClientRetentionPolicy>
+{
+    /// <summary>
+    /// Maps per-client retention policies used by governance operations.
+    /// </summary>
+    public void Configure(EntityTypeBuilder<ClientRetentionPolicy> builder)
+    {
+        builder.HasKey(item => item.Id);
+        builder.Property(item => item.RetentionDays).IsRequired();
+        builder.HasIndex(item => item.ClientId).IsUnique();
+        builder.HasOne(item => item.Client)
+            .WithOne(client => client.RetentionPolicy)
+            .HasForeignKey<ClientRetentionPolicy>(item => item.ClientId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

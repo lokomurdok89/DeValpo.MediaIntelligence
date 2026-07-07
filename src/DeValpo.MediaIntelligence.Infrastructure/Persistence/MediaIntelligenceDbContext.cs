@@ -8,7 +8,9 @@ public sealed class MediaIntelligenceDbContext(DbContextOptions<MediaIntelligenc
 {
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<ClientApiKey> ClientApiKeys => Set<ClientApiKey>();
+    public DbSet<ClientRetentionPolicy> ClientRetentionPolicies => Set<ClientRetentionPolicy>();
     public DbSet<ClientWebhookTarget> ClientWebhookTargets => Set<ClientWebhookTarget>();
+    public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<AnalysisProfile> AnalysisProfiles => Set<AnalysisProfile>();
     public DbSet<AnalysisJob> AnalysisJobs => Set<AnalysisJob>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();

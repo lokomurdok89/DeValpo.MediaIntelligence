@@ -1,4 +1,6 @@
+using DeValpo.MediaIntelligence.Api.Audit;
 using DeValpo.MediaIntelligence.Application.Auth;
+using DeValpo.MediaIntelligence.Application.Audit;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +11,9 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [ApiController]
 [Authorize(Policy = "AdminScope")]
 [Route("api/v1/admin/clients")]
-public sealed class AdminClientsController(IClientAccessApplicationService service) : ControllerBase
+public sealed class AdminClientsController(
+    IClientAccessApplicationService service,
+    IAuditApplicationService auditService) : ControllerBase
 {
     /// <summary>
     /// Creates an API client and returns its initial API key once.
@@ -33,6 +37,16 @@ public sealed class AdminClientsController(IClientAccessApplicationService servi
         CancellationToken cancellationToken)
     {
         var response = await service.CreateClientAsync(request, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.ApiClientCreated,
+                "Client",
+                response.ClientKey,
+                response.ClientKey,
+                AuditOutcome.Success,
+                new Dictionary<string, string> { ["apiKeyId"] = response.ApiKeyId.ToString() }),
+            cancellationToken);
         return Created($"/api/v1/admin/clients/{response.ClientKey}", response);
     }
 
@@ -62,6 +76,16 @@ public sealed class AdminClientsController(IClientAccessApplicationService servi
         CancellationToken cancellationToken)
     {
         var response = await service.RotateApiKeyAsync(clientKey, apiKeyId, request, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.ApiKeyRotated,
+                "ApiKey",
+                apiKeyId.ToString(),
+                clientKey,
+                AuditOutcome.Success,
+                new Dictionary<string, string> { ["replacementApiKeyId"] = response.ApiKeyId.ToString() }),
+            cancellationToken);
         return Ok(response);
     }
 
@@ -89,6 +113,15 @@ public sealed class AdminClientsController(IClientAccessApplicationService servi
         CancellationToken cancellationToken)
     {
         await service.RevokeApiKeyAsync(clientKey, apiKeyId, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.ApiKeyRevoked,
+                "ApiKey",
+                apiKeyId.ToString(),
+                clientKey,
+                AuditOutcome.Success),
+            cancellationToken);
         return NoContent();
     }
 }

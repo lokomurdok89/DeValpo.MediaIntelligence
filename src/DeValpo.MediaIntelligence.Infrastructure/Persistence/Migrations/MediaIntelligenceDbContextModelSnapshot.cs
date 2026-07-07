@@ -174,6 +174,60 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.ToTable("AnalysisResults");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.AuditEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorClientKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ActorSubject")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("MetadataJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ResourceClientKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ResourceId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ResourceType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("EventType");
+
+                    b.HasIndex("ResourceClientKey");
+
+                    b.ToTable("AuditEvents");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.Client", b =>
                 {
                     b.Property<Guid>("Id")
@@ -266,6 +320,35 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.HasIndex("ClientId", "KeyPrefix");
 
                     b.ToTable("ClientApiKeys");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ClientRetentionPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("RetentionDays")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique();
+
+                    b.ToTable("ClientRetentionPolicies");
                 });
 
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ClientWebhookTarget", b =>
@@ -515,6 +598,9 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
 
@@ -532,6 +618,8 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeletedAt");
 
                     b.HasIndex("JobId");
 
@@ -684,6 +772,17 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Navigation("Client");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ClientRetentionPolicy", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.Client", "Client")
+                        .WithOne("RetentionPolicy")
+                        .HasForeignKey("DeValpo.MediaIntelligence.Domain.Entities.ClientRetentionPolicy", "ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ClientWebhookTarget", b =>
                 {
                     b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.Client", "Client")
@@ -809,6 +908,8 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.Client", b =>
                 {
                     b.Navigation("ApiKeys");
+
+                    b.Navigation("RetentionPolicy");
 
                     b.Navigation("WebhookTargets");
                 });

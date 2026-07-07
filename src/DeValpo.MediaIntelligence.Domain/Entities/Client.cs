@@ -11,4 +11,5 @@ public sealed class Client
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public List<ClientApiKey> ApiKeys { get; set; } = [];
     public List<ClientWebhookTarget> WebhookTargets { get; set; } = [];
+    public ClientRetentionPolicy? RetentionPolicy { get; set; }
 }

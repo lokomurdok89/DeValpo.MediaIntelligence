@@ -11,4 +11,5 @@ public sealed class MediaAsset
     public string ContentType { get; set; } = string.Empty;
     public long SizeInBytes { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? DeletedAt { get; set; }
 }

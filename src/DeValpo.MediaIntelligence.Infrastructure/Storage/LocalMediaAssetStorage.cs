@@ -57,6 +57,29 @@ public sealed class LocalMediaAssetStorage(IOptions<StorageOptions> options) : I
     /// </summary>
     public Task<Stream> OpenReadAsync(string storagePath, CancellationToken cancellationToken)
     {
+        var fullPath = ResolveStoragePath(storagePath);
+
+        Stream stream = File.OpenRead(fullPath);
+        return Task.FromResult(stream);
+    }
+
+    /// <summary>
+    /// Deletes a stored asset if it exists while enforcing the configured storage root boundary.
+    /// </summary>
+    public Task<bool> DeleteAsync(string storagePath, CancellationToken cancellationToken)
+    {
+        var fullPath = ResolveStoragePath(storagePath);
+        if (!File.Exists(fullPath))
+        {
+            return Task.FromResult(false);
+        }
+
+        File.Delete(fullPath);
+        return Task.FromResult(true);
+    }
+
+    private string ResolveStoragePath(string storagePath)
+    {
         var rootPath = Path.GetFullPath(options.Value.LocalRootPath);
         var fullPath = Path.GetFullPath(Path.Combine(rootPath, storagePath));
 
@@ -65,7 +88,6 @@ public sealed class LocalMediaAssetStorage(IOptions<StorageOptions> options) : I
             throw new InvalidOperationException(InfrastructureResourceText.RequestedStoragePathOutsideRoot);
         }
 
-        Stream stream = File.OpenRead(fullPath);
-        return Task.FromResult(stream);
+        return fullPath;
     }
 }

@@ -1,4 +1,6 @@
 using DeValpo.MediaIntelligence.Api.Auth;
+using DeValpo.MediaIntelligence.Api.Audit;
+using DeValpo.MediaIntelligence.Application.Audit;
 using DeValpo.MediaIntelligence.Application.AnalysisJobs;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Contracts;
@@ -13,7 +15,8 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 public sealed class AnalysisJobsController(
     IAnalysisJobApplicationService jobService,
     IRequestClientAccessService accessService,
-    IMediaAnalysisApplicationService analysisService) : ControllerBase
+    IMediaAnalysisApplicationService analysisService,
+    IAuditApplicationService auditService) : ControllerBase
 {
     /// <summary>
     /// Creates a pending analysis job without uploading media.
@@ -95,6 +98,16 @@ public sealed class AnalysisJobsController(
         }
 
         var response = await analysisService.GetResultAsync(jobId, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.AnalysisResultRead,
+                "AnalysisJob",
+                jobId.ToString(),
+                job.ClientKey,
+                response is null ? AuditOutcome.Failed : AuditOutcome.Success,
+                new Dictionary<string, string> { ["resultFound"] = (response is not null).ToString() }),
+            cancellationToken);
         return response is null ? NotFound() : Ok(response);
     }
 

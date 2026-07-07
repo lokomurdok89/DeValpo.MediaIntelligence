@@ -40,6 +40,9 @@ internal static class ApplicationResourceText
     public static string AnalysisJobProcessingCompletedLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingCompletedLogMessage));
     public static string AnalysisJobProcessingRetryLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingRetryLogMessage));
     public static string AnalysisJobProcessingFailedLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingFailedLogMessage));
+    public static string RetentionDaysMustBePositive => GetRequiredResource(nameof(RetentionDaysMustBePositive));
+    public static string RetentionPolicyNotFound(string clientKey) => Format(nameof(RetentionPolicyNotFound), clientKey);
+    public static string RetentionPolicyDisabled(string clientKey) => Format(nameof(RetentionPolicyDisabled), clientKey);
     public static string CapabilityResourceMissing(string name) => Format(nameof(CapabilityResourceMissing), name);
     public static string ClientDisplayNameRequired => GetRequiredResource(nameof(ClientDisplayNameRequired));
     public static string ClientAlreadyExists(string clientKey) => Format(nameof(ClientAlreadyExists), clientKey);

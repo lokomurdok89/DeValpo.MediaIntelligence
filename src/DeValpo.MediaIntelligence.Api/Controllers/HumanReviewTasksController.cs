@@ -1,4 +1,6 @@
 using DeValpo.MediaIntelligence.Api.Auth;
+using DeValpo.MediaIntelligence.Api.Audit;
+using DeValpo.MediaIntelligence.Application.Audit;
 using DeValpo.MediaIntelligence.Application.HumanReview;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.HumanReview;
@@ -12,7 +14,8 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [Route("api/v1/human-review-tasks")]
 public sealed class HumanReviewTasksController(
     IHumanReviewApplicationService service,
-    IRequestClientAccessService accessService) : ControllerBase
+    IRequestClientAccessService accessService,
+    IAuditApplicationService auditService) : ControllerBase
 {
     private const string FallbackOperatorId = "unknown-operator";
 
@@ -99,7 +102,17 @@ public sealed class HumanReviewTasksController(
             return Forbid();
         }
 
-        return Ok(await service.StartAsync(taskId, GetOperatorId(), request, cancellationToken));
+        var response = await service.StartAsync(taskId, GetOperatorId(), request, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.HumanReviewStarted,
+                "HumanReviewTask",
+                taskId.ToString(),
+                response.ClientKey,
+                AuditOutcome.Success),
+            cancellationToken);
+        return Ok(response);
     }
 
     /// <summary>
@@ -130,7 +143,18 @@ public sealed class HumanReviewTasksController(
             return Forbid();
         }
 
-        return Ok(await service.CompleteAsync(taskId, GetOperatorId(), request, cancellationToken));
+        var response = await service.CompleteAsync(taskId, GetOperatorId(), request, cancellationToken);
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.HumanReviewCompleted,
+                "HumanReviewTask",
+                taskId.ToString(),
+                response.ClientKey,
+                AuditOutcome.Success,
+                new Dictionary<string, string> { ["decision"] = request.Decision.ToString() }),
+            cancellationToken);
+        return Ok(response);
     }
 
     private string GetOperatorId()
