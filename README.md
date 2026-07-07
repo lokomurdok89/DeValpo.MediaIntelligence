@@ -20,6 +20,7 @@ GitHub Pages is not currently published for this repository because it is privat
 | See endpoint flows and sequence diagrams | [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md) |
 | Search visible targets in event videos | [docs/video-target-search.md](docs/video-target-search.md) |
 | Prepare the real video MVP test | [docs/video-mvp-real-route.md](docs/video-mvp-real-route.md) |
+| Prepare AWS Rekognition face search | [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md) |
 | Understand the API | [docs/api.md](docs/api.md) |
 | Review architecture and components | [docs/architecture.md](docs/architecture.md) |
 | Review security, JWT and secrets | [docs/security.md](docs/security.md) |
