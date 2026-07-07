@@ -1,8 +1,19 @@
 # AWS Rekognition Face Search
 
-This page defines the Phase 2 architecture for face search in videos with Amazon Rekognition. The system can run without AWS credentials today: it exposes local status, keeps AWS disabled by default, and does not publish facial job endpoints.
+This page defines the Phase 2 architecture and requirements for face search in videos with Amazon Rekognition.
+
+Phase 2 does not replace Google Video Intelligence. Google remains the base flow for visible-number OCR and generic face detection. AWS Rekognition is added as a separate provider for comparing reference images against faces found in videos.
+
+Official references:
+
+- [Amazon Rekognition collections](https://docs.aws.amazon.com/rekognition/latest/dg/collections.html)
+- [Amazon Rekognition Video stored video operations](https://docs.aws.amazon.com/rekognition/latest/dg/video.html)
+- [StartFaceSearch API](https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartFaceSearch.html)
+- [Configuring Amazon Rekognition Video](https://docs.aws.amazon.com/rekognition/latest/dg/api-video-roles.html)
 
 ## Current State
+
+The API can run without AWS credentials today. It exposes local status, keeps AWS disabled by default, and does not publish facial job endpoints.
 
 | Piece | State |
 | --- | --- |
@@ -74,19 +85,33 @@ Rules:
 - Buckets and credentials are not shared between providers.
 - Application defines contracts; Infrastructure talks to cloud SDKs.
 
-## Real AWS Preparation
+## Phase 2 Goal
 
-Required resources:
+Allow a client to submit:
 
-| Resource | Use |
+- one or more real videos;
+- one or more reference images;
+- one opaque `targetKey` per participant;
+- a `consentReferenceId` issued outside MediaIntelligence.
+
+The system must return time ranges where AWS finds a face similar to the reference image.
+
+## AWS Requirements
+
+| Resource | Purpose |
 | --- | --- |
-| AWS Account | Account with billing enabled. |
-| Region | Single region for S3 and Rekognition. |
+| AWS Account | Active account with billing enabled. |
+| Region | Single region for S3, Rekognition, SNS/SQS. Initial recommendation: `us-east-1`. |
 | Private S3 bucket | Staging for videos and reference images. |
-| Rekognition collection | Facial vector container keyed by `targetKey`. |
-| IAM app user/role | Scoped access to S3 and Rekognition. |
+| Rekognition collection | Facial vector container indexed by `targetKey`. |
+| IAM app user/role | Allows upload to S3, face indexing and result lookup. |
+| IAM service role | Allows Rekognition Video to publish to SNS if async notification mode is used. |
+| SNS topic | Video analysis completion notification. |
+| SQS queue | Queue subscribed to SNS so the worker can process completions. |
 
-Minimum permissions for the real Phase 2:
+For the fast MVP, polling with `GetFaceSearch` is enough. SNS/SQS can wait for the product phase.
+
+## Minimum Permissions
 
 ```text
 s3:PutObject
@@ -100,9 +125,19 @@ rekognition:DeleteFaces
 rekognition:ListFaces
 rekognition:StartFaceSearch
 rekognition:GetFaceSearch
+iam:PassRole
 ```
 
-## Remote Status
+If SNS/SQS is enabled:
+
+```text
+sns:Publish
+sqs:ReceiveMessage
+sqs:DeleteMessage
+sqs:GetQueueAttributes
+```
+
+## Configuration With Real AWS
 
 When real credentials and resources exist:
 
@@ -114,7 +149,11 @@ AwsRekognition__BucketName=<private-s3-bucket>
 AwsRekognition__CollectionId=<rekognition-collection-id>
 AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
+AwsRekognition__SnsTopicArn=
+AwsRekognition__RoleArn=
 ```
+
+Do not version access keys. For local development, use an AWS CLI profile or secure variables outside the repository. For production, use managed roles or a secret manager.
 
 Validate remote AWS resources:
 
@@ -130,6 +169,72 @@ The remote check validates:
 - the Rekognition collection exists;
 - credentials have enough permissions.
 
+## Preparation Commands
+
+Validate AWS CLI:
+
+```powershell
+aws --version
+aws sts get-caller-identity
+```
+
+Create a private bucket:
+
+```powershell
+$region = "us-east-1"
+$bucketName = "<private-s3-bucket>"
+
+aws s3api create-bucket `
+  --bucket $bucketName `
+  --region $region
+
+aws s3api put-public-access-block `
+  --bucket $bucketName `
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+```
+
+Create a collection:
+
+```powershell
+$collectionId = "<rekognition-collection-id>"
+
+aws rekognition create-collection `
+  --collection-id $collectionId `
+  --region $region
+```
+
+Validate the collection:
+
+```powershell
+aws rekognition describe-collection `
+  --collection-id $collectionId `
+  --region $region
+```
+
+## Recommended Phase 2A Flow
+
+```mermaid
+sequenceDiagram
+    participant Client as External client
+    participant API as MediaIntelligence API
+    participant DB as PostgreSQL
+    participant S3 as Amazon S3
+    participant Rek as AWS Rekognition
+    participant Worker as FaceSearchWorker
+
+    Client->>API: POST /face-search-jobs with videos, referenceImages and consentReferenceId
+    API->>API: Validate JWT, manifest and consent
+    API->>S3: Upload videos and reference images
+    API->>Rek: IndexFaces in collection
+    API->>DB: Create Pending job with targetKey and faceId
+    Worker->>Rek: StartFaceSearch
+    Worker->>Rek: Poll GetFaceSearch
+    Rek-->>Worker: Matches with timestamps
+    Worker->>DB: Persist FaceReference matches
+    Client->>API: GET /face-search-jobs/{jobId}/result
+    API-->>Client: targetKey, videoKey, ranges and similarity
+```
+
 ## Future Contract
 
 Future endpoints, only after the real provider is implemented:
@@ -140,7 +245,7 @@ GET  /api/v1/face-search-jobs/{jobId}
 GET  /api/v1/face-search-jobs/{jobId}/result
 ```
 
-Future input:
+`POST /api/v1/face-search-jobs`:
 
 ```text
 clientKey
@@ -151,13 +256,50 @@ videos[]
 referenceImages[]
 ```
 
-Mandatory rules:
+Minimum manifest:
+
+```json
+{
+  "minSimilarity": 90,
+  "targets": [
+    {
+      "targetKey": "participant-001"
+    }
+  ]
+}
+```
+
+Expected result:
+
+```json
+{
+  "jobId": "00000000-0000-0000-0000-000000000000",
+  "status": "Completed",
+  "faceMatches": [
+    {
+      "targetKey": "participant-001",
+      "videoKey": "video-1",
+      "startTimeSeconds": 83.2,
+      "endTimeSeconds": 95.8,
+      "similarity": 94.7,
+      "matchType": "FaceReference",
+      "sourceProvider": "AwsRekognition"
+    }
+  ]
+}
+```
+
+## Mandatory Rules
 
 - `consentReferenceId` is required.
 - Opaque `targetKey` is required.
 - Reject `name`, `rut`, `email`, `phone`, `userId`, `personId`.
-- Do not permanently store reference images without a retention policy.
-- Do not enable `FaceSearchEnabled` by default.
+- `FaceSearchEnabled=false` by default.
+- Do not mix Google `VisibleNumber` matches with AWS `FaceReference` matches.
+- Do not permanently store reference images without an explicit retention policy.
+- Audit consent, indexing, search, result read and deletion.
+- Delete temporary S3 objects after completing or failing the job.
+- Allow `DeleteFaces` by target/job when consent is revoked.
 - Do not return fake matches.
 
 ## QA Without Credentials
@@ -182,3 +324,15 @@ Expected result:
 | `POST /api/v1/face-search-jobs` with operator token | `404` until the real provider is implemented |
 
 If remote status is tested with AWS enabled, use real credentials and real resources. Do not use simulated responses.
+
+## Criteria Before Implementing AWS Jobs
+
+Before implementing the real facial search flow:
+
+1. AWS CLI authenticates correctly.
+2. Private S3 bucket is created.
+3. Rekognition collection is created.
+4. IAM permissions are defined.
+5. Polling or SNS/SQS is chosen for the MVP.
+6. An external `consentReferenceId` source exists.
+7. Real reference image and real video exist for a local smoke test.

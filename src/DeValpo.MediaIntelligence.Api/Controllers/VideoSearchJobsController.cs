@@ -37,6 +37,7 @@ public sealed class VideoSearchJobsController(
     [HttpPost]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(MultipartRequestSizeLimitBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MultipartRequestSizeLimitBytes)]
     [ProducesResponseType(typeof(CreateVideoSearchJobResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
