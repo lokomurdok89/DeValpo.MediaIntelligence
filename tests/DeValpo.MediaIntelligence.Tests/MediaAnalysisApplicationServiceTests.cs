@@ -276,6 +276,11 @@ public sealed class MediaAnalysisApplicationServiceTests
             Stream stream = new MemoryStream(files[storagePath]);
             return Task.FromResult(stream);
         }
+
+        public Task<bool> DeleteAsync(string storagePath, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(files.Remove(storagePath));
+        }
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork

@@ -55,6 +55,7 @@ internal static class InfrastructureResourceText
     public static string LiveVideoStructuralOnly => GetRequiredResource(nameof(LiveVideoStructuralOnly));
     public static string WebhookTargetNotLoaded => GetRequiredResource(nameof(WebhookTargetNotLoaded));
     public static string WebhookRequestTimedOut => GetRequiredResource(nameof(WebhookRequestTimedOut));
+    public static string ClientNotFound(string clientKey) => Format(nameof(ClientNotFound), clientKey);
 
     private static string GetRequiredResource(string name)
     {

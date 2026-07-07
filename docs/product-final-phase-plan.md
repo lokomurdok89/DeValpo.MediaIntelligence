@@ -339,6 +339,8 @@ Exit criteria:
 
 Objetivo: tratar documentos de clientes como datos sensibles.
 
+Estado: en implementacion en la rama `codex/phase-9-security-governance-retention`.
+
 Implementacion:
 
 - Politica de retencion por cliente.

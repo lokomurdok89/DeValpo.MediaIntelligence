@@ -78,6 +78,40 @@ public sealed class ApiSecurityTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Theory]
+    [InlineData("/api/v1/admin/audit-events")]
+    [InlineData("/api/v1/admin/clients/test-client/retention-policy")]
+    public async Task AdminEndpoints_RequireBearerToken(string path)
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(path);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Theory]
+    [InlineData("/api/v1/admin/audit-events")]
+    [InlineData("/api/v1/admin/clients/test-client/retention-policy")]
+    public async Task AdminEndpoints_RejectClientOnlyToken(string path)
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var tokenResponse = await client.PostAsJsonAsync(
+            "/api/v1/dev/token",
+            new CreateDevTokenRequest("test-user", "test-client", "media-intelligence:client"));
+        tokenResponse.EnsureSuccessStatusCode();
+
+        var token = await tokenResponse.Content.ReadFromJsonAsync<DevTokenResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
+
+        var response = await client.GetAsync(path);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task DevToken_AllowsCallingProtectedEndpoints_InDevelopment()
     {
@@ -138,6 +172,8 @@ public sealed class ApiSecurityTests
         json.Should().Contain("Queues a document or image for background processing.");
         json.Should().Contain("Remote processor validation requires authentication");
         json.Should().Contain("Profiles define the supported asset types");
+        json.Should().Contain("Lists recent sanitized audit events");
+        json.Should().Contain("Creates or updates the retention policy for a client");
     }
 
     [Fact]

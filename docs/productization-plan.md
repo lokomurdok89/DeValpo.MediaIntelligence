@@ -281,6 +281,7 @@ Work:
    - Per-client retention policy.
    - Delete or archive media assets after configured period.
    - Delete provider raw output if not needed.
+   - Done in Phase 9: per-client retention policy and execution delete stored media for terminal jobs and mark asset rows with `DeletedAt`.
 
 2. Encryption.
    - Encrypt secrets at rest.
@@ -293,11 +294,13 @@ Work:
    - Result reads.
    - Review changes.
    - Key rotation/revocation.
+   - Done in Phase 9: sanitized audit trail for token issuance/rejection, API client/key lifecycle, result reads, human review changes, webhook target creation and retention execution.
 
 4. Privacy controls.
    - Redaction strategy for logs.
    - PII handling policy.
    - Data access roles.
+   - Done in Phase 9: documented PII/log rules and admin-only governance endpoints.
 
 Exit criteria:
 

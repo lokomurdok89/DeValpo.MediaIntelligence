@@ -1,5 +1,7 @@
 using DeValpo.MediaIntelligence.Api.Auth;
+using DeValpo.MediaIntelligence.Api.Audit;
 using DeValpo.MediaIntelligence.Api.Resources;
+using DeValpo.MediaIntelligence.Application.Audit;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +12,9 @@ namespace DeValpo.MediaIntelligence.Api.Controllers;
 [ApiController]
 [AllowAnonymous]
 [Route("api/v1/auth")]
-public sealed class AuthController(IClientAccessTokenService tokenService) : ControllerBase
+public sealed class AuthController(
+    IClientAccessTokenService tokenService,
+    IAuditApplicationService auditService) : ControllerBase
 {
     /// <summary>
     /// Exchanges a client API key for a short-lived JWT.
@@ -32,11 +36,33 @@ public sealed class AuthController(IClientAccessTokenService tokenService) : Con
         var token = await tokenService.CreateTokenAsync(request, cancellationToken);
         if (token is null)
         {
+            await auditService.RecordAsync(
+                AuditRequestFactory.Create(
+                    User,
+                    AuditEventTypes.AuthTokenRejected,
+                    "Client",
+                    request.ClientKey,
+                    request.ClientKey,
+                    AuditOutcome.Denied,
+                    fallbackActorClientKey: request.ClientKey),
+                cancellationToken);
+
             return Unauthorized(new ApiErrorResponse(
                 "INVALID_CLIENT_CREDENTIALS",
                 ApiResourceText.InvalidClientCredentials,
                 HttpContext.TraceIdentifier));
         }
+
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.AuthTokenIssued,
+                "Client",
+                request.ClientKey,
+                request.ClientKey,
+                AuditOutcome.Success,
+                fallbackActorClientKey: request.ClientKey),
+            cancellationToken);
 
         return Ok(token);
     }

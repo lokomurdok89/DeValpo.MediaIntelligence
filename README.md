@@ -923,10 +923,30 @@ curl http://localhost:8085/api/v1/operations/metrics \
 
 The metrics response includes counts by job status, human review status and webhook delivery status. It does not include document text, API keys or webhook signing secrets.
 
+## Security, Governance And Retention
+
+Admin tokens can inspect sanitized audit events and configure per-client retention policies. These endpoints require `media-intelligence:admin` scope:
+
+```powershell
+curl.exe "http://localhost:8085/api/v1/admin/audit-events?limit=50" `
+  -H "Authorization: Bearer <adminAccessToken>"
+
+curl.exe -X PUT "http://localhost:8085/api/v1/admin/clients/<clientKey>/retention-policy" `
+  -H "Authorization: Bearer <adminAccessToken>" `
+  -H "Content-Type: application/json" `
+  -d "{\"enabled\":true,\"retentionDays\":30}"
+
+curl.exe -X POST "http://localhost:8085/api/v1/admin/clients/<clientKey>/retention-policy/execute" `
+  -H "Authorization: Bearer <adminAccessToken>"
+```
+
+Retention deletes stored media files for terminal jobs older than the configured policy and marks each asset row with `DeletedAt`. Audit metadata is intentionally sanitized: it must not include API keys, webhook signing secrets, JWT signing keys, Google credentials, OCR text or document content.
+
 Operational runbooks:
 
 - [Google Document AI runbook](docs/runbooks/google-document-ai.md)
 - [PostgreSQL runbook](docs/runbooks/postgres.md)
+- [Security, governance and retention runbook](docs/runbooks/security-governance-retention.md)
 - [Storage runbook](docs/runbooks/storage.md)
 
 ## Add a skill
@@ -967,3 +987,4 @@ The QA review for this change is recorded in:
 - [Phase 6 human review workflow QA](docs/qa-phase-6-human-review-workflow.md)
 - [Phase 7 webhook delivery QA](docs/qa-phase-7-webhook-delivery.md)
 - [Phase 8 observability and readiness QA](docs/qa-phase-8-observability-readiness.md)
+- [Phase 9 security, governance and retention QA](docs/qa-phase-9-security-governance-retention.md)
