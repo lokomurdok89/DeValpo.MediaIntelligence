@@ -13,14 +13,14 @@ Referencias oficiales:
 
 ## Estado Actual
 
-Hoy la API puede operar sin credenciales AWS. Expone status local, mantiene AWS apagado por defecto y oculta los endpoints de jobs faciales mientras `AwsRekognition__FaceSearchEnabled=false`.
+Hoy la API puede operar sin credenciales AWS. Expone status local, mantiene AWS apagado por defecto y permite crear jobs faciales solo para el perfil `event-face-search-v1`; si AWS esta apagado, el job termina con issue de provider deshabilitado.
 
 | Pieza | Estado |
 | --- | --- |
 | `GET /api/v1/providers/aws-rekognition/status` | Implementado |
 | `GET /api/v1/providers/aws-rekognition/status?checkRemote=true` | Implementado, requiere JWT operator/admin |
-| `POST /api/v1/face-search-jobs` | Implementado, oculto por feature flag |
-| Worker AWS face search | Implementado, no se registra si el flag esta apagado |
+| `POST /api/v1/face-search-jobs` | Implementado, requiere JWT y acceso al perfil |
+| Worker AWS face search | Implementado |
 | S3 staging real | Implementado, requiere credenciales reales |
 | Rekognition collection real | Implementado, requiere credenciales reales |
 | Resultados simulados | Prohibidos |
@@ -35,6 +35,9 @@ AwsRekognition__FaceSearchEnabled=false
 AwsRekognition__Region=
 AwsRekognition__BucketName=
 AwsRekognition__CollectionId=
+AwsRekognition__CredentialsPath=
+AwsRekognition__ProfileName=
+AwsRekognition__AllowUserCredentials=false
 AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
 AwsRekognition__PollingIntervalSeconds=5
@@ -58,9 +61,11 @@ Respuesta esperada:
   "enabled": false,
   "configured": false,
   "credentialSourcePresent": false,
+  "credentialFilePresent": false,
   "region": "",
   "bucketName": "",
   "collectionId": "",
+  "profileName": "",
   "missingFields": [],
   "message": "AWS Rekognition is disabled by configuration."
 }
@@ -325,13 +330,14 @@ Resultado esperado:
 | status AWS basico | `enabled=false`, `configured=false` |
 | `checkRemote=true` sin token | `401` |
 | `checkRemote=true` con token sin scope operativo | `403` |
-| `POST /api/v1/face-search-jobs` con token operator | `404` hasta implementar el provider real |
+| `POST /api/v1/face-search-jobs` sin token | `401` |
+| `POST /api/v1/face-search-jobs` con request invalido | `400` |
 
 Si el status remoto se prueba con AWS habilitado, debe usarse una credencial real y recursos reales. No usar respuestas simuladas.
 
-## Criterio Para Implementar Jobs AWS
+## Criterio Para Probar Jobs AWS Reales
 
-Antes de empezar codigo del flujo facial real:
+Antes de ejecutar un smoke test real:
 
 1. AWS CLI autentica correctamente.
 2. S3 bucket privado creado.

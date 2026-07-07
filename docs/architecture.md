@@ -7,7 +7,7 @@ DeValpo.MediaIntelligence es una API independiente para analizar documentos, ima
 - `Contracts`: DTOs publicos y enums expuestos por API.
 - `Domain`: entidades de persistencia y modelo principal.
 - `Application`: casos de uso, orquestacion, perfiles y abstracciones de proveedores/storage.
-- `Infrastructure`: EF Core, PostgreSQL, storage local, Google Document AI y skills.
+- `Infrastructure`: EF Core, PostgreSQL, storage local, Google Document AI, Google Video Intelligence, AWS Rekognition y skills.
 - `Api`: controladores, middleware, Swagger, health checks y composicion.
 
 Direccion de dependencias:
@@ -33,8 +33,12 @@ flowchart TD
     G --> H["Profile resolver"]
     G --> I["Skills"]
     I --> J["Google Document AI"]
+    D --> L["Video/Face search services"]
+    L --> M["Google Video Intelligence"]
+    L --> N["AWS Rekognition + S3"]
     G --> K["Normalized result"]
     K --> F
+    L --> F
 ```
 
 ## Componentes En Runtime
@@ -48,6 +52,10 @@ flowchart LR
     App --> Orchestrator["MediaAnalysisOrchestrator"]
     Orchestrator --> Skills["Skills"]
     Skills --> Google["Google Document AI"]
+    App --> VideoSearch["VideoSearchApplicationService"]
+    App --> FaceSearch["FaceSearchApplicationService"]
+    VideoSearch --> GVI["Google Video Intelligence"]
+    FaceSearch --> AWS["AWS Rekognition + S3"]
 ```
 
 ## Profiles, Skills Y Capabilities
@@ -55,3 +63,10 @@ flowchart LR
 - Una capability describe que puede hacer la plataforma.
 - Un skill es una unidad ejecutable que produce campos, labels, entidades, clips o issues.
 - Un profile selecciona skills, orden, umbrales y reglas de revision para un caso de uso.
+
+## Providers Cloud
+
+- Google Document AI procesa documentos.
+- Google Video Intelligence procesa OCR de numeros visibles y ocurrencias genericas de caras en videos.
+- AWS Rekognition procesa comparacion facial consentida contra imagenes de referencia.
+- Cada provider vive en su propio namespace de Infrastructure y usa opciones/credenciales separadas.

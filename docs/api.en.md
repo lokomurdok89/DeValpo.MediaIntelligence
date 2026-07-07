@@ -26,7 +26,7 @@ sequenceDiagram
 
 | Role | Endpoints | Purpose |
 | --- | --- | --- |
-| Client | `/api/v1/auth/token`, `/api/v1/analyze`, `/api/v1/analysis-jobs/*` | Issue JWTs, upload documents and read results. |
+| Client | `/api/v1/auth/token`, `/api/v1/analyze`, `/api/v1/analysis-jobs/*`, `/api/v1/video-search-jobs/*`, `/api/v1/face-search-jobs/*` | Issue JWTs, upload documents, videos, reference images and read results. |
 | Admin | `/api/v1/admin/clients/*`, `/api/v1/admin/audit-events`, retention policy | Create clients, API keys, audit and retention. |
 | Operator | `/api/v1/human-review-tasks`, `/api/v1/operations/metrics` | Human review and operational diagnostics. |
 | External system | Client webhook receiver | Receive `analysis.completed`. |
@@ -37,6 +37,30 @@ sequenceDiagram
 - [Profiles](profiles.md): available analysis profiles.
 - [Skills](skills.md): executable analysis units.
 - [Client onboarding](client-onboarding-guide.md): controlled client setup.
+
+## AWS Rekognition Face Search
+
+Endpoints:
+
+```text
+POST /api/v1/face-search-jobs
+GET  /api/v1/face-search-jobs/{jobId}
+GET  /api/v1/face-search-jobs/{jobId}/result
+GET  /api/v1/providers/aws-rekognition/status
+```
+
+`POST /api/v1/face-search-jobs` uses `multipart/form-data`:
+
+```text
+clientKey=<client-key>
+profileKey=event-face-search-v1
+consentReferenceId=<external-consent-reference>
+manifestJson={"targets":[{"targetKey":"participant-001","referenceImageKey":"reference-1"}],"minSimilarity":90}
+videos=@<video.mp4>
+referenceImages=@<face.jpg>
+```
+
+`referenceImages` are numbered in upload order: `reference-1`, `reference-2`, etc. Results return `FaceReference` matches with timestamps, similarity and `sourceProvider=AwsRekognition`; they do not expose `FaceId`, S3 paths or credentials.
 
 ## Simple Rules
 

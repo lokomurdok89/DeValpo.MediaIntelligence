@@ -5,7 +5,7 @@
 [![CI](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/ci.yml)
 [![Docs](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/docs.yml/badge.svg)](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/docs.yml)
 
-DeValpo.MediaIntelligence exposes a secure API for real document ingestion, Google Document AI analysis, persisted jobs, human review, client webhooks and operational diagnostics.
+DeValpo.MediaIntelligence exposes a secure API for real document ingestion, Google Document AI analysis, Google video search, AWS Rekognition face search, persisted jobs, human review, client webhooks and operational diagnostics.
 
 ## Open The Documentation
 
@@ -20,7 +20,7 @@ GitHub Pages is not currently published for this repository because it is privat
 | See endpoint flows and sequence diagrams | [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md) |
 | Search visible targets in event videos | [docs/video-target-search.md](docs/video-target-search.md) |
 | Prepare the real video MVP test | [docs/video-mvp-real-route.md](docs/video-mvp-real-route.md) |
-| Prepare AWS Rekognition face search | [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md) |
+| Run AWS Rekognition face search | [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md) |
 | Understand the API | [docs/api.md](docs/api.md) |
 | Review architecture and components | [docs/architecture.md](docs/architecture.md) |
 | Review security, JWT and secrets | [docs/security.md](docs/security.md) |
@@ -69,11 +69,12 @@ http://localhost:8085
 ```mermaid
 flowchart LR
     A["Configure deploy/.env"] --> B["Mount Google credentials outside repo"]
-    B --> C["Start Docker Compose"]
-    C --> D["Generate Development JWT"]
-    D --> E["Upload real PDF"]
-    E --> F["Poll job"]
-    F --> G["Read result"]
+    B --> C["Mount optional AWS credentials outside repo"]
+    C --> D["Start Docker Compose"]
+    D --> E["Generate Development JWT"]
+    E --> F["Upload real media"]
+    F --> G["Poll job"]
+    G --> H["Read result"]
 ```
 
 Google CLI, ADC credential generation and Document AI validation are documented in [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md).
@@ -112,7 +113,9 @@ Never commit:
 
 - `deploy/.env`
 - `secrets/*.json`
+- `secrets/aws-credentials`
 - Google credential files
+- AWS credential files
 - raw API keys
 - JWT signing keys
 - webhook signing secrets

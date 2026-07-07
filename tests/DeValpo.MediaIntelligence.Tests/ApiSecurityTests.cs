@@ -96,22 +96,14 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
-    public async Task FaceSearchJobs_AreNotExposedUntilRealAwsProviderExists()
+    public async Task FaceSearchJobs_RequireBearerToken()
     {
         using var factory = CreateFactory();
         using var client = factory.CreateClient();
 
-        var tokenResponse = await client.PostAsJsonAsync(
-            "/api/v1/dev/token",
-            new CreateDevTokenRequest("test-user", "test-client", "media-intelligence:operator"));
-        tokenResponse.EnsureSuccessStatusCode();
+        var response = await client.GetAsync("/api/v1/face-search-jobs/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-        var token = await tokenResponse.Content.ReadFromJsonAsync<DevTokenResponse>();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
-
-        var response = await client.PostAsync("/api/v1/face-search-jobs", null);
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
