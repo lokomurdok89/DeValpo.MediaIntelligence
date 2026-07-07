@@ -66,7 +66,15 @@ public sealed class StaticAnalysisProfileResolver(
             [],
             0.70m,
             true,
-            ApplicationResourceText.EventVideoTargetSearchDescription)
+            ApplicationResourceText.EventVideoTargetSearchDescription),
+        new(
+            "event-face-search-v1",
+            "generic",
+            [MediaAssetType.Video, MediaAssetType.Image],
+            [],
+            0.90m,
+            true,
+            ApplicationResourceText.EventFaceSearchDescription)
     ];
 
     /// <summary>

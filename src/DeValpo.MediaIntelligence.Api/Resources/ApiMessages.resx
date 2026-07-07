@@ -111,6 +111,9 @@
   <data name="ReleaseGoogleVideoUserCredentialsDisabled" xml:space="preserve">
     <value>GoogleVideoIntelligence:AllowUserCredentials must be false outside Development.</value>
   </data>
+  <data name="ReleaseAwsUserCredentialsDisabled" xml:space="preserve">
+    <value>AwsRekognition:AllowUserCredentials must be false outside Development.</value>
+  </data>
   <data name="ReleaseMockSkillsDisabled" xml:space="preserve">
     <value>Skills:EnableMockSkills must be false outside Development.</value>
   </data>
@@ -126,11 +129,20 @@
   <data name="VideoSearchJobWorkerFailed" xml:space="preserve">
     <value>Video search job worker failed while processing the queue.</value>
   </data>
+  <data name="FaceSearchJobWorkerFailed" xml:space="preserve">
+    <value>Face search job worker failed while processing the queue.</value>
+  </data>
   <data name="WebhookDeliveryWorkerFailed" xml:space="preserve">
     <value>Webhook delivery worker failed while processing the queue.</value>
   </data>
   <data name="VideoFilesRequired" xml:space="preserve">
     <value>At least one video file is required.</value>
+  </data>
+  <data name="ReferenceImagesRequired" xml:space="preserve">
+    <value>At least one reference image file is required.</value>
+  </data>
+  <data name="ReferenceImageMaxFilesExceeded" xml:space="preserve">
+    <value>The request exceeds the maximum of {0} reference image files.</value>
   </data>
   <data name="VideoMaxFilesExceeded" xml:space="preserve">
     <value>The request exceeds the maximum of {0} video files.</value>

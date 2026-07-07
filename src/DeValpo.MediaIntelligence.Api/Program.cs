@@ -7,6 +7,7 @@ using DeValpo.MediaIntelligence.Api.Swagger;
 using DeValpo.MediaIntelligence.Api.Validation;
 using DeValpo.MediaIntelligence.Api.Workers;
 using DeValpo.MediaIntelligence.Application;
+using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure;
@@ -15,6 +16,7 @@ using DeValpo.MediaIntelligence.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -29,7 +31,13 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration);
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    if (!builder.Configuration.GetValue("AwsRekognition:FaceSearchEnabled", false))
+    {
+        options.Conventions.Add(new RemoveControllerConvention("FaceSearchJobs"));
+    }
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -88,10 +96,15 @@ builder.Services.Configure<UploadValidationOptions>(builder.Configuration.GetSec
 builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
 builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
+builder.Services.Configure<FaceSearchOptions>(builder.Configuration.GetSection("AwsRekognition"));
 builder.Services.Configure<WebhookDeliveryOptions>(builder.Configuration.GetSection("WebhookDelivery"));
 builder.Services.Configure<ReadinessOptions>(builder.Configuration.GetSection("Readiness"));
 builder.Services.AddHostedService<AnalysisJobWorker>();
 builder.Services.AddHostedService<VideoSearchJobWorker>();
+if (builder.Configuration.GetValue("AwsRekognition:FaceSearchEnabled", false))
+{
+    builder.Services.AddHostedService<FaceSearchJobWorker>();
+}
 builder.Services.AddHostedService<WebhookDeliveryWorker>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
@@ -269,6 +282,11 @@ static void ValidateReleaseSafety(IWebHostEnvironment environment, IConfiguratio
         throw new InvalidOperationException(ApiResourceText.ReleaseGoogleVideoUserCredentialsDisabled);
     }
 
+    if (configuration.GetValue("AwsRekognition:AllowUserCredentials", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseAwsUserCredentialsDisabled);
+    }
+
     if (configuration.GetValue("Skills:EnableMockSkills", false))
     {
         throw new InvalidOperationException(ApiResourceText.ReleaseMockSkillsDisabled);
@@ -296,3 +314,17 @@ static async Task ApplyMigrationsIfConfiguredAsync(WebApplication app)
 }
 
 public partial class Program;
+
+internal sealed class RemoveControllerConvention(string controllerName) : IApplicationModelConvention
+{
+    public void Apply(ApplicationModel application)
+    {
+        for (var index = application.Controllers.Count - 1; index >= 0; index--)
+        {
+            if (string.Equals(application.Controllers[index].ControllerName, controllerName, StringComparison.OrdinalIgnoreCase))
+            {
+                application.Controllers.RemoveAt(index);
+            }
+        }
+    }
+}

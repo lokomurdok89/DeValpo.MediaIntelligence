@@ -1,0 +1,420 @@
+using Amazon.Rekognition;
+using Amazon.Rekognition.Model;
+using Amazon.Runtime;
+using Amazon.S3;
+using Amazon.S3.Model;
+using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.FaceSearch;
+using DeValpo.MediaIntelligence.Infrastructure.Options;
+using DeValpo.MediaIntelligence.Infrastructure.Resources;
+using Microsoft.Extensions.Options;
+
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
+
+public sealed class AwsRekognitionFaceSearchProvider(
+    IMediaAssetStorage mediaAssetStorage,
+    IOptions<AwsRekognitionOptions> options,
+    IAwsRekognitionClientFactory clientFactory) : IFaceSearchProvider
+{
+    private const string SourceProvider = "AwsRekognition";
+
+    /// <summary>
+    /// Stages videos and reference images in S3, indexes references and polls Rekognition face search.
+    /// </summary>
+    public async Task<FaceSearchProviderResult> AnalyzeAsync(
+        FaceSearchProviderRequest request,
+        CancellationToken cancellationToken)
+    {
+        var config = options.Value;
+        if (!config.Enabled || !config.FaceSearchEnabled)
+        {
+            return new FaceSearchProviderResult(
+                [],
+                [new("AWS_REKOGNITION_DISABLED", InfrastructureResourceText.AwsRekognitionAnalysisDisabled, "Warning", SourceProvider)],
+                new Dictionary<Guid, string>(),
+                new Dictionary<Guid, decimal>());
+        }
+
+        using var s3Client = clientFactory.CreateS3Client(config);
+        using var rekognitionClient = clientFactory.CreateRekognitionClient(config);
+
+        var providerUris = new Dictionary<Guid, string>();
+        var stagedObjectKeys = new List<string>();
+        var indexedFaceIds = new List<string>();
+        var videoDurations = new Dictionary<Guid, decimal>();
+        var issues = new List<FaceSearchProviderIssue>();
+
+        try
+        {
+            var stagedReferenceImages = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var referenceImage in request.ReferenceImages)
+            {
+                var objectKey = await StageAssetAsync(s3Client, config, request.JobId, referenceImage, cancellationToken);
+                stagedObjectKeys.Add(objectKey);
+                providerUris[referenceImage.AssetId] = ToS3Uri(config.BucketName, objectKey);
+                stagedReferenceImages[referenceImage.AssetKey] = objectKey;
+            }
+
+            var targetFaceIds = await IndexTargetFacesAsync(
+                rekognitionClient,
+                config,
+                request.Targets,
+                stagedReferenceImages,
+                indexedFaceIds,
+                cancellationToken);
+
+            foreach (var target in targetFaceIds.Values.Where(item => string.IsNullOrWhiteSpace(item.FaceId)))
+            {
+                issues.Add(new FaceSearchProviderIssue(
+                    "AWS_REKOGNITION_REFERENCE_FACE_NOT_INDEXED",
+                    InfrastructureResourceText.AwsRekognitionReferenceFaceNotIndexed(target.ReferenceImageKey),
+                    "Warning",
+                    SourceProvider));
+            }
+
+            var stagedVideos = new Dictionary<FaceSearchProviderAsset, string>();
+            foreach (var video in request.Videos)
+            {
+                var objectKey = await StageAssetAsync(s3Client, config, request.JobId, video, cancellationToken);
+                stagedObjectKeys.Add(objectKey);
+                providerUris[video.AssetId] = ToS3Uri(config.BucketName, objectKey);
+                stagedVideos[video] = objectKey;
+            }
+
+            var faceMatches = new List<FaceReferenceMatchOccurrence>();
+            foreach (var item in stagedVideos)
+            {
+                try
+                {
+                    var searchResult = await SearchVideoAsync(
+                        rekognitionClient,
+                        config,
+                        request.JobId,
+                        item.Key,
+                        item.Value,
+                        request.MinSimilarity,
+                        targetFaceIds,
+                        cancellationToken);
+
+                    faceMatches.AddRange(searchResult.FaceMatches);
+                    if (searchResult.DurationSeconds.HasValue)
+                    {
+                        videoDurations[item.Key.AssetId] = searchResult.DurationSeconds.Value;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    issues.Add(new FaceSearchProviderIssue(
+                        "AWS_REKOGNITION_FACE_SEARCH_FAILED",
+                        ClassifyProviderError(exception),
+                        "Error",
+                        SourceProvider));
+                }
+            }
+
+            return new FaceSearchProviderResult(faceMatches, issues, providerUris, videoDurations);
+        }
+        finally
+        {
+            await CleanupAsync(s3Client, rekognitionClient, config, stagedObjectKeys, indexedFaceIds, cancellationToken);
+        }
+    }
+
+    private async Task<string> StageAssetAsync(
+        IAmazonS3 s3Client,
+        AwsRekognitionOptions config,
+        Guid jobId,
+        FaceSearchProviderAsset asset,
+        CancellationToken cancellationToken)
+    {
+        var extension = Path.GetExtension(asset.OriginalFileName);
+        var objectKey = $"{NormalizePrefix(config.StagingPrefix)}/{jobId:N}/{asset.AssetKey}/{Guid.NewGuid():N}{extension}";
+        await using var stream = await mediaAssetStorage.OpenReadAsync(asset.StoragePath, cancellationToken);
+        await s3Client.PutObjectAsync(
+            new PutObjectRequest
+            {
+                BucketName = config.BucketName,
+                Key = objectKey,
+                ContentType = asset.ContentType,
+                InputStream = stream
+            },
+            cancellationToken);
+
+        return objectKey;
+    }
+
+    private async Task<Dictionary<string, IndexedTargetFace>> IndexTargetFacesAsync(
+        IAmazonRekognition rekognitionClient,
+        AwsRekognitionOptions config,
+        IReadOnlyCollection<FaceSearchTarget> targets,
+        IReadOnlyDictionary<string, string> stagedReferenceImages,
+        List<string> indexedFaceIds,
+        CancellationToken cancellationToken)
+    {
+        var indexedTargets = new Dictionary<string, IndexedTargetFace>(StringComparer.OrdinalIgnoreCase);
+        foreach (var target in targets)
+        {
+            var response = await rekognitionClient.IndexFacesAsync(
+                new IndexFacesRequest
+                {
+                    CollectionId = config.CollectionId,
+                    ExternalImageId = target.TargetKey,
+                    MaxFaces = 1,
+                    QualityFilter = QualityFilter.AUTO,
+                    Image = new Image
+                    {
+                        S3Object = new Amazon.Rekognition.Model.S3Object
+                        {
+                            Bucket = config.BucketName,
+                            Name = stagedReferenceImages[target.ReferenceImageKey]
+                        }
+                    }
+                },
+                cancellationToken);
+
+            var faceId = response.FaceRecords.FirstOrDefault()?.Face.FaceId;
+            if (string.IsNullOrWhiteSpace(faceId))
+            {
+                indexedTargets[target.TargetKey] = new IndexedTargetFace(target.TargetKey, target.ReferenceImageKey, string.Empty);
+                continue;
+            }
+
+            indexedFaceIds.Add(faceId);
+            indexedTargets[target.TargetKey] = new IndexedTargetFace(target.TargetKey, target.ReferenceImageKey, faceId);
+        }
+
+        return indexedTargets;
+    }
+
+    private async Task<SearchVideoResult> SearchVideoAsync(
+        IAmazonRekognition rekognitionClient,
+        AwsRekognitionOptions config,
+        Guid jobId,
+        FaceSearchProviderAsset video,
+        string videoObjectKey,
+        decimal minSimilarity,
+        IReadOnlyDictionary<string, IndexedTargetFace> targetFaceIds,
+        CancellationToken cancellationToken)
+    {
+        var indexedTargetsByFaceId = targetFaceIds.Values
+            .Where(item => !string.IsNullOrWhiteSpace(item.FaceId))
+            .ToDictionary(item => item.FaceId, StringComparer.Ordinal);
+
+        if (indexedTargetsByFaceId.Count == 0)
+        {
+            return new SearchVideoResult([], null);
+        }
+
+        var startResponse = await rekognitionClient.StartFaceSearchAsync(
+            new StartFaceSearchRequest
+            {
+                ClientRequestToken = $"{jobId:N}-{video.AssetKey}",
+                CollectionId = config.CollectionId,
+                FaceMatchThreshold = (float)minSimilarity,
+                JobTag = $"{jobId:N}-{video.AssetKey}",
+                Video = new Video
+                {
+                    S3Object = new Amazon.Rekognition.Model.S3Object
+                    {
+                        Bucket = config.BucketName,
+                        Name = videoObjectKey
+                    }
+                }
+            },
+            cancellationToken);
+
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(Math.Max(1, config.PollingTimeoutSeconds));
+        var delay = TimeSpan.FromSeconds(Math.Max(1, config.PollingIntervalSeconds));
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            var firstPage = await rekognitionClient.GetFaceSearchAsync(
+                new GetFaceSearchRequest
+                {
+                    JobId = startResponse.JobId,
+                    SortBy = FaceSearchSortBy.TIMESTAMP
+                },
+                cancellationToken);
+
+            if (string.Equals(firstPage.JobStatus, VideoJobStatus.FAILED, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(firstPage.StatusMessage ?? InfrastructureResourceText.AwsRekognitionFaceSearchFailed);
+            }
+
+            if (string.Equals(firstPage.JobStatus, VideoJobStatus.SUCCEEDED, StringComparison.OrdinalIgnoreCase))
+            {
+                return await CollectSucceededResultAsync(
+                    rekognitionClient,
+                    startResponse.JobId,
+                    firstPage,
+                    video,
+                    indexedTargetsByFaceId,
+                    cancellationToken);
+            }
+
+            await Task.Delay(delay, cancellationToken);
+        }
+
+        throw new TimeoutException(InfrastructureResourceText.AwsRekognitionFaceSearchTimedOut);
+    }
+
+    private static async Task<SearchVideoResult> CollectSucceededResultAsync(
+        IAmazonRekognition rekognitionClient,
+        string jobId,
+        GetFaceSearchResponse firstPage,
+        FaceSearchProviderAsset video,
+        IReadOnlyDictionary<string, IndexedTargetFace> indexedTargetsByFaceId,
+        CancellationToken cancellationToken)
+    {
+        var matches = new List<FaceReferenceMatchOccurrence>();
+        decimal? durationSeconds = ToDurationSeconds(firstPage.VideoMetadata);
+        var currentPage = firstPage;
+
+        while (true)
+        {
+            MapPage(video, currentPage, indexedTargetsByFaceId, matches);
+
+            if (string.IsNullOrWhiteSpace(currentPage.NextToken))
+            {
+                break;
+            }
+
+            currentPage = await rekognitionClient.GetFaceSearchAsync(
+                new GetFaceSearchRequest
+                {
+                    JobId = jobId,
+                    SortBy = FaceSearchSortBy.TIMESTAMP,
+                    NextToken = currentPage.NextToken
+                },
+                cancellationToken);
+
+            durationSeconds ??= ToDurationSeconds(currentPage.VideoMetadata);
+        }
+
+        return new SearchVideoResult(matches, durationSeconds);
+    }
+
+    private static void MapPage(
+        FaceSearchProviderAsset video,
+        GetFaceSearchResponse response,
+        IReadOnlyDictionary<string, IndexedTargetFace> indexedTargetsByFaceId,
+        List<FaceReferenceMatchOccurrence> matches)
+    {
+        foreach (var person in response.Persons)
+        {
+            var timestampSeconds = Math.Round((decimal)person.Timestamp.GetValueOrDefault() / 1000m, 3);
+            foreach (var faceMatch in person.FaceMatches)
+            {
+                var faceId = faceMatch.Face?.FaceId;
+                if (string.IsNullOrWhiteSpace(faceId) ||
+                    !indexedTargetsByFaceId.TryGetValue(faceId, out var target))
+                {
+                    continue;
+                }
+
+                matches.Add(new FaceReferenceMatchOccurrence(
+                    video.AssetId,
+                    target.TargetKey,
+                    target.ReferenceImageKey,
+                    video.AssetKey,
+                    video.OriginalFileName,
+                    timestampSeconds,
+                    timestampSeconds,
+                    Math.Round((decimal)faceMatch.Similarity.GetValueOrDefault(), 2),
+                    SourceProvider));
+            }
+        }
+    }
+
+    private async Task CleanupAsync(
+        IAmazonS3 s3Client,
+        IAmazonRekognition rekognitionClient,
+        AwsRekognitionOptions config,
+        IReadOnlyCollection<string> stagedObjectKeys,
+        IReadOnlyCollection<string> indexedFaceIds,
+        CancellationToken cancellationToken)
+    {
+        if (indexedFaceIds.Count > 0)
+        {
+            try
+            {
+                await rekognitionClient.DeleteFacesAsync(
+                    new DeleteFacesRequest
+                    {
+                        CollectionId = config.CollectionId,
+                        FaceIds = indexedFaceIds.ToList()
+                    },
+                    cancellationToken);
+            }
+            catch
+            {
+                // Cleanup failure must not hide the provider result or original processing error.
+            }
+        }
+
+        if (!config.DeleteStagedObjectsAfterProcessing || stagedObjectKeys.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var objectKey in stagedObjectKeys)
+        {
+            try
+            {
+                await s3Client.DeleteObjectAsync(
+                    new DeleteObjectRequest
+                    {
+                        BucketName = config.BucketName,
+                        Key = objectKey
+                    },
+                    cancellationToken);
+            }
+            catch
+            {
+                // Cleanup failure must not hide the provider result or original processing error.
+            }
+        }
+    }
+
+    private static decimal? ToDurationSeconds(VideoMetadata? metadata)
+    {
+        return metadata is null
+            ? null
+            : Math.Round((decimal)metadata.DurationMillis.GetValueOrDefault() / 1000m, 3);
+    }
+
+    private static string NormalizePrefix(string prefix)
+    {
+        var normalized = string.IsNullOrWhiteSpace(prefix) ? "face-search" : prefix.Trim();
+        return normalized.Trim('/').Replace('\\', '/');
+    }
+
+    private static string ToS3Uri(string bucketName, string objectKey)
+    {
+        return $"s3://{bucketName}/{objectKey}";
+    }
+
+    private static string ClassifyProviderError(Exception exception)
+    {
+        return exception switch
+        {
+            FileNotFoundException => InfrastructureResourceText.AwsRekognitionCredentialsFileNotFound,
+            UnauthorizedAccessException => InfrastructureResourceText.AwsRekognitionCredentialsUnavailable,
+            InvalidOperationException { Message: { Length: > 0 } } => exception.Message,
+            AmazonRekognitionException { StatusCode: System.Net.HttpStatusCode.Forbidden } => InfrastructureResourceText.AwsRekognitionPermissionDenied,
+            AmazonRekognitionException { ErrorCode: "ResourceNotFoundException" } => InfrastructureResourceText.AwsRekognitionCollectionNotFound,
+            AmazonS3Exception { StatusCode: System.Net.HttpStatusCode.NotFound } => InfrastructureResourceText.AwsRekognitionBucketNotFound,
+            AmazonS3Exception { StatusCode: System.Net.HttpStatusCode.Forbidden } => InfrastructureResourceText.AwsRekognitionPermissionDenied,
+            AmazonServiceException { StatusCode: System.Net.HttpStatusCode.Forbidden } => InfrastructureResourceText.AwsRekognitionPermissionDenied,
+            AmazonServiceException amazonServiceException => InfrastructureResourceText.AwsRekognitionRemoteCheckFailedWithStatus(amazonServiceException.StatusCode),
+            TimeoutException => InfrastructureResourceText.AwsRekognitionFaceSearchTimedOut,
+            AmazonClientException => InfrastructureResourceText.AwsRekognitionCredentialsUnavailable,
+            _ => InfrastructureResourceText.AwsRekognitionFaceSearchFailed
+        };
+    }
+
+    private sealed record IndexedTargetFace(string TargetKey, string ReferenceImageKey, string FaceId);
+
+    private sealed record SearchVideoResult(
+        IReadOnlyCollection<FaceReferenceMatchOccurrence> FaceMatches,
+        decimal? DurationSeconds);
+}

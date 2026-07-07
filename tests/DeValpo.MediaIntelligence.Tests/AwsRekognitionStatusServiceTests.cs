@@ -1,3 +1,6 @@
+using Amazon.Rekognition;
+using Amazon.Runtime;
+using Amazon.S3;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
 using FluentAssertions;
@@ -61,6 +64,40 @@ public sealed class AwsRekognitionStatusServiceTests
 
     private static AwsRekognitionStatusService CreateService(AwsRekognitionOptions options)
     {
-        return new AwsRekognitionStatusService(Options.Create(options));
+        return new AwsRekognitionStatusService(
+            Options.Create(options),
+            new TestAwsCredentialProvider(),
+            new TestAwsRekognitionClientFactory());
+    }
+
+    private sealed class TestAwsCredentialProvider : IAwsCredentialProvider
+    {
+        public AWSCredentials GetCredentials(AwsRekognitionOptions options)
+        {
+            return new AnonymousAWSCredentials();
+        }
+
+        public bool IsCredentialSourcePresent(AwsRekognitionOptions options)
+        {
+            return false;
+        }
+
+        public bool IsCredentialFilePresent(AwsRekognitionOptions options)
+        {
+            return false;
+        }
+    }
+
+    private sealed class TestAwsRekognitionClientFactory : IAwsRekognitionClientFactory
+    {
+        public IAmazonS3 CreateS3Client(AwsRekognitionOptions options)
+        {
+            throw new InvalidOperationException("Remote AWS checks are not expected in this test.");
+        }
+
+        public IAmazonRekognition CreateRekognitionClient(AwsRekognitionOptions options)
+        {
+            throw new InvalidOperationException("Remote AWS checks are not expected in this test.");
+        }
     }
 }

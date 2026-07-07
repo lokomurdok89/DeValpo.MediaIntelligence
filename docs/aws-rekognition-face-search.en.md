@@ -13,16 +13,16 @@ Official references:
 
 ## Current State
 
-The API can run without AWS credentials today. It exposes local status, keeps AWS disabled by default, and does not publish facial job endpoints.
+The API can run without AWS credentials today. It exposes local status, keeps AWS disabled by default, and hides facial job endpoints while `AwsRekognition__FaceSearchEnabled=false`.
 
 | Piece | State |
 | --- | --- |
 | `GET /api/v1/providers/aws-rekognition/status` | Implemented |
 | `GET /api/v1/providers/aws-rekognition/status?checkRemote=true` | Implemented, requires operator/admin JWT |
-| `POST /api/v1/face-search-jobs` | Not implemented |
-| AWS face search worker | Not implemented |
-| Real S3 staging | Waiting for credentials |
-| Real Rekognition collection | Waiting for credentials |
+| `POST /api/v1/face-search-jobs` | Implemented, hidden behind feature flag |
+| AWS face search worker | Implemented, not registered when the flag is off |
+| Real S3 staging | Implemented, requires real credentials |
+| Real Rekognition collection | Implemented, requires real credentials |
 | Simulated results | Forbidden |
 
 ## No-Credentials Mode
@@ -37,6 +37,10 @@ AwsRekognition__BucketName=
 AwsRekognition__CollectionId=
 AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
+AwsRekognition__PollingIntervalSeconds=5
+AwsRekognition__PollingTimeoutSeconds=900
+AwsRekognition__StagingPrefix=face-search
+AwsRekognition__DeleteStagedObjectsAfterProcessing=true
 AwsRekognition__SnsTopicArn=
 AwsRekognition__RoleArn=
 ```

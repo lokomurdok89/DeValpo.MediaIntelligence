@@ -2,6 +2,7 @@ using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Auth;
 using DeValpo.MediaIntelligence.Application.AnalysisJobs;
 using DeValpo.MediaIntelligence.Application.Capabilities;
+using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.HumanReview;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Application.Operations;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IRetentionApplicationService, RetentionApplicationService>();
         services.AddScoped<IMediaAnalysisApplicationService, MediaAnalysisApplicationService>();
         services.AddScoped<IVideoSearchApplicationService, VideoSearchApplicationService>();
+        services.AddScoped<IFaceSearchApplicationService, FaceSearchApplicationService>();
         services.AddSingleton<IAnalysisProfileResolver, StaticAnalysisProfileResolver>();
         services.AddScoped<IMediaAnalysisOrchestrator, MediaAnalysisOrchestrator>();
 

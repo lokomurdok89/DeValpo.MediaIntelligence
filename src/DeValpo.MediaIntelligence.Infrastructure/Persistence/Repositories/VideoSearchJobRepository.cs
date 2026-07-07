@@ -6,6 +6,8 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Repositories;
 
 public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContext) : IVideoSearchJobRepository
 {
+    private const string ProfileKey = "event-video-target-search-v1";
+
     /// <summary>
     /// Adds a new video search job to the DbContext without saving immediately.
     /// </summary>
@@ -22,7 +24,7 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
         return dbContext.VideoSearchJobs
             .AsNoTracking()
             .Include(job => job.Assets)
-            .Where(job => job.Status == "Pending" && job.Assets.Any())
+            .Where(job => job.ProfileKey == ProfileKey && job.Status == "Pending" && job.Assets.Any())
             .OrderBy(job => job.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -33,7 +35,7 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
     public async Task<bool> MarkRunningAsync(Guid jobId, CancellationToken cancellationToken)
     {
         var updated = await dbContext.VideoSearchJobs
-            .Where(job => job.Id == jobId && job.Status == "Pending")
+            .Where(job => job.Id == jobId && job.ProfileKey == ProfileKey && job.Status == "Pending")
             .ExecuteUpdateAsync(
                 setters => setters
                     .SetProperty(job => job.Status, "Running")
@@ -55,7 +57,7 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
             .Include(job => job.TargetMatchSegments)
             .Include(job => job.FaceOccurrenceSegments)
             .Include(job => job.Issues)
-            .FirstOrDefaultAsync(job => job.Id == jobId, cancellationToken);
+            .FirstOrDefaultAsync(job => job.Id == jobId && job.ProfileKey == ProfileKey, cancellationToken);
     }
 
     /// <summary>
@@ -64,7 +66,7 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
     public Task<int> ResetRunningAsync(CancellationToken cancellationToken)
     {
         return dbContext.VideoSearchJobs
-            .Where(job => job.Status == "Running")
+            .Where(job => job.ProfileKey == ProfileKey && job.Status == "Running")
             .ExecuteUpdateAsync(
                 setters => setters
                     .SetProperty(job => job.Status, "Pending")
@@ -83,7 +85,7 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
         CancellationToken cancellationToken)
     {
         return dbContext.VideoSearchJobs
-            .Where(job => job.Id == jobId)
+            .Where(job => job.Id == jobId && job.ProfileKey == ProfileKey)
             .ExecuteUpdateAsync(
                 setters => setters
                     .SetProperty(job => job.Status, status)
@@ -132,7 +134,7 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
         }
 
         await dbContext.VideoSearchJobs
-            .Where(job => job.Id == jobId && job.Status == "Running")
+            .Where(job => job.Id == jobId && job.ProfileKey == ProfileKey && job.Status == "Running")
             .ExecuteUpdateAsync(
                 setters => setters
                     .SetProperty(job => job.Status, status)

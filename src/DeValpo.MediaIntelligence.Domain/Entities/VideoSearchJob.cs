@@ -7,6 +7,7 @@ public sealed class VideoSearchJob
     public string ProfileKey { get; set; } = string.Empty;
     public string Status { get; set; } = "Pending";
     public string ManifestJson { get; set; } = string.Empty;
+    public string? ConsentReferenceId { get; set; }
     public string? ErrorMessage { get; set; }
     public int ProcessingAttempts { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
@@ -14,5 +15,6 @@ public sealed class VideoSearchJob
     public List<VideoSearchAsset> Assets { get; set; } = [];
     public List<VideoSearchTargetMatchSegment> TargetMatchSegments { get; set; } = [];
     public List<VideoSearchFaceOccurrenceSegment> FaceOccurrenceSegments { get; set; } = [];
+    public List<VideoSearchFaceReferenceMatchSegment> FaceReferenceMatchSegments { get; set; } = [];
     public List<VideoSearchIssue> Issues { get; set; } = [];
 }

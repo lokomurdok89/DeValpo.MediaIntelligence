@@ -1,4 +1,3 @@
-using Amazon;
 using Amazon.Rekognition;
 using Amazon.Rekognition.Model;
 using Amazon.Runtime;
@@ -13,7 +12,9 @@ using Microsoft.Extensions.Options;
 namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
 
 public sealed class AwsRekognitionStatusService(
-    IOptions<AwsRekognitionOptions> options) : IAwsRekognitionStatusService
+    IOptions<AwsRekognitionOptions> options,
+    IAwsCredentialProvider credentialProvider,
+    IAwsRekognitionClientFactory clientFactory) : IAwsRekognitionStatusService
 {
     /// <summary>
     /// Reports AWS Rekognition configuration and optionally checks S3 and collection reachability.
@@ -23,7 +24,7 @@ public sealed class AwsRekognitionStatusService(
         CancellationToken cancellationToken)
     {
         var config = options.Value;
-        var credentialSourcePresent = IsCredentialSourcePresent();
+        var credentialSourcePresent = credentialProvider.IsCredentialSourcePresent(config);
         var missingFields = GetMissingFields(config);
         var locallyConfigured = config.Enabled && config.FaceSearchEnabled && missingFields.Count == 0;
 
@@ -59,9 +60,8 @@ public sealed class AwsRekognitionStatusService(
 
         try
         {
-            var region = RegionEndpoint.GetBySystemName(config.Region);
-            using var s3Client = new AmazonS3Client(region);
-            using var rekognitionClient = new AmazonRekognitionClient(region);
+            using var s3Client = clientFactory.CreateS3Client(config);
+            using var rekognitionClient = clientFactory.CreateRekognitionClient(config);
 
             await s3Client.GetBucketLocationAsync(
                 new GetBucketLocationRequest { BucketName = config.BucketName },
@@ -116,32 +116,18 @@ public sealed class AwsRekognitionStatusService(
             options.Enabled,
             configured,
             credentialSourcePresent,
+            IsCredentialFilePresent(options),
             options.Region,
             options.BucketName,
             options.CollectionId,
+            options.ProfileName,
             missingFields,
             message);
     }
 
-    private static bool IsCredentialSourcePresent()
+    private static bool IsCredentialFilePresent(AwsRekognitionOptions options)
     {
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID")) &&
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY")))
-        {
-            return true;
-        }
-
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AWS_PROFILE")) ||
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AWS_WEB_IDENTITY_TOKEN_FILE")) ||
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI")) ||
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AWS_CONTAINER_CREDENTIALS_FULL_URI")))
-        {
-            return true;
-        }
-
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        return !string.IsNullOrWhiteSpace(home) &&
-            File.Exists(Path.Combine(home, ".aws", "credentials"));
+        return !string.IsNullOrWhiteSpace(options.CredentialsPath) && File.Exists(options.CredentialsPath);
     }
 
     private static string ClassifyException(Exception exception)

@@ -775,6 +775,69 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.ToTable("VideoSearchFaceOccurrenceSegments");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchFaceReferenceMatchSegment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("EndTimeSeconds")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MatchType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ReferenceImageKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<decimal>("Similarity")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<string>("SourceProvider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<decimal>("StartTimeSeconds")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("TargetKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("VideoAssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VideoFileName")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("VideoKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VideoAssetId");
+
+                    b.HasIndex("JobId", "TargetKey", "VideoKey");
+
+                    b.ToTable("VideoSearchFaceReferenceMatchSegments");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchIssue", b =>
                 {
                     b.Property<Guid>("Id")
@@ -824,6 +887,10 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ConsentReferenceId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1149,6 +1216,25 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Navigation("VideoAsset");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchFaceReferenceMatchSegment", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchJob", "Job")
+                        .WithMany("FaceReferenceMatchSegments")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchAsset", "VideoAsset")
+                        .WithMany()
+                        .HasForeignKey("VideoAssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Job");
+
+                    b.Navigation("VideoAsset");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchIssue", b =>
                 {
                     b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchJob", "Job")
@@ -1227,6 +1313,8 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Navigation("Assets");
 
                     b.Navigation("FaceOccurrenceSegments");
+
+                    b.Navigation("FaceReferenceMatchSegments");
 
                     b.Navigation("Issues");
 

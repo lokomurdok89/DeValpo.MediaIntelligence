@@ -27,6 +27,7 @@ public sealed class MediaIntelligenceDbContext(DbContextOptions<MediaIntelligenc
     public DbSet<VideoSearchAsset> VideoSearchAssets => Set<VideoSearchAsset>();
     public DbSet<VideoSearchTargetMatchSegment> VideoSearchTargetMatchSegments => Set<VideoSearchTargetMatchSegment>();
     public DbSet<VideoSearchFaceOccurrenceSegment> VideoSearchFaceOccurrenceSegments => Set<VideoSearchFaceOccurrenceSegment>();
+    public DbSet<VideoSearchFaceReferenceMatchSegment> VideoSearchFaceReferenceMatchSegments => Set<VideoSearchFaceReferenceMatchSegment>();
     public DbSet<VideoSearchIssue> VideoSearchIssues => Set<VideoSearchIssue>();
 
     /// <summary>

@@ -56,6 +56,7 @@ internal static class ApplicationResourceText
     public static string GenericDocumentOcrDescription => GetRequiredResource(nameof(GenericDocumentOcrDescription));
     public static string InvoiceExtractionDescription => GetRequiredResource(nameof(InvoiceExtractionDescription));
     public static string EventVideoTargetSearchDescription => GetRequiredResource(nameof(EventVideoTargetSearchDescription));
+    public static string EventFaceSearchDescription => GetRequiredResource(nameof(EventFaceSearchDescription));
     public static string VideoSearchProfileRequired(string profileKey) => Format(nameof(VideoSearchProfileRequired), profileKey);
     public static string VideoSearchVideosRequired => GetRequiredResource(nameof(VideoSearchVideosRequired));
     public static string VideoSearchMaxVideosExceeded(int maxVideos) => Format(nameof(VideoSearchMaxVideosExceeded), maxVideos);
@@ -76,6 +77,24 @@ internal static class ApplicationResourceText
     public static string VideoSearchJobProcessingRetryLogMessage => GetRequiredResource(nameof(VideoSearchJobProcessingRetryLogMessage));
     public static string VideoSearchJobProcessingFailedLogMessage => GetRequiredResource(nameof(VideoSearchJobProcessingFailedLogMessage));
     public static string VideoSearchJobProcessingCompletedLogMessage => GetRequiredResource(nameof(VideoSearchJobProcessingCompletedLogMessage));
+    public static string FaceSearchProfileRequired(string profileKey) => Format(nameof(FaceSearchProfileRequired), profileKey);
+    public static string FaceSearchVideosRequired => GetRequiredResource(nameof(FaceSearchVideosRequired));
+    public static string FaceSearchReferenceImagesRequired => GetRequiredResource(nameof(FaceSearchReferenceImagesRequired));
+    public static string FaceSearchConsentReferenceRequired => GetRequiredResource(nameof(FaceSearchConsentReferenceRequired));
+    public static string FaceSearchManifestRequired => GetRequiredResource(nameof(FaceSearchManifestRequired));
+    public static string FaceSearchManifestMustBeObject => GetRequiredResource(nameof(FaceSearchManifestMustBeObject));
+    public static string FaceSearchManifestPropertyUnsupported(string propertyName) => Format(nameof(FaceSearchManifestPropertyUnsupported), propertyName);
+    public static string FaceSearchPersonalDataNotAllowed(string propertyName) => Format(nameof(FaceSearchPersonalDataNotAllowed), propertyName);
+    public static string FaceSearchMinSimilarityInvalid => GetRequiredResource(nameof(FaceSearchMinSimilarityInvalid));
+    public static string FaceSearchTargetsRequired => GetRequiredResource(nameof(FaceSearchTargetsRequired));
+    public static string FaceSearchTargetMustBeObject => GetRequiredResource(nameof(FaceSearchTargetMustBeObject));
+    public static string FaceSearchTargetKeyRequired => GetRequiredResource(nameof(FaceSearchTargetKeyRequired));
+    public static string FaceSearchReferenceImageKeyRequired => GetRequiredResource(nameof(FaceSearchReferenceImageKeyRequired));
+    public static string FaceSearchTargetReferenceImageMissing(string referenceImageKey) => Format(nameof(FaceSearchTargetReferenceImageMissing), referenceImageKey);
+    public static string FaceSearchJobQueuedLogMessage => GetRequiredResource(nameof(FaceSearchJobQueuedLogMessage));
+    public static string FaceSearchJobProcessingRetryLogMessage => GetRequiredResource(nameof(FaceSearchJobProcessingRetryLogMessage));
+    public static string FaceSearchJobProcessingFailedLogMessage => GetRequiredResource(nameof(FaceSearchJobProcessingFailedLogMessage));
+    public static string FaceSearchJobProcessingCompletedLogMessage => GetRequiredResource(nameof(FaceSearchJobProcessingCompletedLogMessage));
 
     private static string GetRequiredResource(string name)
     {

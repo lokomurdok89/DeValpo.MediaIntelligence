@@ -192,6 +192,12 @@
   <data name="GoogleVideoIntelligenceRequestFailed" xml:space="preserve">
     <value>Google Video Intelligence request failed.</value>
   </data>
+  <data name="GoogleVideoIntelligenceRemoteOperationTimedOut" xml:space="preserve">
+    <value>Google Video Intelligence remote operation timed out.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceRemoteOperationTimeoutRequired" xml:space="preserve">
+    <value>GoogleVideoIntelligence:RemoteOperationTimeoutSeconds must be greater than zero.</value>
+  </data>
   <data name="GoogleVideoIntelligenceLocalConfigComplete" xml:space="preserve">
     <value>Google Video Intelligence local configuration is complete.</value>
   </data>
@@ -216,6 +222,12 @@
   <data name="AwsRekognitionCredentialsUnavailable" xml:space="preserve">
     <value>AWS Rekognition credentials are unavailable or invalid.</value>
   </data>
+  <data name="AwsRekognitionCredentialsFileNotFound" xml:space="preserve">
+    <value>AWS Rekognition credentials file was not found.</value>
+  </data>
+  <data name="AwsRekognitionCredentialsInvalid" xml:space="preserve">
+    <value>AWS Rekognition credentials are invalid.</value>
+  </data>
   <data name="AwsRekognitionPermissionDenied" xml:space="preserve">
     <value>AWS Rekognition credentials do not have permission to access the configured resources.</value>
   </data>
@@ -230,6 +242,21 @@
   </data>
   <data name="AwsRekognitionRemoteCheckFailed" xml:space="preserve">
     <value>AWS Rekognition remote check failed.</value>
+  </data>
+  <data name="AwsRekognitionAnalysisDisabled" xml:space="preserve">
+    <value>AWS Rekognition face search is disabled by configuration.</value>
+  </data>
+  <data name="AwsRekognitionReferenceFaceNotIndexed" xml:space="preserve">
+    <value>AWS Rekognition did not index a usable face for reference image '{0}'.</value>
+  </data>
+  <data name="AwsRekognitionFaceSearchFailed" xml:space="preserve">
+    <value>AWS Rekognition face search failed.</value>
+  </data>
+  <data name="AwsRekognitionFaceSearchTimedOut" xml:space="preserve">
+    <value>AWS Rekognition face search timed out.</value>
+  </data>
+  <data name="AwsRekognitionCleanupFailed" xml:space="preserve">
+    <value>AWS Rekognition cleanup failed.</value>
   </data>
   <data name="WebhookTargetNotLoaded" xml:space="preserve">
     <value>Webhook target was not loaded.</value>
