@@ -971,6 +971,8 @@ The remaining work to move from MVP to product is tracked in:
 
 - [Productization plan](docs/productization-plan.md)
 - [Product final phase plan](docs/product-final-phase-plan.md)
+- [Release scope v0.1.0-rc.1](docs/release-scope-v0.1.0-rc.1.md)
+- [Client onboarding guide](docs/client-onboarding-guide.md)
 
 The repository also includes a reusable QA skill for future product-readiness audits:
 
@@ -990,3 +992,4 @@ The QA review for this change is recorded in:
 - [Phase 8 observability and readiness QA](docs/qa-phase-8-observability-readiness.md)
 - [Phase 9 security, governance and retention QA](docs/qa-phase-9-security-governance-retention.md)
 - [Phase 10 CI/CD, staging and release QA](docs/qa-phase-10-cicd-staging-release.md)
+- [Phase 11 product certification QA](docs/qa-phase-11-product-certification.md)

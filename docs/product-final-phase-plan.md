@@ -401,6 +401,8 @@ Exit criteria:
 
 Objetivo: declarar el producto listo para primer cliente real.
 
+Estado: en implementacion en la rama `codex/phase-11-product-certification`.
+
 Implementacion:
 
 - Congelar scope de release.

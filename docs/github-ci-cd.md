@@ -7,10 +7,15 @@ It validates:
 - checkout
 - .NET 10 setup
 - restore
+- .NET tool restore
 - release build
 - tests
+- EF migration drift
+- secret scan
+- release configuration safety
 - Docker build
 - Docker Compose config
+- Trivy container vulnerability scan
 
 It does not deploy automatically.
 
