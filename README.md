@@ -946,6 +946,7 @@ Operational runbooks:
 
 - [Google Document AI runbook](docs/runbooks/google-document-ai.md)
 - [PostgreSQL runbook](docs/runbooks/postgres.md)
+- [Release and migration runbook](docs/runbooks/release-and-migrations.md)
 - [Security, governance and retention runbook](docs/runbooks/security-governance-retention.md)
 - [Storage runbook](docs/runbooks/storage.md)
 
@@ -988,3 +989,4 @@ The QA review for this change is recorded in:
 - [Phase 7 webhook delivery QA](docs/qa-phase-7-webhook-delivery.md)
 - [Phase 8 observability and readiness QA](docs/qa-phase-8-observability-readiness.md)
 - [Phase 9 security, governance and retention QA](docs/qa-phase-9-security-governance-retention.md)
+- [Phase 10 CI/CD, staging and release QA](docs/qa-phase-10-cicd-staging-release.md)

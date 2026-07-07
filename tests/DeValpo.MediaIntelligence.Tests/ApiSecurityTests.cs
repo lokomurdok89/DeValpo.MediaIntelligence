@@ -190,17 +190,72 @@ public sealed class ApiSecurityTests
             .WithMessage("*Jwt:SigningKey must be at least 32 bytes.*");
     }
 
+    [Theory]
+    [InlineData("Production")]
+    [InlineData("Staging")]
+    public void Startup_Fails_OutsideDevelopment_WhenReleaseSafetyRulesAreViolated(string environment)
+    {
+        using var factory = CreateFactory(
+            CreateReleaseSafeOverrides(new Dictionary<string, string?>
+            {
+                ["Jwt:SigningKey"] = "dev-only-change-me-32-chars-minimum-key"
+            }),
+            environment);
+
+        var act = () => factory.CreateClient();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Jwt:SigningKey cannot use local, dummy, test or change-me values outside Development.*");
+    }
+
+    [Theory]
+    [InlineData("Swagger:Enabled", "true")]
+    [InlineData("Database:ApplyMigrationsOnStartup", "true")]
+    [InlineData("Jwt:RequireHttpsMetadata", "false")]
+    [InlineData("GoogleDocumentAi:AllowUserCredentials", "true")]
+    [InlineData("Skills:EnableMockSkills", "true")]
+    [InlineData("AnalysisProfiles:EnableMockProfiles", "true")]
+    public void Startup_Fails_InProduction_WhenUnsafeReleaseOptionIsEnabled(string key, string value)
+    {
+        using var factory = CreateFactory(
+            CreateReleaseSafeOverrides(new Dictionary<string, string?>
+            {
+                [key] = value
+            }),
+            "Production");
+
+        var act = () => factory.CreateClient();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Swagger_IsNotPublic_InProduction_WithReleaseSafeConfiguration()
+    {
+        using var factory = CreateFactory(CreateReleaseSafeOverrides(), "Production");
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/swagger/v1/swagger.json");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     private static WebApplicationFactory<Program> CreateFactory(
-        IReadOnlyDictionary<string, string?>? overrides = null)
+        IReadOnlyDictionary<string, string?>? overrides = null,
+        string environment = "Development")
     {
         return new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
-                builder.UseEnvironment("Development");
+                builder.UseEnvironment(environment);
                 builder.ConfigureAppConfiguration((_, configurationBuilder) =>
                 {
+                    configurationBuilder.Sources.Clear();
+
                     var values = new Dictionary<string, string?>
                     {
+                        ["AllowedHosts"] = "*",
+                        ["ConnectionStrings:MediaIntelligence"] = "Host=localhost;Port=5435;Database=media_intelligence;Username=postgres;Password=postgres",
                         ["Database:ApplyMigrationsOnStartup"] = "false",
                         ["Swagger:Enabled"] = "true",
                         ["GoogleDocumentAi:Enabled"] = "false",
@@ -222,5 +277,35 @@ public sealed class ApiSecurityTests
                     configurationBuilder.AddInMemoryCollection(values);
                 });
             });
+    }
+
+    private static IReadOnlyDictionary<string, string?> CreateReleaseSafeOverrides(
+        IReadOnlyDictionary<string, string?>? overrides = null)
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["Database:ApplyMigrationsOnStartup"] = "false",
+            ["Swagger:Enabled"] = "false",
+            ["GoogleDocumentAi:Enabled"] = "false",
+            ["GoogleDocumentAi:AllowUserCredentials"] = "false",
+            ["Skills:EnableMockSkills"] = "false",
+            ["AnalysisProfiles:EnableMockProfiles"] = "false",
+            ["Jwt:Issuer"] = "DeValpo.MediaIntelligence",
+            ["Jwt:Audience"] = "DeValpo.MediaIntelligence.Api",
+            ["Jwt:SigningKey"] = "release-safe-signing-key-with-more-than-32-bytes",
+            ["Jwt:RequireHttpsMetadata"] = "true",
+            ["AnalysisWorker:Enabled"] = "false",
+            ["WebhookDelivery:Enabled"] = "false"
+        };
+
+        if (overrides is not null)
+        {
+            foreach (var item in overrides)
+            {
+                values[item.Key] = item.Value;
+            }
+        }
+
+        return values;
     }
 }

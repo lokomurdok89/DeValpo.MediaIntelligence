@@ -93,6 +93,27 @@
   <data name="JwtAccessTokenMinutesRequired" xml:space="preserve">
     <value>Jwt:AccessTokenMinutes must be greater than zero.</value>
   </data>
+  <data name="ReleaseJwtSigningKeyUnsafe" xml:space="preserve">
+    <value>Jwt:SigningKey cannot use local, dummy, test or change-me values outside Development.</value>
+  </data>
+  <data name="ReleaseJwtRequireHttpsMetadataRequired" xml:space="preserve">
+    <value>Jwt:RequireHttpsMetadata must be true outside Development.</value>
+  </data>
+  <data name="ReleaseSwaggerMustBeDisabled" xml:space="preserve">
+    <value>Swagger must be disabled outside Development.</value>
+  </data>
+  <data name="ReleaseAutomaticMigrationsDisabled" xml:space="preserve">
+    <value>Database:ApplyMigrationsOnStartup must be false outside Development; run migrations through the release process.</value>
+  </data>
+  <data name="ReleaseGoogleUserCredentialsDisabled" xml:space="preserve">
+    <value>GoogleDocumentAi:AllowUserCredentials must be false outside Development.</value>
+  </data>
+  <data name="ReleaseMockSkillsDisabled" xml:space="preserve">
+    <value>Skills:EnableMockSkills must be false outside Development.</value>
+  </data>
+  <data name="ReleaseMockProfilesDisabled" xml:space="preserve">
+    <value>AnalysisProfiles:EnableMockProfiles must be false outside Development.</value>
+  </data>
   <data name="InvalidClientCredentials" xml:space="preserve">
     <value>Client credentials are invalid.</value>
   </data>

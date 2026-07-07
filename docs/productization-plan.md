@@ -319,6 +319,7 @@ Work:
    - Enforce strong JWT/API key settings.
    - Disable Development token endpoint.
    - Disable Swagger or protect it in production.
+   - Done in Phase 10: release environments fail startup when local JWT keys, automatic migrations, Swagger, Google user credentials or mock skills/profiles are enabled.
 
 2. CI/CD.
    - Build and test.
@@ -327,10 +328,12 @@ Work:
    - Migration validation.
    - Secret scanning.
    - Container vulnerability scan.
+   - Done in Phase 10: GitHub Actions runs build, tests, EF migration drift validation, secret scan, release config validation, Docker image build, Compose config validation and Trivy image scan.
 
 3. Database migration process.
    - Decide automatic vs controlled migrations.
    - Add rollback/runbook.
+   - Done in Phase 10: release runbook documents controlled migration SQL generation, application and rollback expectations.
    - Test migrations against a copy of production-like data.
 
 4. Environment strategy.
