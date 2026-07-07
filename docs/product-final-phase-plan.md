@@ -367,7 +367,7 @@ Exit criteria:
 
 Objetivo: poder desplegar una version candidata fuera del ambiente local.
 
-Estado: en implementacion en la rama `codex/phase-10-cicd-staging-release`.
+Estado: implementada en PR #17 desde la rama `codex/phase-10-cicd-staging-release`.
 
 Implementacion:
 
