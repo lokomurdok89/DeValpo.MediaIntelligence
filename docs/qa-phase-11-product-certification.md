@@ -23,9 +23,9 @@ Certify the product for controlled onboarding of the first client.
 | Webhooks | Signed delivery reaches local receiver and history is visible | Passed |
 | Observability | `/health`, `/ready`, metrics and logs are usable without leaking OCR/secrets | Passed |
 | Security | Audit, retention and release safety gates pass | Passed |
-| CI/CD | GitHub Actions release gates pass on PR | Pending |
+| CI/CD | GitHub Actions release gates pass on PR | Passed |
 | Docs | Release scope, client onboarding and runbooks are complete | Passed |
-| Tag | `v0.1.0-rc.1` exists after merge | Pending |
+| Tag | `v0.1.0-rc.1` exists after merge | Pending until merge commit is created |
 
 ## Real Document Matrix
 
@@ -43,6 +43,7 @@ Certify the product for controlled onboarding of the first client.
 - `docker compose -f deploy\docker-compose.yml config --quiet` passed.
 - Docker image build for `devalpo-media-intelligence-api:ci` passed.
 - Trivy `aquasec/trivy:0.69.3` scan against `devalpo-media-intelligence-api:ci` reported `0` HIGH/CRITICAL vulnerabilities.
+- GitHub Actions `build-test` passed on PR #18.
 - Docker Compose release candidate rebuilt and started API plus PostgreSQL.
 - `/health` returned `200`.
 - `/ready` returned `Healthy` with PostgreSQL, local storage and Google Document AI.
@@ -68,4 +69,4 @@ Certify the product for controlled onboarding of the first client.
 ## Findings
 
 - No Blocker, Critical or Major findings found in local product certification.
-- Minor pending until after PR merge: create and push tag `v0.1.0-rc.1`.
+- Minor pending until after PR merge: create and push tag `v0.1.0-rc.1` on the merge commit.
