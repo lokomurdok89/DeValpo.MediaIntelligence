@@ -55,6 +55,34 @@ public sealed class VideoSearchApplicationServiceTests
     }
 
     [Fact]
+    public async Task ProcessNextPendingAsync_ReadsPersistedManifestWithSerializedPropertyNames()
+    {
+        var repository = new FakeVideoSearchJobRepository();
+        var provider = new FakeVideoSearchProvider
+        {
+            TextOccurrences =
+            [
+                new(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), "video-1", "race.mp4", "runner 123", 1m, 2m, 0.82m, "FakeProvider")
+            ]
+        };
+        var service = CreateService(repository, provider);
+
+        await service.EnqueueAsync(
+            new CreateVideoSearchJobCommand(
+                "generic",
+                "event-video-target-search-v1",
+                """{"targets":[{"targetKey":"target-1","visibleNumber":"123"}],"mergeGapSeconds":2,"minConfidence":0.7}""",
+                [CreateUpload()]),
+            CancellationToken.None);
+
+        var processed = await service.ProcessNextPendingAsync(CancellationToken.None);
+
+        processed.Should().BeTrue();
+        repository.CompletedTargetSegments.Should().ContainSingle();
+        repository.Job!.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
     public async Task ProcessNextPendingAsync_PersistsGenericFaceOccurrencesWithoutTargetIdentity()
     {
         var repository = new FakeVideoSearchJobRepository { Job = CreatePendingJob() };

@@ -254,3 +254,19 @@ La Parte 1 se considera MVP real cuando:
 5. El resultado devuelve `targetMatches` por numero visible.
 6. El resultado devuelve `faceOccurrences` si hay caras.
 7. No hay mocks habilitados en el flujo probado.
+
+## Evidencia De Smoke Test Real
+
+Smoke test local validado el 2026-07-07:
+
+| Item | Resultado |
+| --- | --- |
+| Provider | Google Video Intelligence |
+| Video real | 774.23 MB |
+| Cantidad de videos | 1 |
+| Bucket GCS remoto | Alcanzable |
+| Estado final del job | `Completed` |
+| Intentos | 1 |
+| Tiempo aproximado | 24 minutos 50 segundos |
+
+El resultado completo fue exportado localmente para revision funcional, pero no debe subirse al repositorio porque puede contener informacion derivada de un video real.
