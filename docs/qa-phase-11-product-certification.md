@@ -25,7 +25,7 @@ Certify the product for controlled onboarding of the first client.
 | Security | Audit, retention and release safety gates pass | Passed |
 | CI/CD | GitHub Actions release gates pass on PR | Passed |
 | Docs | Release scope, client onboarding and runbooks are complete | Passed |
-| Tag | `v0.1.0-rc.1` exists after merge | Pending until merge commit is created |
+| Tag | `v0.1.0-rc.1` exists after merge | Passed |
 
 ## Real Document Matrix
 
@@ -44,6 +44,7 @@ Certify the product for controlled onboarding of the first client.
 - Docker image build for `devalpo-media-intelligence-api:ci` passed.
 - Trivy `aquasec/trivy:0.69.3` scan against `devalpo-media-intelligence-api:ci` reported `0` HIGH/CRITICAL vulnerabilities.
 - GitHub Actions `build-test` passed on PR #18.
+- Tag `v0.1.0-rc.1` was created and pushed after PR #18 merged.
 - Docker Compose release candidate rebuilt and started API plus PostgreSQL.
 - `/health` returned `200`.
 - `/ready` returned `Healthy` with PostgreSQL, local storage and Google Document AI.
@@ -69,4 +70,4 @@ Certify the product for controlled onboarding of the first client.
 ## Findings
 
 - No Blocker, Critical or Major findings found in local product certification.
-- Minor pending until after PR merge: create and push tag `v0.1.0-rc.1` on the merge commit.
+- No open Blocker, Critical, Major or Minor findings remain for `v0.1.0-rc.1`.
