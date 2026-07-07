@@ -71,6 +71,50 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
+    public async Task AwsRekognitionStatus_BasicCheck_RemainsAnonymous()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/providers/aws-rekognition/status");
+        var json = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        json.Should().Contain("\"enabled\":false");
+        json.Should().Contain("\"configured\":false");
+    }
+
+    [Fact]
+    public async Task AwsRekognitionStatus_RemoteCheck_RequiresBearerToken()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/providers/aws-rekognition/status?checkRemote=true");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task FaceSearchJobs_AreNotExposedUntilRealAwsProviderExists()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var tokenResponse = await client.PostAsJsonAsync(
+            "/api/v1/dev/token",
+            new CreateDevTokenRequest("test-user", "test-client", "media-intelligence:operator"));
+        tokenResponse.EnsureSuccessStatusCode();
+
+        var token = await tokenResponse.Content.ReadFromJsonAsync<DevTokenResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
+
+        var response = await client.PostAsync("/api/v1/face-search-jobs", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task OperationsMetrics_RejectsClientOnlyToken()
     {
         using var factory = CreateFactory();
@@ -188,6 +232,7 @@ public sealed class ApiSecurityTests
         json.Should().Contain("Creates a video target search job");
         json.Should().Contain("Returns video search job metadata");
         json.Should().Contain("generic face occurrences, not identity matches");
+        json.Should().Contain("Reports AWS Rekognition configuration status");
     }
 
     [Fact]

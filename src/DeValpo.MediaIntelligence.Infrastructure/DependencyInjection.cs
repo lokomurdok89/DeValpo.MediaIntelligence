@@ -4,10 +4,11 @@ using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence.Repositories;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Google.DocumentAi;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Google.VideoIntelligence;
 using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using DeValpo.MediaIntelligence.Infrastructure.Skills;
-using DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
-using DeValpo.MediaIntelligence.Infrastructure.Skills.Video;
 using DeValpo.MediaIntelligence.Infrastructure.Storage;
 using DeValpo.MediaIntelligence.Infrastructure.Webhooks;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.Configure<StorageOptions>(configuration.GetSection("Storage"));
         services.Configure<GoogleDocumentAiOptions>(configuration.GetSection("GoogleDocumentAi"));
         services.Configure<GoogleVideoIntelligenceOptions>(configuration.GetSection("GoogleVideoIntelligence"));
+        services.Configure<AwsRekognitionOptions>(configuration.GetSection("AwsRekognition"));
         services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
         services.Configure<SkillRegistrationOptions>(configuration.GetSection("Skills"));
         services.Configure<AnalysisProfileOptions>(configuration.GetSection("AnalysisProfiles"));
@@ -59,6 +61,7 @@ public static class DependencyInjection
         services.AddScoped<IGoogleDocumentAiClientFactory, GoogleDocumentAiClientFactory>();
         services.AddScoped<IGoogleDocumentAiStatusService, GoogleDocumentAiStatusService>();
         services.AddScoped<IGoogleVideoIntelligenceStatusService, GoogleVideoIntelligenceStatusService>();
+        services.AddScoped<IAwsRekognitionStatusService, AwsRekognitionStatusService>();
         services.AddScoped<IVideoSearchProvider, GoogleVideoIntelligenceSearchProvider>();
 
         var skillRegistrationOptions = configuration.GetSection("Skills").Get<SkillRegistrationOptions>() ?? new SkillRegistrationOptions();

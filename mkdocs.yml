@@ -54,6 +54,7 @@ plugins:
             API: API
             Busqueda de targets en video: Video target search
             Ruta MVP video real: Real video MVP route
+            AWS Rekognition face search: AWS Rekognition face search
             Arquitectura: Architecture
             Modelo de datos: Data model
             Seguridad: Security
@@ -88,6 +89,7 @@ nav:
       - Flujos de endpoints: api-endpoint-flows.md
       - Busqueda de targets en video: video-target-search.md
       - Ruta MVP video real: video-mvp-real-route.md
+      - AWS Rekognition face search: aws-rekognition-face-search.md
   - Arquitectura:
       - Arquitectura: architecture.md
       - Modelo de datos: data-model.md

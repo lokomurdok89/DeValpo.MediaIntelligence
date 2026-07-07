@@ -215,7 +215,13 @@ Endpoints futuros, solo cuando el provider real este implementado:
 POST /api/v1/face-search-jobs
 GET /api/v1/face-search-jobs/{jobId}
 GET /api/v1/face-search-jobs/{jobId}/result
+```
+
+El status del provider ya existe para operar sin credenciales:
+
+```http
 GET /api/v1/providers/aws-rekognition/status
+GET /api/v1/providers/aws-rekognition/status?checkRemote=true
 ```
 
 Contrato minimo futuro:

@@ -7,7 +7,7 @@ using Google.Cloud.VideoIntelligence.V1;
 using Grpc.Core;
 using Microsoft.Extensions.Options;
 
-namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Video;
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.VideoIntelligence;
 
 public sealed class GoogleVideoIntelligenceSearchProvider(
     IMediaAssetStorage mediaAssetStorage,
@@ -167,7 +167,7 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
         }
     }
 
-    private static decimal ToSeconds(Google.Protobuf.WellKnownTypes.Duration duration)
+    private static decimal ToSeconds(global::Google.Protobuf.WellKnownTypes.Duration duration)
     {
         return Math.Round((decimal)duration.ToTimeSpan().TotalSeconds, 3);
     }

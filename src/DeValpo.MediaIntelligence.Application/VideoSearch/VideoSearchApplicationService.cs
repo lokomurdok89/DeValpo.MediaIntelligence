@@ -20,18 +20,6 @@ public sealed class VideoSearchApplicationService(
     ILogger<VideoSearchApplicationService> logger) : IVideoSearchApplicationService
 {
     private const string ProfileKey = "event-video-target-search-v1";
-    private static readonly HashSet<string> AllowedRootProperties = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "targets", "detectFaces", "detectNumbers", "minConfidence", "mergeGapSeconds"
-    };
-    private static readonly HashSet<string> AllowedTargetProperties = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "targetKey", "visibleNumber"
-    };
-    private static readonly HashSet<string> PersonalDataPropertyNames = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "name", "fullName", "email", "rut", "dni", "phone", "telephone", "documentNumber", "personId", "userId"
-    };
 
     /// <summary>
     /// Stores all source videos and creates a pending video search job.
@@ -153,7 +141,7 @@ public sealed class VideoSearchApplicationService(
 
     private async Task ProcessJobAsync(VideoSearchJob job, CancellationToken cancellationToken)
     {
-        var manifest = ParseManifest(job.ManifestJson, options.Value);
+        var manifest = VideoSearchManifestParser.Parse(job.ManifestJson, options.Value);
         var providerResult = await provider.AnalyzeAsync(
             new VideoSearchProviderRequest(
                 job.Id,
@@ -243,75 +231,7 @@ public sealed class VideoSearchApplicationService(
             throw new InvalidOperationException(ApplicationResourceText.ProfileAssetTypeUnsupported(command.ProfileKey, MediaAssetType.Video));
         }
 
-        return ParseManifest(command.ManifestJson, options.Value);
-    }
-
-    private static VideoSearchManifest ParseManifest(string manifestJson, VideoAnalysisOptions options)
-    {
-        if (string.IsNullOrWhiteSpace(manifestJson))
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchManifestRequired);
-        }
-
-        using var document = JsonDocument.Parse(manifestJson);
-        if (document.RootElement.ValueKind != JsonValueKind.Object)
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchManifestMustBeObject);
-        }
-
-        RejectUnexpectedProperties(document.RootElement, AllowedRootProperties);
-
-        var detectFaces = GetOptionalBoolean(document.RootElement, "detectFaces") ?? true;
-        var detectNumbers = GetOptionalBoolean(document.RootElement, "detectNumbers") ?? true;
-        if (!detectFaces && !detectNumbers)
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchAtLeastOneDetectionRequired);
-        }
-
-        var minConfidence = GetOptionalDecimal(document.RootElement, "minConfidence") ?? options.DefaultMinConfidence;
-        if (minConfidence is < 0m or > 1m)
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchMinConfidenceInvalid);
-        }
-
-        var mergeGapSeconds = GetOptionalDecimal(document.RootElement, "mergeGapSeconds") ?? options.DefaultMergeGapSeconds;
-        if (mergeGapSeconds is < 0m or > 60m)
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchMergeGapInvalid);
-        }
-
-        if (!document.RootElement.TryGetProperty("targets", out var targetsElement) ||
-            targetsElement.ValueKind != JsonValueKind.Array)
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchTargetsRequired);
-        }
-
-        var targets = new List<VideoSearchTarget>();
-        foreach (var targetElement in targetsElement.EnumerateArray())
-        {
-            if (targetElement.ValueKind != JsonValueKind.Object)
-            {
-                throw new ArgumentException(ApplicationResourceText.VideoSearchTargetMustBeObject);
-            }
-
-            RejectUnexpectedProperties(targetElement, AllowedTargetProperties);
-
-            var targetKey = GetRequiredString(targetElement, "targetKey", ApplicationResourceText.VideoSearchTargetKeyRequired);
-            var visibleNumber = GetRequiredString(targetElement, "visibleNumber", ApplicationResourceText.VideoSearchVisibleNumberRequired);
-            if (NormalizeNumber(visibleNumber).Length == 0)
-            {
-                throw new ArgumentException(ApplicationResourceText.VideoSearchVisibleNumberMustContainDigit);
-            }
-
-            targets.Add(new VideoSearchTarget(targetKey, visibleNumber));
-        }
-
-        if (targets.Count == 0)
-        {
-            throw new ArgumentException(ApplicationResourceText.VideoSearchTargetsRequired);
-        }
-
-        return new VideoSearchManifest(targets, detectFaces, detectNumbers, minConfidence, mergeGapSeconds);
+        return VideoSearchManifestParser.Parse(command.ManifestJson, options.Value);
     }
 
     private static IReadOnlyCollection<VideoSearchTargetMatchSegment> BuildTargetSegments(
@@ -327,11 +247,11 @@ public sealed class VideoSearchApplicationService(
         var rawSegments = new List<VideoSearchTargetMatchSegment>();
         foreach (var target in manifest.Targets)
         {
-            var normalizedTarget = NormalizeNumber(target.VisibleNumber);
+            var normalizedTarget = VideoSearchTextNormalizer.NormalizeNumber(target.VisibleNumber);
             foreach (var occurrence in textOccurrences)
             {
                 if (occurrence.Confidence < manifest.MinConfidence ||
-                    !NormalizeNumber(occurrence.Text).Contains(normalizedTarget, StringComparison.Ordinal))
+                    !VideoSearchTextNormalizer.NormalizeNumber(occurrence.Text).Contains(normalizedTarget, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -352,34 +272,7 @@ public sealed class VideoSearchApplicationService(
             }
         }
 
-        return MergeSegments(rawSegments, manifest.MergeGapSeconds);
-    }
-
-    private static IReadOnlyCollection<VideoSearchTargetMatchSegment> MergeSegments(
-        IReadOnlyCollection<VideoSearchTargetMatchSegment> segments,
-        decimal mergeGapSeconds)
-    {
-        return segments
-            .GroupBy(item => new { item.TargetKey, item.VisibleNumber, item.VideoAssetId, item.VideoKey, item.VideoFileName, item.SourceProvider })
-            .SelectMany(group =>
-            {
-                var merged = new List<VideoSearchTargetMatchSegment>();
-                foreach (var segment in group.OrderBy(item => item.StartTimeSeconds))
-                {
-                    var current = merged.LastOrDefault();
-                    if (current is null || segment.StartTimeSeconds > current.EndTimeSeconds + mergeGapSeconds)
-                    {
-                        merged.Add(segment);
-                        continue;
-                    }
-
-                    current.EndTimeSeconds = Math.Max(current.EndTimeSeconds, segment.EndTimeSeconds);
-                    current.Confidence = Math.Max(current.Confidence, segment.Confidence);
-                }
-
-                return merged;
-            })
-            .ToArray();
+        return VideoSearchSegmentMerger.Merge(rawSegments, manifest.MergeGapSeconds);
     }
 
     private static VideoSearchResultResponse MapResult(VideoSearchJob job)
@@ -397,8 +290,8 @@ public sealed class VideoSearchApplicationService(
                         item.VideoFileName,
                         item.StartTimeSeconds,
                         item.EndTimeSeconds,
-                        ToTimecode(item.StartTimeSeconds),
-                        ToTimecode(item.EndTimeSeconds),
+                        VideoTimecodeFormatter.Format(item.StartTimeSeconds),
+                        VideoTimecodeFormatter.Format(item.EndTimeSeconds),
                         item.Confidence,
                         item.SourceProvider))
                     .ToArray()))
@@ -415,8 +308,8 @@ public sealed class VideoSearchApplicationService(
                     item.VideoFileName,
                     item.StartTimeSeconds,
                     item.EndTimeSeconds,
-                    ToTimecode(item.StartTimeSeconds),
-                    ToTimecode(item.EndTimeSeconds),
+                    VideoTimecodeFormatter.Format(item.StartTimeSeconds),
+                    VideoTimecodeFormatter.Format(item.EndTimeSeconds),
                     item.Confidence,
                     item.SourceProvider))
                 .ToArray(),
@@ -439,58 +332,4 @@ public sealed class VideoSearchApplicationService(
             job.CompletedAt);
     }
 
-    private static string ToTimecode(decimal seconds)
-    {
-        var timeSpan = TimeSpan.FromSeconds((double)seconds);
-        return timeSpan.Hours > 0
-            ? timeSpan.ToString(@"hh\:mm\:ss\.fff")
-            : timeSpan.ToString(@"mm\:ss\.fff");
-    }
-
-    private static void RejectUnexpectedProperties(JsonElement element, HashSet<string> allowedProperties)
-    {
-        foreach (var property in element.EnumerateObject())
-        {
-            if (PersonalDataPropertyNames.Contains(property.Name))
-            {
-                throw new ArgumentException(ApplicationResourceText.VideoSearchPersonalDataNotAllowed(property.Name));
-            }
-
-            if (!allowedProperties.Contains(property.Name))
-            {
-                throw new ArgumentException(ApplicationResourceText.VideoSearchManifestPropertyUnsupported(property.Name));
-            }
-        }
-    }
-
-    private static string GetRequiredString(JsonElement element, string propertyName, string message)
-    {
-        if (!element.TryGetProperty(propertyName, out var property) ||
-            property.ValueKind != JsonValueKind.String ||
-            string.IsNullOrWhiteSpace(property.GetString()))
-        {
-            throw new ArgumentException(message);
-        }
-
-        return property.GetString()!.Trim();
-    }
-
-    private static bool? GetOptionalBoolean(JsonElement element, string propertyName)
-    {
-        return element.TryGetProperty(propertyName, out var property)
-            ? property.GetBoolean()
-            : null;
-    }
-
-    private static decimal? GetOptionalDecimal(JsonElement element, string propertyName)
-    {
-        return element.TryGetProperty(propertyName, out var property)
-            ? property.GetDecimal()
-            : null;
-    }
-
-    private static string NormalizeNumber(string value)
-    {
-        return new string(value.Where(char.IsDigit).ToArray());
-    }
 }

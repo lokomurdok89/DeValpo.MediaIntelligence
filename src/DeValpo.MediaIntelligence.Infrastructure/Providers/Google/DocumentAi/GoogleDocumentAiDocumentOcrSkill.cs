@@ -9,7 +9,7 @@ using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Options;
 
-namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.DocumentAi;
 
 public sealed class GoogleDocumentAiDocumentOcrSkill(
     IOptions<GoogleDocumentAiOptions> options,

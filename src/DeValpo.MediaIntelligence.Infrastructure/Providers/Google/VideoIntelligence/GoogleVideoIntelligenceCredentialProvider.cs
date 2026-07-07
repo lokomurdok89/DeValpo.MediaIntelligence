@@ -3,7 +3,7 @@ using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using Google.Apis.Auth.OAuth2;
 using System.Text.Json;
 
-namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Video;
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.VideoIntelligence;
 
 internal static class GoogleVideoIntelligenceCredentialProvider
 {
