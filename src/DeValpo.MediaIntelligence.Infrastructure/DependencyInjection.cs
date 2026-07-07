@@ -28,6 +28,8 @@ public static class DependencyInjection
         services.Configure<SkillRegistrationOptions>(configuration.GetSection("Skills"));
         services.Configure<AnalysisProfileOptions>(configuration.GetSection("AnalysisProfiles"));
         services.Configure<WebhookDeliveryOptions>(configuration.GetSection("WebhookDelivery"));
+        services.Configure<GoogleDocumentAiStatusCacheOptions>(configuration.GetSection("GoogleDocumentAiStatusCache"));
+        services.AddMemoryCache();
 
         var connectionString = configuration.GetConnectionString("MediaIntelligence")
             ?? throw new InvalidOperationException(InfrastructureResourceText.ConnectionStringRequired);
@@ -41,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IHumanReviewTaskRepository, HumanReviewTaskRepository>();
         services.AddScoped<IClientWebhookTargetRepository, ClientWebhookTargetRepository>();
         services.AddScoped<IWebhookDeliveryRepository, WebhookDeliveryRepository>();
+        services.AddScoped<IOperationalMetricsRepository, OperationalMetricsRepository>();
         services.AddScoped<IWebhookSignatureService, WebhookSignatureService>();
         services.AddScoped<IWebhookDeliveryProcessor, WebhookDeliveryProcessor>();
         services.AddHttpClient<IWebhookDeliverySender, WebhookDeliverySender>();

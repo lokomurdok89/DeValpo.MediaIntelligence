@@ -27,6 +27,9 @@ internal static class ApiResourceText
     public static string LocalStorageUnhealthy => GetRequiredResource(nameof(LocalStorageUnhealthy));
     public static string PostgresHealthy => GetRequiredResource(nameof(PostgresHealthy));
     public static string PostgresUnhealthy => GetRequiredResource(nameof(PostgresUnhealthy));
+    public static string GoogleDocumentAiReadinessDisabled => GetRequiredResource(nameof(GoogleDocumentAiReadinessDisabled));
+    public static string GoogleDocumentAiReadinessHealthy => GetRequiredResource(nameof(GoogleDocumentAiReadinessHealthy));
+    public static string GoogleDocumentAiReadinessUnhealthy => GetRequiredResource(nameof(GoogleDocumentAiReadinessUnhealthy));
     public static string ConnectionStringRequired => GetRequiredResource(nameof(ConnectionStringRequired));
     public static string RequestFailedLogMessage => GetRequiredResource(nameof(RequestFailedLogMessage));
     public static string UnexpectedError => GetRequiredResource(nameof(UnexpectedError));

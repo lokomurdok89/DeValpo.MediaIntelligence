@@ -63,6 +63,15 @@
   <data name="PostgresUnhealthy" xml:space="preserve">
     <value>PostgreSQL is not reachable.</value>
   </data>
+  <data name="GoogleDocumentAiReadinessDisabled" xml:space="preserve">
+    <value>Google Document AI readiness is not required in this environment.</value>
+  </data>
+  <data name="GoogleDocumentAiReadinessHealthy" xml:space="preserve">
+    <value>Google Document AI readiness check passed.</value>
+  </data>
+  <data name="GoogleDocumentAiReadinessUnhealthy" xml:space="preserve">
+    <value>Google Document AI readiness check failed.</value>
+  </data>
   <data name="ConnectionStringRequired" xml:space="preserve">
     <value>ConnectionStrings:MediaIntelligence is required.</value>
   </data>

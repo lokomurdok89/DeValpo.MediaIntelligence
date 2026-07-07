@@ -84,6 +84,9 @@
   <data name="GoogleDocumentAiRemoteCheckFailedWithStatus" xml:space="preserve">
     <value>Google Document AI remote check failed: {0}.</value>
   </data>
+  <data name="GoogleDocumentAiRemoteCheckTimedOut" xml:space="preserve">
+    <value>Google Document AI remote check timed out.</value>
+  </data>
   <data name="GoogleDocumentAiRemoteCheckFailed" xml:space="preserve">
     <value>Google Document AI remote check failed.</value>
   </data>

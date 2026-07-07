@@ -36,6 +36,49 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
+    public async Task RootHealth_RemainsAnonymousAndLightweight()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/health");
+        var body = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        body.Should().Be("Healthy");
+    }
+
+    [Fact]
+    public async Task OperationsMetrics_RequiresBearerToken()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/operations/metrics");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task OperationsMetrics_RejectsClientOnlyToken()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var tokenResponse = await client.PostAsJsonAsync(
+            "/api/v1/dev/token",
+            new CreateDevTokenRequest("test-user", "test-client", "media-intelligence:client"));
+        tokenResponse.EnsureSuccessStatusCode();
+
+        var token = await tokenResponse.Content.ReadFromJsonAsync<DevTokenResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
+
+        var response = await client.GetAsync("/api/v1/operations/metrics");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task DevToken_AllowsCallingProtectedEndpoints_InDevelopment()
     {
         using var factory = CreateFactory();

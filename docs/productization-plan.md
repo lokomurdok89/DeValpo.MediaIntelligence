@@ -21,6 +21,9 @@ Already working:
 - Analysis jobs, media assets, skill executions, results, issues and human review tasks are persisted.
 - Human review supports list/detail/start/complete with approve, correct and reject decisions.
 - Webhook targets and delivery attempts are implemented for completed jobs.
+- Liveness and readiness are separated through `/health` and `/ready`.
+- Basic operational counters are exposed for operator/admin diagnostics.
+- Google Document AI remote readiness checks are cached and timeout-bounded.
 - Initial EF Core migration exists.
 - Basic unit and API security tests exist.
 - Interfaces have been split from several application implementations.
@@ -31,7 +34,7 @@ Known product gaps:
 - Rate limiting and abuse controls are not implemented yet.
 - Auth/audit events are not recorded yet.
 - Webhook signing secrets are stored for local HMAC delivery and must move to managed secret storage before production.
-- There is no production observability, audit trail or rate limiting.
+- There is no production audit trail, distributed tracing backend or rate limiting.
 - There is no real QA matrix using real documents and real provider calls.
 
 ## Product Definition
@@ -241,31 +244,26 @@ Goal: make production behavior visible and supportable.
 Work:
 
 1. Structured logging.
-   - Include correlation id, job id, client key, profile key and provider.
-   - Exclude secrets and raw document content.
+   - Done in Phase 8: include correlation id, job id, client key, profile key and provider in request/job logs.
+   - Done in Phase 8: exclude secrets and raw document content.
 
 2. Metrics.
-   - Request counts/status.
-   - Job duration.
-   - Provider latency/error rate.
-   - Review rate.
-   - Queue depth.
+   - Done in Phase 8: expose persisted job, review and webhook status counters.
+   - Future: request counts/status, job duration, provider latency/error rate and queue depth metrics backend.
 
 3. Tracing.
-   - API request to job execution to provider call.
-   - Propagate correlation id.
+   - Done in Phase 8: propagate correlation id through request logs and responses.
+   - Future: distributed tracing backend from API request to worker/provider call.
 
 4. Operational endpoints.
-   - `/health` liveness.
-   - `/ready` readiness.
-   - Provider status with cached remote result.
+   - Done in Phase 8: `/health` liveness.
+   - Done in Phase 8: `/ready` readiness.
+   - Done in Phase 8: Provider status with cached remote result.
 
 5. Runbooks.
-   - Google auth failure.
-   - Processor not found.
-   - Quota/billing failure.
-   - Database unavailable.
-   - Storage unavailable.
+   - Done in Phase 8: Google auth/processor/quota/billing failures.
+   - Done in Phase 8: Database unavailable.
+   - Done in Phase 8: Storage unavailable.
 
 Exit criteria:
 

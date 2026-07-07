@@ -710,7 +710,7 @@ This single Compose file starts both components:
 
 In Docker, migrations run automatically on API startup because `deploy/.env.example` sets `Database__ApplyMigrationsOnStartup=true`.
 
-The API listens on `http://localhost:8085`, Swagger is available at `http://localhost:8085/swagger`, and health is exposed at `/health`.
+The API listens on `http://localhost:8085`, Swagger is available at `http://localhost:8085/swagger`, liveness is exposed at `/health`, and dependency readiness is exposed at `/ready`.
 
 Functional endpoints require JWT Bearer. For real client access, an operator first creates an API client using an admin-scoped token. In Development/Docker local, generate the admin token with:
 
@@ -891,6 +891,44 @@ curl "http://localhost:8085/api/v1/webhook-deliveries?clientKey=<clientKey>&jobI
 
 Failed deliveries move to `RetryPending` until `WebhookDelivery:MaxAttempts` is reached, then end as `Failed`.
 
+## Operations
+
+Use `/health` for lightweight liveness. It does not check PostgreSQL, storage or Google:
+
+```bash
+curl http://localhost:8085/health
+```
+
+Use `/ready` for dependency readiness. It checks PostgreSQL, local asset storage and Google Document AI according to `Readiness` configuration:
+
+```bash
+curl http://localhost:8085/ready
+```
+
+Docker local enables remote Google readiness through:
+
+```text
+Readiness__RequireGoogleDocumentAi=true
+Readiness__CheckGoogleDocumentAiRemote=true
+GoogleDocumentAiStatusCache__RemoteStatusTtlSeconds=60
+GoogleDocumentAiStatusCache__RemoteStatusTimeoutSeconds=10
+```
+
+Operator/admin tokens can read operational counters:
+
+```bash
+curl http://localhost:8085/api/v1/operations/metrics \
+  -H "Authorization: Bearer <operatorOrAdminAccessToken>"
+```
+
+The metrics response includes counts by job status, human review status and webhook delivery status. It does not include document text, API keys or webhook signing secrets.
+
+Operational runbooks:
+
+- [Google Document AI runbook](docs/runbooks/google-document-ai.md)
+- [PostgreSQL runbook](docs/runbooks/postgres.md)
+- [Storage runbook](docs/runbooks/storage.md)
+
 ## Add a skill
 
 1. Implement `IMediaAnalysisSkill`.
@@ -928,3 +966,4 @@ The QA review for this change is recorded in:
 - [Phase 5 file ingestion validation QA](docs/qa-phase-5-file-ingestion-validation.md)
 - [Phase 6 human review workflow QA](docs/qa-phase-6-human-review-workflow.md)
 - [Phase 7 webhook delivery QA](docs/qa-phase-7-webhook-delivery.md)
+- [Phase 8 observability and readiness QA](docs/qa-phase-8-observability-readiness.md)

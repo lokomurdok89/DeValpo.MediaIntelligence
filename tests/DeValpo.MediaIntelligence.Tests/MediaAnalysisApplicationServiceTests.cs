@@ -8,6 +8,7 @@ using DeValpo.MediaIntelligence.Contracts.Webhooks;
 using DeValpo.MediaIntelligence.Application.Webhooks;
 using DeValpo.MediaIntelligence.Domain.Entities;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Tests;
@@ -113,7 +114,8 @@ public sealed class MediaAnalysisApplicationServiceTests
             jobRepository,
             new FakeWebhookDeliveryApplicationService(),
             new FakeUnitOfWork(),
-            Options.Create(options ?? new AnalysisProcessingOptions()));
+            Options.Create(options ?? new AnalysisProcessingOptions()),
+            NullLogger<MediaAnalysisApplicationService>.Instance);
     }
 
     private sealed class SuccessfulOrchestrator : IMediaAnalysisOrchestrator

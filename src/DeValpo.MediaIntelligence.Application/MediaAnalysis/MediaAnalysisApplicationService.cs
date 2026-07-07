@@ -6,6 +6,7 @@ using DeValpo.MediaIntelligence.Contracts.AnalysisJobs;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
 using DeValpo.MediaIntelligence.Domain.Entities;
 using DeValpo.MediaIntelligence.Application.Webhooks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Application.MediaAnalysis;
@@ -17,7 +18,8 @@ public sealed class MediaAnalysisApplicationService(
     IAnalysisJobRepository jobRepository,
     IWebhookDeliveryApplicationService webhookDeliveryService,
     IUnitOfWork unitOfWork,
-    IOptions<AnalysisProcessingOptions> processingOptions) : IMediaAnalysisApplicationService
+    IOptions<AnalysisProcessingOptions> processingOptions,
+    ILogger<MediaAnalysisApplicationService> logger) : IMediaAnalysisApplicationService
 {
     /// <summary>
     /// Stores the asset and creates a pending job for the background worker.
@@ -57,6 +59,16 @@ public sealed class MediaAnalysisApplicationService(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        using (logger.BeginScope(new Dictionary<string, object>
+        {
+            ["JobId"] = job.Id,
+            ["ClientKey"] = job.ClientKey,
+            ["ProfileKey"] = job.ProfileKey
+        }))
+        {
+            logger.LogInformation(ApplicationResourceText.AnalysisJobQueuedLogMessage);
+        }
+
         return new CreateAnalysisJobResponse(job.Id, job.Status, job.ProcessingAttempts, job.CreatedAt);
     }
 
@@ -78,12 +90,22 @@ public sealed class MediaAnalysisApplicationService(
             return true;
         }
 
+        using var processingScope = logger.BeginScope(new Dictionary<string, object>
+        {
+            ["JobId"] = job.Id,
+            ["ClientKey"] = job.ClientKey,
+            ["ProfileKey"] = job.ProfileKey,
+            ["ProcessingAttempt"] = attempt
+        });
+        logger.LogInformation(ApplicationResourceText.AnalysisJobProcessingStartedLogMessage);
+
         try
         {
             await ProcessJobAsync(job, cancellationToken);
         }
         catch (Exception exception) when (attempt < processingOptions.Value.MaxProcessingAttempts)
         {
+            logger.LogWarning(exception, ApplicationResourceText.AnalysisJobProcessingRetryLogMessage);
             await jobRepository.SetProcessingFailureAsync(
                 job.Id,
                 AnalysisJobStatus.Pending.ToString(),
@@ -93,6 +115,7 @@ public sealed class MediaAnalysisApplicationService(
         }
         catch (Exception exception)
         {
+            logger.LogError(exception, ApplicationResourceText.AnalysisJobProcessingFailedLogMessage);
             await jobRepository.SetProcessingFailureAsync(
                 job.Id,
                 AnalysisJobStatus.Failed.ToString(),
@@ -231,6 +254,18 @@ public sealed class MediaAnalysisApplicationService(
         if (status == AnalysisJobStatus.Completed.ToString())
         {
             await webhookDeliveryService.EnqueueForJobAsync(job.Id, "analysis.completed", cancellationToken);
+        }
+
+        using (logger.BeginScope(new Dictionary<string, object>
+        {
+            ["JobId"] = job.Id,
+            ["ClientKey"] = job.ClientKey,
+            ["ProfileKey"] = job.ProfileKey,
+            ["JobStatus"] = status,
+            ["Provider"] = orchestrationResult.SkillResults.FirstOrDefault()?.SkillName ?? "unknown"
+        }))
+        {
+            logger.LogInformation(ApplicationResourceText.AnalysisJobProcessingCompletedLogMessage);
         }
     }
 

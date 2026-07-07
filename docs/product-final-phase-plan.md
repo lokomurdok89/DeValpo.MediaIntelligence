@@ -278,7 +278,7 @@ Exit criteria:
 
 Objetivo: entregar resultados a sistemas externos de forma confiable.
 
-Estado: en implementacion en la rama `codex/phase-7-webhook-delivery`; no se puede iniciar Fase 8 hasta que PR, CI, QA real y merge esten completos.
+Estado: implementada y mergeada en PR #14.
 
 Implementacion:
 
@@ -308,6 +308,8 @@ Exit criteria:
 ## Fase 8: Observabilidad, Readiness Y Operacion
 
 Objetivo: hacer diagnosticable el sistema sin leer codigo.
+
+Estado: en implementacion en la rama `codex/phase-8-observability-readiness`; no se puede iniciar Fase 9 hasta que PR, CI, QA real y merge esten completos.
 
 Implementacion:
 

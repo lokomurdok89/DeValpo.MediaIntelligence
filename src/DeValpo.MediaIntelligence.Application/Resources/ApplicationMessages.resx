@@ -105,6 +105,21 @@
   <data name="WebhookTargetAlreadyExists" xml:space="preserve">
     <value>Webhook target '{0}' already exists for client '{1}'.</value>
   </data>
+  <data name="AnalysisJobQueuedLogMessage" xml:space="preserve">
+    <value>Analysis job queued.</value>
+  </data>
+  <data name="AnalysisJobProcessingStartedLogMessage" xml:space="preserve">
+    <value>Analysis job processing started.</value>
+  </data>
+  <data name="AnalysisJobProcessingCompletedLogMessage" xml:space="preserve">
+    <value>Analysis job processing completed.</value>
+  </data>
+  <data name="AnalysisJobProcessingRetryLogMessage" xml:space="preserve">
+    <value>Analysis job processing failed and will be retried.</value>
+  </data>
+  <data name="AnalysisJobProcessingFailedLogMessage" xml:space="preserve">
+    <value>Analysis job processing failed permanently.</value>
+  </data>
   <data name="CapabilityResourceMissing" xml:space="preserve">
     <value>Missing capability resource '{0}'.</value>
   </data>
