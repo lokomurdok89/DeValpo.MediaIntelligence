@@ -45,5 +45,5 @@ The release is ready for controlled onboarding of one first client in a supervis
 
 ## Version Tag
 
-Target tag after merge: `v0.1.0-rc.1`.
+Published tag: `v0.1.0-rc.1`.
 

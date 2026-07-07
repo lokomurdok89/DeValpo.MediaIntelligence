@@ -401,7 +401,7 @@ Exit criteria:
 
 Objetivo: declarar el producto listo para primer cliente real.
 
-Estado: implementada en PR #18 desde la rama `codex/phase-11-product-certification`; tag objetivo `v0.1.0-rc.1`.
+Estado: implementada en PR #18 desde la rama `codex/phase-11-product-certification`; tag publicado `v0.1.0-rc.1`.
 
 Implementacion:
 
