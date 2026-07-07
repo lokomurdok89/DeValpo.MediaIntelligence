@@ -53,6 +53,7 @@ flowchart LR
 ## Key Pages
 
 - [Getting started](getting-started.md): minimum commands to run and test locally.
+- [Implementation guide](implementation-guide.md): complete steps to integrate clients, endpoints, services and real validation.
 - [API](api.md): contracts, authentication and role-based usage.
 - [Endpoint flows](api-endpoint-flows.md): endpoint sequence diagrams.
 - [Architecture](architecture.md): components and internal flow.

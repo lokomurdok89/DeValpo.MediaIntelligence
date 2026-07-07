@@ -50,6 +50,7 @@ plugins:
           nav_translations:
             Inicio: Home
             Primeros pasos: Getting started
+            Guia de implementacion: Implementation guide
             API: API
             Arquitectura: Architecture
             Modelo de datos: Data model
@@ -77,7 +78,9 @@ markdown_extensions:
 
 nav:
   - Inicio: index.md
-  - Primeros pasos: getting-started.md
+  - Primeros pasos:
+      - Primeros pasos: getting-started.md
+      - Guia de implementacion: implementation-guide.md
   - API:
       - API: api.md
       - Flujos de endpoints: api-endpoint-flows.md

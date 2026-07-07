@@ -53,6 +53,7 @@ flowchart LR
 ## Paginas Clave
 
 - [Primeros pasos](getting-started.md): comandos minimos para levantar y probar.
+- [Guia de implementacion](implementation-guide.md): pasos completos para integrar clientes, endpoints, servicios y validacion real.
 - [API](api.md): contratos, autenticacion y uso por rol.
 - [Flujos de endpoints](api-endpoint-flows.md): diagramas de secuencia por endpoint.
 - [Arquitectura](architecture.md): componentes y flujo interno.
