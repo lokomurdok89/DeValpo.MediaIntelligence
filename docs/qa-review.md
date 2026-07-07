@@ -137,7 +137,7 @@ Fix: added `GoogleVideoIntelligence__RemoteOperationTimeoutSeconds`, resource-ba
 | AWS basic status | `/api/v1/providers/aws-rekognition/status` returned `enabled=false`, `configured=false` |
 | AWS remote status without token | returned `401` |
 | AWS remote status with client-only token | returned `403` |
-| AWS face jobs | `POST /api/v1/face-search-jobs` with operator token returned `404` |
+| AWS face jobs | Historical pre-provider check returned `404`; current implementation exposes `/api/v1/face-search-jobs` with JWT/profile access |
 | Google Video remote status | `configured=true`, staging bucket reachable |
 | Swagger | `/swagger/v1/swagger.json` contains `/api/v1/providers/aws-rekognition/status` |
 | Existing real video job | `00cf5f09-6e1d-4c0c-a9f5-5bd3a9ff2740` returned `Completed` |

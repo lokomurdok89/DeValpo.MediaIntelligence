@@ -8,6 +8,7 @@ This is the short path to run the product locally and test it with a real docume
 - Docker Desktop.
 - Google Cloud CLI.
 - Access to the Google Document AI project and processor.
+- AWS CLI only if you will validate real Rekognition.
 
 ## 1. Prepare Local Variables
 
@@ -27,6 +28,20 @@ GoogleDocumentAi__AllowUserCredentials=true
 Jwt__SigningKey=<local-dev-secret-min-32-chars>
 ```
 
+AWS is disabled by default. To test real Rekognition, also configure:
+
+```text
+AwsRekognition__Enabled=true
+AwsRekognition__FaceSearchEnabled=true
+AwsRekognition__Region=<aws-region>
+AwsRekognition__BucketName=<private-s3-bucket>
+AwsRekognition__CollectionId=<rekognition-collection-id>
+AwsRekognition__CredentialsPath=/run/secrets/aws-credentials
+AwsRekognition__ProfileName=default
+AwsRekognition__AllowUserCredentials=true
+AwsRekognition__UsePolling=true
+```
+
 ## 2. Prepare Google ADC
 
 ```powershell
@@ -38,6 +53,17 @@ Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\goo
 More detail: [local tokens and Google secrets](local-tokens-and-google-secrets.md).
 
 That document explains the full path from installing Google Cloud CLI to obtaining the ADC credential this API uses to call Document AI.
+
+## 2.1. Prepare Optional AWS Credentials
+
+Only if you will test real face search:
+
+```powershell
+aws configure --profile <profile-name>
+Copy-Item "$env:USERPROFILE\.aws\credentials" secrets\aws-credentials
+```
+
+Docker mounts that file at `/run/secrets/aws-credentials`. Do not paste access keys into `deploy/.env` or commit them.
 
 ## 3. Start Docker
 
@@ -75,6 +101,15 @@ $token = ($tokenJson | ConvertFrom-Json).accessToken
 curl.exe "http://localhost:8085/api/v1/providers/google-document-ai/status?checkRemote=true" `
   -H "Authorization: Bearer $token"
 ```
+
+## 6.1. Validate Optional AWS
+
+```powershell
+curl.exe "http://localhost:8085/api/v1/providers/aws-rekognition/status?checkRemote=true" `
+  -H "Authorization: Bearer $token"
+```
+
+Expected result when AWS is configured correctly: `AWS Rekognition S3 bucket and collection are reachable.`
 
 ## 7. Upload A Real Document
 
