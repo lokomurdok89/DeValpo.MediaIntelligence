@@ -63,6 +63,18 @@ public sealed class UploadedFileValidationService(
         MediaAssetType assetType,
         CancellationToken cancellationToken)
     {
+        return await ValidateAsync(file, assetType, options.Value.MaxFileSizeBytes, cancellationToken);
+    }
+
+    /// <summary>
+    /// Validates upload size, declared type, binary signature and threat scan result with a caller-specific size limit.
+    /// </summary>
+    public async Task<UploadedFileValidationResult> ValidateAsync(
+        IFormFile? file,
+        MediaAssetType assetType,
+        long maxFileSizeBytes,
+        CancellationToken cancellationToken)
+    {
         if (file is null)
         {
             return UploadedFileValidationResult.Invalid(
@@ -78,11 +90,11 @@ public sealed class UploadedFileValidationService(
         }
 
         var validationOptions = options.Value;
-        if (file.Length > validationOptions.MaxFileSizeBytes)
+        if (file.Length > maxFileSizeBytes)
         {
             return UploadedFileValidationResult.Invalid(
                 FileValidationErrorCodes.FileTooLarge,
-                ApiResourceText.FileExceedsMaxSize(validationOptions.MaxFileSizeBytes));
+                ApiResourceText.FileExceedsMaxSize(maxFileSizeBytes));
         }
 
         var extension = Path.GetExtension(file.FileName);

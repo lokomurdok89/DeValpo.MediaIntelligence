@@ -60,6 +60,17 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
+    public async Task VideoSearchJobs_RequireBearerToken()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/video-search-jobs/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
     public async Task OperationsMetrics_RejectsClientOnlyToken()
     {
         using var factory = CreateFactory();
@@ -174,6 +185,9 @@ public sealed class ApiSecurityTests
         json.Should().Contain("Profiles define the supported asset types");
         json.Should().Contain("Lists recent sanitized audit events");
         json.Should().Contain("Creates or updates the retention policy for a client");
+        json.Should().Contain("Creates a video target search job");
+        json.Should().Contain("Returns video search job metadata");
+        json.Should().Contain("generic face occurrences, not identity matches");
     }
 
     [Fact]
@@ -213,6 +227,7 @@ public sealed class ApiSecurityTests
     [InlineData("Database:ApplyMigrationsOnStartup", "true")]
     [InlineData("Jwt:RequireHttpsMetadata", "false")]
     [InlineData("GoogleDocumentAi:AllowUserCredentials", "true")]
+    [InlineData("GoogleVideoIntelligence:AllowUserCredentials", "true")]
     [InlineData("Skills:EnableMockSkills", "true")]
     [InlineData("AnalysisProfiles:EnableMockProfiles", "true")]
     public void Startup_Fails_InProduction_WhenUnsafeReleaseOptionIsEnabled(string key, string value)
@@ -259,6 +274,7 @@ public sealed class ApiSecurityTests
                         ["Database:ApplyMigrationsOnStartup"] = "false",
                         ["Swagger:Enabled"] = "true",
                         ["GoogleDocumentAi:Enabled"] = "false",
+                        ["GoogleVideoIntelligence:Enabled"] = "false",
                         ["Jwt:Issuer"] = "DeValpo.MediaIntelligence",
                         ["Jwt:Audience"] = "DeValpo.MediaIntelligence.Api",
                         ["Jwt:SigningKey"] = "test-only-jwt-signing-key-with-32-chars",
@@ -288,6 +304,8 @@ public sealed class ApiSecurityTests
             ["Swagger:Enabled"] = "false",
             ["GoogleDocumentAi:Enabled"] = "false",
             ["GoogleDocumentAi:AllowUserCredentials"] = "false",
+            ["GoogleVideoIntelligence:Enabled"] = "false",
+            ["GoogleVideoIntelligence:AllowUserCredentials"] = "false",
             ["Skills:EnableMockSkills"] = "false",
             ["AnalysisProfiles:EnableMockProfiles"] = "false",
             ["Jwt:Issuer"] = "DeValpo.MediaIntelligence",

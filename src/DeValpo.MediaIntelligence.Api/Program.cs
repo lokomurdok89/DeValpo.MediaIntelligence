@@ -8,6 +8,7 @@ using DeValpo.MediaIntelligence.Api.Validation;
 using DeValpo.MediaIntelligence.Api.Workers;
 using DeValpo.MediaIntelligence.Application;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
+using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
@@ -85,10 +86,12 @@ builder.Services.AddScoped<IUploadedFileValidationService, UploadedFileValidatio
 builder.Services.AddScoped<IUploadedFileThreatScanner, NoOpUploadedFileThreatScanner>();
 builder.Services.Configure<UploadValidationOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
+builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
 builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
 builder.Services.Configure<WebhookDeliveryOptions>(builder.Configuration.GetSection("WebhookDelivery"));
 builder.Services.Configure<ReadinessOptions>(builder.Configuration.GetSection("Readiness"));
 builder.Services.AddHostedService<AnalysisJobWorker>();
+builder.Services.AddHostedService<VideoSearchJobWorker>();
 builder.Services.AddHostedService<WebhookDeliveryWorker>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
 
@@ -256,6 +259,11 @@ static void ValidateReleaseSafety(IWebHostEnvironment environment, IConfiguratio
     if (configuration.GetValue("GoogleDocumentAi:AllowUserCredentials", false))
     {
         throw new InvalidOperationException(ApiResourceText.ReleaseGoogleUserCredentialsDisabled);
+    }
+
+    if (configuration.GetValue("GoogleVideoIntelligence:AllowUserCredentials", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseGoogleVideoUserCredentialsDisabled);
     }
 
     if (configuration.GetValue("Skills:EnableMockSkills", false))

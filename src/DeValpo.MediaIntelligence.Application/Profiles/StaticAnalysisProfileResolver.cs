@@ -58,6 +58,15 @@ public sealed class StaticAnalysisProfileResolver(
             0.85m,
             true,
             ApplicationResourceText.InvoiceExtractionDescription)
+        ,
+        new(
+            "event-video-target-search-v1",
+            "generic",
+            [MediaAssetType.Video],
+            [],
+            0.70m,
+            true,
+            ApplicationResourceText.EventVideoTargetSearchDescription)
     ];
 
     /// <summary>

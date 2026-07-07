@@ -42,11 +42,15 @@ internal static class ApiResourceText
     public static string ReleaseSwaggerMustBeDisabled => GetRequiredResource(nameof(ReleaseSwaggerMustBeDisabled));
     public static string ReleaseAutomaticMigrationsDisabled => GetRequiredResource(nameof(ReleaseAutomaticMigrationsDisabled));
     public static string ReleaseGoogleUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseGoogleUserCredentialsDisabled));
+    public static string ReleaseGoogleVideoUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseGoogleVideoUserCredentialsDisabled));
     public static string ReleaseMockSkillsDisabled => GetRequiredResource(nameof(ReleaseMockSkillsDisabled));
     public static string ReleaseMockProfilesDisabled => GetRequiredResource(nameof(ReleaseMockProfilesDisabled));
     public static string InvalidClientCredentials => GetRequiredResource(nameof(InvalidClientCredentials));
     public static string AnalysisJobWorkerFailed => GetRequiredResource(nameof(AnalysisJobWorkerFailed));
+    public static string VideoSearchJobWorkerFailed => GetRequiredResource(nameof(VideoSearchJobWorkerFailed));
     public static string WebhookDeliveryWorkerFailed => GetRequiredResource(nameof(WebhookDeliveryWorkerFailed));
+    public static string VideoFilesRequired => GetRequiredResource(nameof(VideoFilesRequired));
+    public static string VideoMaxFilesExceeded(int maxFiles) => Format(nameof(VideoMaxFilesExceeded), maxFiles);
     public static string SwaggerBearerDescription => GetRequiredResource(nameof(SwaggerBearerDescription));
     public static string SwaggerResourceMissing(string name) => Format(nameof(SwaggerResourceMissing), name);
 
