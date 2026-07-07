@@ -23,6 +23,11 @@ public sealed class MediaIntelligenceDbContext(DbContextOptions<MediaIntelligenc
     public DbSet<AnalysisIssue> AnalysisIssues => Set<AnalysisIssue>();
     public DbSet<HumanReviewTask> HumanReviewTasks => Set<HumanReviewTask>();
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+    public DbSet<VideoSearchJob> VideoSearchJobs => Set<VideoSearchJob>();
+    public DbSet<VideoSearchAsset> VideoSearchAssets => Set<VideoSearchAsset>();
+    public DbSet<VideoSearchTargetMatchSegment> VideoSearchTargetMatchSegments => Set<VideoSearchTargetMatchSegment>();
+    public DbSet<VideoSearchFaceOccurrenceSegment> VideoSearchFaceOccurrenceSegments => Set<VideoSearchFaceOccurrenceSegment>();
+    public DbSet<VideoSearchIssue> VideoSearchIssues => Set<VideoSearchIssue>();
 
     /// <summary>
     /// Applies all entity mappings declared in the infrastructure assembly.

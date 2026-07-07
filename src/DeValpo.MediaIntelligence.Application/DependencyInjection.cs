@@ -8,6 +8,7 @@ using DeValpo.MediaIntelligence.Application.Operations;
 using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Application.Retention;
 using DeValpo.MediaIntelligence.Application.Skills;
+using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Application.Webhooks;
 using DeValpo.MediaIntelligence.Application.Audit;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditApplicationService, AuditApplicationService>();
         services.AddScoped<IRetentionApplicationService, RetentionApplicationService>();
         services.AddScoped<IMediaAnalysisApplicationService, MediaAnalysisApplicationService>();
+        services.AddScoped<IVideoSearchApplicationService, VideoSearchApplicationService>();
         services.AddSingleton<IAnalysisProfileResolver, StaticAnalysisProfileResolver>();
         services.AddScoped<IMediaAnalysisOrchestrator, MediaAnalysisOrchestrator>();
 

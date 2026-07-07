@@ -18,6 +18,8 @@ GitHub Pages is not currently published for this repository because it is privat
 | Generate Google credentials and tokens | [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md) |
 | Implement the application end-to-end | [docs/implementation-guide.md](docs/implementation-guide.md) |
 | See endpoint flows and sequence diagrams | [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md) |
+| Search visible targets in event videos | [docs/video-target-search.md](docs/video-target-search.md) |
+| Prepare the real video MVP test | [docs/video-mvp-real-route.md](docs/video-mvp-real-route.md) |
 | Understand the API | [docs/api.md](docs/api.md) |
 | Review architecture and components | [docs/architecture.md](docs/architecture.md) |
 | Review security, JWT and secrets | [docs/security.md](docs/security.md) |

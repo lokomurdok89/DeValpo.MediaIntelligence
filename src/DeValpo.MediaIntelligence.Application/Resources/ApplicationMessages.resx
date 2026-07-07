@@ -147,4 +147,67 @@
   <data name="InvoiceExtractionDescription" xml:space="preserve">
     <value>Compatibility alias for the generic Document AI OCR profile.</value>
   </data>
+  <data name="EventVideoTargetSearchDescription" xml:space="preserve">
+    <value>Video target search profile for visible participant numbers and generic face occurrence timestamps.</value>
+  </data>
+  <data name="VideoSearchProfileRequired" xml:space="preserve">
+    <value>Video search requires profile '{0}'.</value>
+  </data>
+  <data name="VideoSearchVideosRequired" xml:space="preserve">
+    <value>At least one source video is required.</value>
+  </data>
+  <data name="VideoSearchMaxVideosExceeded" xml:space="preserve">
+    <value>The video search request exceeds the maximum of {0} videos per job.</value>
+  </data>
+  <data name="VideoSearchMaxDurationExceeded" xml:space="preserve">
+    <value>Video duration exceeds the maximum of {0} seconds.</value>
+  </data>
+  <data name="VideoSearchManifestRequired" xml:space="preserve">
+    <value>manifestJson is required.</value>
+  </data>
+  <data name="VideoSearchManifestMustBeObject" xml:space="preserve">
+    <value>manifestJson must be a JSON object.</value>
+  </data>
+  <data name="VideoSearchManifestPropertyUnsupported" xml:space="preserve">
+    <value>manifestJson property '{0}' is not supported.</value>
+  </data>
+  <data name="VideoSearchPersonalDataNotAllowed" xml:space="preserve">
+    <value>manifestJson cannot include personal data property '{0}'. Use opaque target keys only.</value>
+  </data>
+  <data name="VideoSearchAtLeastOneDetectionRequired" xml:space="preserve">
+    <value>At least one detection mode must be enabled.</value>
+  </data>
+  <data name="VideoSearchMinConfidenceInvalid" xml:space="preserve">
+    <value>minConfidence must be between 0 and 1.</value>
+  </data>
+  <data name="VideoSearchMergeGapInvalid" xml:space="preserve">
+    <value>mergeGapSeconds must be between 0 and 60.</value>
+  </data>
+  <data name="VideoSearchTargetsRequired" xml:space="preserve">
+    <value>At least one target is required.</value>
+  </data>
+  <data name="VideoSearchTargetMustBeObject" xml:space="preserve">
+    <value>Each target must be a JSON object.</value>
+  </data>
+  <data name="VideoSearchTargetKeyRequired" xml:space="preserve">
+    <value>targetKey is required.</value>
+  </data>
+  <data name="VideoSearchVisibleNumberRequired" xml:space="preserve">
+    <value>visibleNumber is required.</value>
+  </data>
+  <data name="VideoSearchVisibleNumberMustContainDigit" xml:space="preserve">
+    <value>visibleNumber must contain at least one digit.</value>
+  </data>
+  <data name="VideoSearchJobQueuedLogMessage" xml:space="preserve">
+    <value>Video search job queued.</value>
+  </data>
+  <data name="VideoSearchJobProcessingRetryLogMessage" xml:space="preserve">
+    <value>Video search job processing failed and will be retried.</value>
+  </data>
+  <data name="VideoSearchJobProcessingFailedLogMessage" xml:space="preserve">
+    <value>Video search job processing failed permanently.</value>
+  </data>
+  <data name="VideoSearchJobProcessingCompletedLogMessage" xml:space="preserve">
+    <value>Video search job processing completed.</value>
+  </data>
 </root>

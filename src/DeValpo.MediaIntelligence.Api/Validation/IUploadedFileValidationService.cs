@@ -11,4 +11,13 @@ public interface IUploadedFileValidationService
         IFormFile? file,
         MediaAssetType assetType,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Validates the uploaded file with a caller-specific maximum size.
+    /// </summary>
+    Task<UploadedFileValidationResult> ValidateAsync(
+        IFormFile? file,
+        MediaAssetType assetType,
+        long maxFileSizeBytes,
+        CancellationToken cancellationToken);
 }

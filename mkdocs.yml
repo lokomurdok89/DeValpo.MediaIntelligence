@@ -52,6 +52,8 @@ plugins:
             Primeros pasos: Getting started
             Guia de implementacion: Implementation guide
             API: API
+            Busqueda de targets en video: Video target search
+            Ruta MVP video real: Real video MVP route
             Arquitectura: Architecture
             Modelo de datos: Data model
             Seguridad: Security
@@ -84,6 +86,8 @@ nav:
   - API:
       - API: api.md
       - Flujos de endpoints: api-endpoint-flows.md
+      - Busqueda de targets en video: video-target-search.md
+      - Ruta MVP video real: video-mvp-real-route.md
   - Arquitectura:
       - Arquitectura: architecture.md
       - Modelo de datos: data-model.md

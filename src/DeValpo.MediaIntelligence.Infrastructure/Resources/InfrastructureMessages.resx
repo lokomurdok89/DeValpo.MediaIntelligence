@@ -141,6 +141,63 @@
   <data name="LiveVideoStructuralOnly" xml:space="preserve">
     <value>Live video is represented structurally in the initial phase.</value>
   </data>
+  <data name="GoogleVideoIntelligenceDisabled" xml:space="preserve">
+    <value>Google Video Intelligence is disabled by configuration.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceRequiredOptions" xml:space="preserve">
+    <value>Google Video Intelligence requires BucketName when enabled.</value>
+  </data>
+  <data name="MissingGoogleVideoIntelligenceConfiguration" xml:space="preserve">
+    <value>Missing Google Video Intelligence configuration: {0}.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceCredentialsFileNotFound" xml:space="preserve">
+    <value>Google Video Intelligence credentials file was not found.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceCredentialsCannotBeRead" xml:space="preserve">
+    <value>Google Video Intelligence credentials file cannot be read.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceCredentialsInvalid" xml:space="preserve">
+    <value>Google Video Intelligence credentials are invalid.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceUserCredentialsNotAllowed" xml:space="preserve">
+    <value>Google Video Intelligence user credentials are not allowed by configuration.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceCredentialsInvalidOrExpired" xml:space="preserve">
+    <value>Google Video Intelligence credentials are invalid or expired.</value>
+  </data>
+  <data name="GoogleVideoIntelligencePermissionDenied" xml:space="preserve">
+    <value>Google Video Intelligence credentials do not have permission to access the configured resources.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceBucketNotFound" xml:space="preserve">
+    <value>Google Video Intelligence staging bucket was not found.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceApiOrBillingUnavailable" xml:space="preserve">
+    <value>Google Video Intelligence API or billing is not available for this project.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceQuotaReached" xml:space="preserve">
+    <value>Google Video Intelligence quota was reached.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceServiceUnavailable" xml:space="preserve">
+    <value>Google Video Intelligence service is unavailable.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceRemoteCheckFailedWithStatus" xml:space="preserve">
+    <value>Google Video Intelligence remote check failed with status {0}.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceRemoteCheckFailed" xml:space="preserve">
+    <value>Google Video Intelligence remote check failed.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceRequestFailedWithStatus" xml:space="preserve">
+    <value>Google Video Intelligence request failed with status {0}.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceRequestFailed" xml:space="preserve">
+    <value>Google Video Intelligence request failed.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceLocalConfigComplete" xml:space="preserve">
+    <value>Google Video Intelligence local configuration is complete.</value>
+  </data>
+  <data name="GoogleVideoIntelligenceBucketReachable" xml:space="preserve">
+    <value>Google Video Intelligence staging bucket is reachable.</value>
+  </data>
   <data name="WebhookTargetNotLoaded" xml:space="preserve">
     <value>Webhook target was not loaded.</value>
   </data>

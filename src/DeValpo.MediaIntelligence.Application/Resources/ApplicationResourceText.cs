@@ -55,6 +55,27 @@ internal static class ApplicationResourceText
     public static string GenericDocumentExtractionDescription => GetRequiredResource(nameof(GenericDocumentExtractionDescription));
     public static string GenericDocumentOcrDescription => GetRequiredResource(nameof(GenericDocumentOcrDescription));
     public static string InvoiceExtractionDescription => GetRequiredResource(nameof(InvoiceExtractionDescription));
+    public static string EventVideoTargetSearchDescription => GetRequiredResource(nameof(EventVideoTargetSearchDescription));
+    public static string VideoSearchProfileRequired(string profileKey) => Format(nameof(VideoSearchProfileRequired), profileKey);
+    public static string VideoSearchVideosRequired => GetRequiredResource(nameof(VideoSearchVideosRequired));
+    public static string VideoSearchMaxVideosExceeded(int maxVideos) => Format(nameof(VideoSearchMaxVideosExceeded), maxVideos);
+    public static string VideoSearchMaxDurationExceeded(int maxDurationSeconds) => Format(nameof(VideoSearchMaxDurationExceeded), maxDurationSeconds);
+    public static string VideoSearchManifestRequired => GetRequiredResource(nameof(VideoSearchManifestRequired));
+    public static string VideoSearchManifestMustBeObject => GetRequiredResource(nameof(VideoSearchManifestMustBeObject));
+    public static string VideoSearchManifestPropertyUnsupported(string propertyName) => Format(nameof(VideoSearchManifestPropertyUnsupported), propertyName);
+    public static string VideoSearchPersonalDataNotAllowed(string propertyName) => Format(nameof(VideoSearchPersonalDataNotAllowed), propertyName);
+    public static string VideoSearchAtLeastOneDetectionRequired => GetRequiredResource(nameof(VideoSearchAtLeastOneDetectionRequired));
+    public static string VideoSearchMinConfidenceInvalid => GetRequiredResource(nameof(VideoSearchMinConfidenceInvalid));
+    public static string VideoSearchMergeGapInvalid => GetRequiredResource(nameof(VideoSearchMergeGapInvalid));
+    public static string VideoSearchTargetsRequired => GetRequiredResource(nameof(VideoSearchTargetsRequired));
+    public static string VideoSearchTargetMustBeObject => GetRequiredResource(nameof(VideoSearchTargetMustBeObject));
+    public static string VideoSearchTargetKeyRequired => GetRequiredResource(nameof(VideoSearchTargetKeyRequired));
+    public static string VideoSearchVisibleNumberRequired => GetRequiredResource(nameof(VideoSearchVisibleNumberRequired));
+    public static string VideoSearchVisibleNumberMustContainDigit => GetRequiredResource(nameof(VideoSearchVisibleNumberMustContainDigit));
+    public static string VideoSearchJobQueuedLogMessage => GetRequiredResource(nameof(VideoSearchJobQueuedLogMessage));
+    public static string VideoSearchJobProcessingRetryLogMessage => GetRequiredResource(nameof(VideoSearchJobProcessingRetryLogMessage));
+    public static string VideoSearchJobProcessingFailedLogMessage => GetRequiredResource(nameof(VideoSearchJobProcessingFailedLogMessage));
+    public static string VideoSearchJobProcessingCompletedLogMessage => GetRequiredResource(nameof(VideoSearchJobProcessingCompletedLogMessage));
 
     private static string GetRequiredResource(string name)
     {
