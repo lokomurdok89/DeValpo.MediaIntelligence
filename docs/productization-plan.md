@@ -407,3 +407,5 @@ Do not call the system product-ready until all are true:
 - Analysis jobs are recoverable, auditable and observable.
 - Human review and webhook behavior are implemented or explicitly disabled in product configuration.
 - Real-document QA has passed with documented evidence.
+
+Status for `v0.1.0-rc.1`: ready for controlled onboarding of the first client in a supervised environment after the release PR is merged, CI passes and the tag is created. External cloud deployment automation remains out of scope for this release candidate.
