@@ -1,17 +1,48 @@
 # DeValpo.MediaIntelligence
 
-Reusable multi-client document and media intelligence engine.
+> Reusable multi-client document and media intelligence engine.
 
-The product exposes a secure API for clients to upload real documents, run configured analysis profiles, persist normalized results, manage human review and notify external systems through webhooks.
+[![CI](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/ci.yml)
+[![Docs](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/docs.yml/badge.svg)](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/docs.yml)
 
-## Documentation
+DeValpo.MediaIntelligence exposes a secure API for real document ingestion, Google Document AI analysis, persisted jobs, human review, client webhooks and operational diagnostics.
 
-The full documentation is built as a MkDocs Material site with navigation tabs, search, Mermaid diagrams and bilingual pages:
+## Open The Documentation
 
-- Local preview: `python -m mkdocs serve`
-- GitHub Pages URL when enabled: [DeValpo MediaIntelligence Docs](https://lokomurdok89.github.io/DeValpo.MediaIntelligence/)
-- Local documentation source: [docs/index.md](docs/index.md)
-- Endpoint sequence diagrams: [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md)
+GitHub Pages is not currently published for this repository because it is private and the active GitHub plan does not support Pages for this repo. Use the GitHub-rendered docs or run the MkDocs preview locally.
+
+| I want to... | Open this |
+| --- | --- |
+| Start from the documentation home | [docs/index.md](docs/index.md) |
+| Run the product locally | [docs/getting-started.md](docs/getting-started.md) |
+| See endpoint flows and sequence diagrams | [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md) |
+| Understand the API | [docs/api.md](docs/api.md) |
+| Review architecture and components | [docs/architecture.md](docs/architecture.md) |
+| Review security, JWT and secrets | [docs/security.md](docs/security.md) |
+| Operate Docker, readiness and runbooks | [docs/operations.md](docs/operations.md) |
+| Follow QA and product certification | [docs/qa.md](docs/qa.md) |
+| See the product roadmap | [docs/roadmap.md](docs/roadmap.md) |
+
+## Local Documentation Preview
+
+Run the real tabbed documentation site locally:
+
+```powershell
+pip install -r requirements-docs.txt
+python -m mkdocs serve
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/DeValpo.MediaIntelligence/
+```
+
+Build validation:
+
+```powershell
+python -m mkdocs build --strict
+```
 
 ## Quick Start
 
@@ -22,20 +53,25 @@ dotnet test DeValpo.MediaIntelligence.sln
 docker compose -f deploy\docker-compose.yml up --build
 ```
 
-The local API listens on `http://localhost:8085`.
+The local API listens on:
 
-## Main Local Flow
+```text
+http://localhost:8085
+```
 
-1. Configure `deploy/.env` from `deploy/.env.example`.
-2. Configure Google ADC outside the repository.
-3. Start Docker Compose.
-4. Generate a local Development token.
-5. Upload a real PDF through `POST /api/v1/analyze`.
-6. Read the result from `/api/v1/analysis-jobs/{jobId}/result`.
+## Main Real Flow
 
-Use [docs/getting-started.md](docs/getting-started.md) for the complete step-by-step guide.
+```mermaid
+flowchart LR
+    A["Configure deploy/.env"] --> B["Mount Google credentials outside repo"]
+    B --> C["Start Docker Compose"]
+    C --> D["Generate Development JWT"]
+    D --> E["Upload real PDF"]
+    E --> F["Poll job"]
+    F --> G["Read result"]
+```
 
-## Repository Layout
+## Repository Map
 
 | Path | Purpose |
 | --- | --- |
@@ -48,19 +84,24 @@ Use [docs/getting-started.md](docs/getting-started.md) for the complete step-by-
 | `docs` | MkDocs documentation source. |
 | `tests` | Unit and API tests. |
 
-## Documentation Development
+## GitHub Pages
 
-```powershell
-pip install -r requirements-docs.txt
-mkdocs serve
-mkdocs build --strict
+The docs workflow builds the MkDocs site and uploads a `mkdocs-site` artifact. Public Pages deploy is intentionally gated by:
+
+```text
+DEPLOY_GITHUB_PAGES=true
 ```
 
-`.github/workflows/docs.yml` builds the documentation on every push and pull request. GitHub Pages deploy is gated by the repository variable `DEPLOY_GITHUB_PAGES=true`, because private repositories require a GitHub plan that supports Pages.
+To make the public Pages URL work, the repository must either be public or use a GitHub plan that supports Pages for private repositories. After that:
+
+1. Go to `Settings -> Pages`.
+2. Set source to `GitHub Actions`.
+3. Create repository variable `DEPLOY_GITHUB_PAGES=true`.
+4. Re-run the `Docs` workflow.
 
 ## Safety
 
-Do not commit:
+Never commit:
 
 - `deploy/.env`
 - `secrets/*.json`
