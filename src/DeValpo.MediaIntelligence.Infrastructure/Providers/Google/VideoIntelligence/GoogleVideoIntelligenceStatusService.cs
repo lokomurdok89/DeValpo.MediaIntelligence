@@ -6,7 +6,7 @@ using Google.Cloud.Storage.V1;
 using Grpc.Core;
 using Microsoft.Extensions.Options;
 
-namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Video;
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.VideoIntelligence;
 
 public sealed class GoogleVideoIntelligenceStatusService(
     IOptions<GoogleVideoIntelligenceOptions> options) : IGoogleVideoIntelligenceStatusService

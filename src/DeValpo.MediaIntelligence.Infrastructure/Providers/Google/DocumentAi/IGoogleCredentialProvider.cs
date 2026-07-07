@@ -1,7 +1,7 @@
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using Google.Apis.Auth.OAuth2;
 
-namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.DocumentAi;
 
 public interface IGoogleCredentialProvider
 {

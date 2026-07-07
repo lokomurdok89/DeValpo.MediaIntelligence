@@ -7,7 +7,7 @@ using Grpc.Core;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
+namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.DocumentAi;
 
 public sealed class GoogleDocumentAiStatusService(
     IOptions<GoogleDocumentAiOptions> options,

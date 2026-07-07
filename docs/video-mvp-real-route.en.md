@@ -118,7 +118,13 @@ Future endpoints:
 POST /api/v1/face-search-jobs
 GET /api/v1/face-search-jobs/{jobId}
 GET /api/v1/face-search-jobs/{jobId}/result
+```
+
+Provider status already exists for no-credentials operation:
+
+```http
 GET /api/v1/providers/aws-rekognition/status
+GET /api/v1/providers/aws-rekognition/status?checkRemote=true
 ```
 
 Rules:

@@ -1,6 +1,6 @@
 using DeValpo.MediaIntelligence.Infrastructure;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
-using DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Google.DocumentAi;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

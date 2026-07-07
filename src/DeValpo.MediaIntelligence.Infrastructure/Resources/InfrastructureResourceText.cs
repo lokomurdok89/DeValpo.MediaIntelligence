@@ -72,6 +72,17 @@ internal static class InfrastructureResourceText
     public static string GoogleVideoIntelligenceRequestFailed => GetRequiredResource(nameof(GoogleVideoIntelligenceRequestFailed));
     public static string GoogleVideoIntelligenceLocalConfigComplete => GetRequiredResource(nameof(GoogleVideoIntelligenceLocalConfigComplete));
     public static string GoogleVideoIntelligenceBucketReachable => GetRequiredResource(nameof(GoogleVideoIntelligenceBucketReachable));
+    public static string AwsRekognitionDisabled => GetRequiredResource(nameof(AwsRekognitionDisabled));
+    public static string AwsRekognitionFaceSearchDisabled => GetRequiredResource(nameof(AwsRekognitionFaceSearchDisabled));
+    public static string MissingAwsRekognitionConfiguration(string fields) => Format(nameof(MissingAwsRekognitionConfiguration), fields);
+    public static string AwsRekognitionLocalConfigComplete => GetRequiredResource(nameof(AwsRekognitionLocalConfigComplete));
+    public static string AwsRekognitionRemoteResourcesReachable => GetRequiredResource(nameof(AwsRekognitionRemoteResourcesReachable));
+    public static string AwsRekognitionCredentialsUnavailable => GetRequiredResource(nameof(AwsRekognitionCredentialsUnavailable));
+    public static string AwsRekognitionPermissionDenied => GetRequiredResource(nameof(AwsRekognitionPermissionDenied));
+    public static string AwsRekognitionBucketNotFound => GetRequiredResource(nameof(AwsRekognitionBucketNotFound));
+    public static string AwsRekognitionCollectionNotFound => GetRequiredResource(nameof(AwsRekognitionCollectionNotFound));
+    public static string AwsRekognitionRemoteCheckFailedWithStatus(object statusCode) => Format(nameof(AwsRekognitionRemoteCheckFailedWithStatus), statusCode);
+    public static string AwsRekognitionRemoteCheckFailed => GetRequiredResource(nameof(AwsRekognitionRemoteCheckFailed));
     public static string WebhookTargetNotLoaded => GetRequiredResource(nameof(WebhookTargetNotLoaded));
     public static string WebhookRequestTimedOut => GetRequiredResource(nameof(WebhookRequestTimedOut));
     public static string ClientNotFound(string clientKey) => Format(nameof(ClientNotFound), clientKey);

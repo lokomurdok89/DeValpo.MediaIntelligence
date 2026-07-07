@@ -198,6 +198,39 @@
   <data name="GoogleVideoIntelligenceBucketReachable" xml:space="preserve">
     <value>Google Video Intelligence staging bucket is reachable.</value>
   </data>
+  <data name="AwsRekognitionDisabled" xml:space="preserve">
+    <value>AWS Rekognition is disabled by configuration.</value>
+  </data>
+  <data name="AwsRekognitionFaceSearchDisabled" xml:space="preserve">
+    <value>AWS Rekognition face search is disabled by configuration.</value>
+  </data>
+  <data name="MissingAwsRekognitionConfiguration" xml:space="preserve">
+    <value>Missing AWS Rekognition configuration: {0}.</value>
+  </data>
+  <data name="AwsRekognitionLocalConfigComplete" xml:space="preserve">
+    <value>AWS Rekognition local configuration is complete.</value>
+  </data>
+  <data name="AwsRekognitionRemoteResourcesReachable" xml:space="preserve">
+    <value>AWS Rekognition S3 bucket and collection are reachable.</value>
+  </data>
+  <data name="AwsRekognitionCredentialsUnavailable" xml:space="preserve">
+    <value>AWS Rekognition credentials are unavailable or invalid.</value>
+  </data>
+  <data name="AwsRekognitionPermissionDenied" xml:space="preserve">
+    <value>AWS Rekognition credentials do not have permission to access the configured resources.</value>
+  </data>
+  <data name="AwsRekognitionBucketNotFound" xml:space="preserve">
+    <value>AWS Rekognition staging bucket was not found.</value>
+  </data>
+  <data name="AwsRekognitionCollectionNotFound" xml:space="preserve">
+    <value>AWS Rekognition collection was not found.</value>
+  </data>
+  <data name="AwsRekognitionRemoteCheckFailedWithStatus" xml:space="preserve">
+    <value>AWS Rekognition remote check failed with status {0}.</value>
+  </data>
+  <data name="AwsRekognitionRemoteCheckFailed" xml:space="preserve">
+    <value>AWS Rekognition remote check failed.</value>
+  </data>
   <data name="WebhookTargetNotLoaded" xml:space="preserve">
     <value>Webhook target was not loaded.</value>
   </data>
