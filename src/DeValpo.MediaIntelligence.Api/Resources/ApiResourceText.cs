@@ -37,6 +37,13 @@ internal static class ApiResourceText
     public static string JwtAudienceRequired => GetRequiredResource(nameof(JwtAudienceRequired));
     public static string JwtSigningKeyMinimumLength => GetRequiredResource(nameof(JwtSigningKeyMinimumLength));
     public static string JwtAccessTokenMinutesRequired => GetRequiredResource(nameof(JwtAccessTokenMinutesRequired));
+    public static string ReleaseJwtSigningKeyUnsafe => GetRequiredResource(nameof(ReleaseJwtSigningKeyUnsafe));
+    public static string ReleaseJwtRequireHttpsMetadataRequired => GetRequiredResource(nameof(ReleaseJwtRequireHttpsMetadataRequired));
+    public static string ReleaseSwaggerMustBeDisabled => GetRequiredResource(nameof(ReleaseSwaggerMustBeDisabled));
+    public static string ReleaseAutomaticMigrationsDisabled => GetRequiredResource(nameof(ReleaseAutomaticMigrationsDisabled));
+    public static string ReleaseGoogleUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseGoogleUserCredentialsDisabled));
+    public static string ReleaseMockSkillsDisabled => GetRequiredResource(nameof(ReleaseMockSkillsDisabled));
+    public static string ReleaseMockProfilesDisabled => GetRequiredResource(nameof(ReleaseMockProfilesDisabled));
     public static string InvalidClientCredentials => GetRequiredResource(nameof(InvalidClientCredentials));
     public static string AnalysisJobWorkerFailed => GetRequiredResource(nameof(AnalysisJobWorkerFailed));
     public static string WebhookDeliveryWorkerFailed => GetRequiredResource(nameof(WebhookDeliveryWorkerFailed));

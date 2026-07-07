@@ -367,6 +367,8 @@ Exit criteria:
 
 Objetivo: poder desplegar una version candidata fuera del ambiente local.
 
+Estado: en implementacion en la rama `codex/phase-10-cicd-staging-release`.
+
 Implementacion:
 
 - GitHub Actions para build, test y docker build.

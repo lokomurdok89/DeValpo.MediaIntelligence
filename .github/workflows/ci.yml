@@ -27,14 +27,46 @@ jobs:
       - name: Restore
         run: dotnet restore DeValpo.MediaIntelligence.sln
 
+      - name: Restore .NET tools
+        run: dotnet tool restore --tool-manifest dotnet-tools.json
+
       - name: Build
         run: dotnet build DeValpo.MediaIntelligence.sln --configuration Release --no-restore
 
       - name: Test
         run: dotnet test DeValpo.MediaIntelligence.sln --configuration Release --no-build
 
+      - name: Validate EF migrations
+        run: >
+          dotnet ef migrations has-pending-model-changes
+          --project src/DeValpo.MediaIntelligence.Infrastructure
+          --startup-project src/DeValpo.MediaIntelligence.Api
+
+      - name: Secret scan
+        shell: pwsh
+        run: ./scripts/ci/secret-scan.ps1 -Root .
+
+      - name: Validate release configuration
+        shell: pwsh
+        run: ./scripts/ci/validate-release-config.ps1 -Root .
+
       - name: Docker build
-        run: docker build -f src/DeValpo.MediaIntelligence.Api/Dockerfile .
+        run: docker build -t devalpo-media-intelligence-api:ci -f src/DeValpo.MediaIntelligence.Api/Dockerfile .
 
       - name: Validate Docker Compose
-        run: docker compose -f deploy/docker-compose.yml config
+        run: docker compose -f deploy/docker-compose.yml config --quiet
+
+      - name: Container vulnerability scan
+        run: >
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          aquasec/trivy:0.69.3
+          image
+          --format table
+          --exit-code 0
+          --ignore-unfixed
+          --scanners vuln
+          --pkg-types os,library
+          --severity HIGH,CRITICAL
+          --skip-version-check
+          devalpo-media-intelligence-api:ci

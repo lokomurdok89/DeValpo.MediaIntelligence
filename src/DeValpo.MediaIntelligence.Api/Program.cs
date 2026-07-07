@@ -101,6 +101,7 @@ builder.Services.AddHealthChecks()
     .AddCheck<GoogleDocumentAiReadinessHealthCheck>("google-document-ai", tags: ["ready"]);
 
 var app = builder.Build();
+ValidateReleaseSafety(app.Environment, app.Configuration);
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -211,6 +212,61 @@ static bool HasScope(System.Security.Claims.ClaimsPrincipal user, string scope)
     return user.FindAll(AuthClaimTypes.Scope)
         .SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         .Any(value => string.Equals(value, scope, StringComparison.OrdinalIgnoreCase));
+}
+
+// Fails startup when a staging or production process is configured with local-only safety exceptions.
+static void ValidateReleaseSafety(IWebHostEnvironment environment, IConfiguration configuration)
+{
+    if (environment.IsDevelopment())
+    {
+        return;
+    }
+
+    var signingKey = configuration["Jwt:SigningKey"] ?? string.Empty;
+    var unsafeSigningKeyMarkers = new[]
+    {
+        "dev-only",
+        "test-only",
+        "change-me",
+        "dummy",
+        "replace-with",
+        "local-dev"
+    };
+
+    if (unsafeSigningKeyMarkers.Any(marker => signingKey.Contains(marker, StringComparison.OrdinalIgnoreCase)))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseJwtSigningKeyUnsafe);
+    }
+
+    if (!configuration.GetValue("Jwt:RequireHttpsMetadata", true))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseJwtRequireHttpsMetadataRequired);
+    }
+
+    if (configuration.GetValue("Swagger:Enabled", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseSwaggerMustBeDisabled);
+    }
+
+    if (configuration.GetValue("Database:ApplyMigrationsOnStartup", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseAutomaticMigrationsDisabled);
+    }
+
+    if (configuration.GetValue("GoogleDocumentAi:AllowUserCredentials", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseGoogleUserCredentialsDisabled);
+    }
+
+    if (configuration.GetValue("Skills:EnableMockSkills", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseMockSkillsDisabled);
+    }
+
+    if (configuration.GetValue("AnalysisProfiles:EnableMockProfiles", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseMockProfilesDisabled);
+    }
 }
 
 // Applies EF Core migrations at startup only when the database option explicitly enables it.
