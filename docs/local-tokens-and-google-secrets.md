@@ -9,20 +9,22 @@ Follow the steps in order.
 - Windows PowerShell.
 - Docker Desktop running.
 - Google Cloud CLI installed or permission to install it.
-- Access to the Google Cloud project:
+- Access to the Google Cloud project that will host Document AI:
 
 ```text
-primeval-wind-499515-k6
+<google-cloud-project-id>
 ```
 
 - Existing Document AI processor:
 
 ```text
-ProjectId: primeval-wind-499515-k6
-Location: us
-ProcessorId: 44b3274ce1e84552
+ProjectId: <google-cloud-project-id>
+Location: <document-ai-location>
+ProcessorId: <document-ai-processor-id>
 Type: OCR_PROCESSOR
 ```
+
+Use the real values from your Google Cloud project. For local examples in this repository, replace the placeholders consistently in `deploy/.env`, `gcloud` commands and status checks.
 
 ## Important Files
 
@@ -135,13 +137,13 @@ gcloud config list
 Expected project:
 
 ```text
-primeval-wind-499515-k6
+<google-cloud-project-id>
 ```
 
 If the project is different, run:
 
 ```powershell
-gcloud config set project primeval-wind-499515-k6
+gcloud config set project <google-cloud-project-id>
 ```
 
 If this is the first time using the CLI on the machine, initialize it:
@@ -157,7 +159,7 @@ This authorizes the Google Cloud CLI itself. It is useful for commands such as `
 Run:
 
 ```powershell
-gcloud services list --enabled --project primeval-wind-499515-k6 --filter="documentai.googleapis.com"
+gcloud services list --enabled --project <google-cloud-project-id> --filter="documentai.googleapis.com"
 ```
 
 Expected output:
@@ -170,7 +172,7 @@ TITLE: Cloud Document AI API
 If it is missing, enable it:
 
 ```powershell
-gcloud services enable documentai.googleapis.com --project primeval-wind-499515-k6
+gcloud services enable documentai.googleapis.com --project <google-cloud-project-id>
 ```
 
 ## Step 3: Confirm The Processor Exists
@@ -194,15 +196,15 @@ $headers = @{ Authorization = "Bearer $googleToken" }
 Invoke-RestMethod `
   -Method Get `
   -Headers $headers `
-  -Uri "https://us-documentai.googleapis.com/v1/projects/primeval-wind-499515-k6/locations/us/processors" |
+  -Uri "https://us-documentai.googleapis.com/v1/projects/<google-cloud-project-id>/locations/us/processors" |
   ConvertTo-Json -Depth 10
 ```
 
 Look for this processor:
 
 ```text
-name: projects/474013945360/locations/us/processors/44b3274ce1e84552
-displayName: entel-security-intake-ocr
+name: projects/<google-cloud-project-number>/locations/us/processors/<document-ai-processor-id>
+displayName: <document-ai-processor-display-name>
 type: OCR_PROCESSOR
 state: ENABLED
 ```
@@ -210,9 +212,9 @@ state: ENABLED
 For this project, use:
 
 ```text
-GoogleDocumentAi__ProjectId=primeval-wind-499515-k6
+GoogleDocumentAi__ProjectId=<google-cloud-project-id>
 GoogleDocumentAi__Location=us
-GoogleDocumentAi__ProcessorId=44b3274ce1e84552
+GoogleDocumentAi__ProcessorId=<document-ai-processor-id>
 ```
 
 ## Step 4: Create Google ADC Credentials
@@ -328,13 +330,13 @@ The generated file is a local Google credential. Treat it as a secret.
 Run:
 
 ```powershell
-gcloud auth application-default set-quota-project primeval-wind-499515-k6
+gcloud auth application-default set-quota-project <google-cloud-project-id>
 ```
 
 Expected result:
 
 ```text
-Quota project "primeval-wind-499515-k6" was added to ADC
+Quota project "<google-cloud-project-id>" was added to ADC
 ```
 
 ## Step 5.1: Validate The Google Token And ADC Before Docker
@@ -370,7 +372,7 @@ $headers = @{ Authorization = "Bearer $googleAccessToken" }
 $processor = Invoke-RestMethod `
   -Method Get `
   -Headers $headers `
-  -Uri "https://us-documentai.googleapis.com/v1/projects/primeval-wind-499515-k6/locations/us/processors/44b3274ce1e84552"
+  -Uri "https://us-documentai.googleapis.com/v1/projects/<google-cloud-project-id>/locations/us/processors/<document-ai-processor-id>"
 
 $processor | ConvertTo-Json -Depth 10
 ```
@@ -396,7 +398,7 @@ If this fails with `403`, the Google account lacks permission. If it fails with 
 
 ```powershell
 gcloud auth application-default print-access-token | Out-Null
-gcloud auth application-default set-quota-project primeval-wind-499515-k6
+gcloud auth application-default set-quota-project <google-cloud-project-id>
 ```
 
 If `print-access-token` fails here, re-run:
@@ -462,9 +464,9 @@ Storage__Provider=Local
 Storage__LocalRootPath=/app/storage/media-assets
 
 GoogleDocumentAi__Enabled=true
-GoogleDocumentAi__ProjectId=primeval-wind-499515-k6
+GoogleDocumentAi__ProjectId=<google-cloud-project-id>
 GoogleDocumentAi__Location=us
-GoogleDocumentAi__ProcessorId=44b3274ce1e84552
+GoogleDocumentAi__ProcessorId=<document-ai-processor-id>
 GoogleDocumentAi__CredentialsPath=/run/secrets/google-application-default-credentials.json
 GoogleDocumentAi__AllowUserCredentials=true
 
@@ -655,9 +657,9 @@ Expected:
   "enabled": true,
   "configured": true,
   "credentialFilePresent": true,
-  "projectId": "primeval-wind-499515-k6",
+  "projectId": "<google-cloud-project-id>",
   "location": "us",
-  "processorId": "44b3274ce1e84552",
+  "processorId": "<document-ai-processor-id>",
   "missingFields": []
 }
 ```
@@ -678,9 +680,9 @@ Expected:
   "enabled": true,
   "configured": true,
   "credentialFilePresent": true,
-  "projectId": "primeval-wind-499515-k6",
+  "projectId": "<google-cloud-project-id>",
   "location": "us",
-  "processorId": "44b3274ce1e84552",
+  "processorId": "<document-ai-processor-id>",
   "missingFields": [],
   "message": "Google Document AI processor is reachable."
 }
@@ -743,7 +745,7 @@ Expected result shape:
     },
     {
       "name": "processor_id",
-      "value": "44b3274ce1e84552"
+      "value": "<document-ai-processor-id>"
     },
     {
       "name": "text",
@@ -809,7 +811,7 @@ Regenerate ADC:
 
 ```powershell
 gcloud auth application-default login --no-launch-browser
-gcloud auth application-default set-quota-project primeval-wind-499515-k6
+gcloud auth application-default set-quota-project <google-cloud-project-id>
 Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" `
   secrets\google-application-default-credentials.json `
   -Force
@@ -821,9 +823,9 @@ docker compose -f deploy\docker-compose.yml up --build -d
 Confirm these values:
 
 ```text
-GoogleDocumentAi__ProjectId=primeval-wind-499515-k6
+GoogleDocumentAi__ProjectId=<google-cloud-project-id>
 GoogleDocumentAi__Location=us
-GoogleDocumentAi__ProcessorId=44b3274ce1e84552
+GoogleDocumentAi__ProcessorId=<document-ai-processor-id>
 ```
 
 ### curl cannot open the PDF
