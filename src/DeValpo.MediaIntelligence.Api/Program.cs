@@ -131,7 +131,10 @@ if (app.Environment.IsDevelopment())
     app.UseCors("DefaultCors");
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseMiddleware<RequestLogContextMiddleware>();
 app.UseSerilogRequestLogging(options =>

@@ -159,3 +159,26 @@ Mandatory rules:
 - Do not permanently store reference images without a retention policy.
 - Do not enable `FaceSearchEnabled` by default.
 - Do not return fake matches.
+
+## QA Without Credentials
+
+Checklist to validate that the API runs without AWS:
+
+```powershell
+curl.exe http://localhost:8085/health
+curl.exe http://localhost:8085/api/v1/providers/aws-rekognition/status
+curl.exe -s -o NUL -w "%{http_code}" "http://localhost:8085/api/v1/providers/aws-rekognition/status?checkRemote=true"
+curl.exe -s -o NUL -w "%{http_code}" -X POST "http://localhost:8085/api/v1/face-search-jobs" -H "Authorization: Bearer $token"
+```
+
+Expected result:
+
+| Validation | Result |
+| --- | --- |
+| `/health` | `200` |
+| Basic AWS status | `enabled=false`, `configured=false` |
+| `checkRemote=true` without token | `401` |
+| `checkRemote=true` with token without operational scope | `403` |
+| `POST /api/v1/face-search-jobs` with operator token | `404` until the real provider is implemented |
+
+If remote status is tested with AWS enabled, use real credentials and real resources. Do not use simulated responses.
