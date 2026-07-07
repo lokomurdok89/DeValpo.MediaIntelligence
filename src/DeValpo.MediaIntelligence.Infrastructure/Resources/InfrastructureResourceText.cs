@@ -34,6 +34,7 @@ internal static class InfrastructureResourceText
     public static string GoogleDocumentAiQuotaReached => GetRequiredResource(nameof(GoogleDocumentAiQuotaReached));
     public static string GoogleDocumentAiServiceUnavailable => GetRequiredResource(nameof(GoogleDocumentAiServiceUnavailable));
     public static string GoogleDocumentAiRemoteCheckFailedWithStatus(object statusCode) => Format(nameof(GoogleDocumentAiRemoteCheckFailedWithStatus), statusCode);
+    public static string GoogleDocumentAiRemoteCheckTimedOut => GetRequiredResource(nameof(GoogleDocumentAiRemoteCheckTimedOut));
     public static string GoogleDocumentAiRemoteCheckFailed => GetRequiredResource(nameof(GoogleDocumentAiRemoteCheckFailed));
     public static string GoogleDocumentAiRequestFailedWithStatus(object statusCode) => Format(nameof(GoogleDocumentAiRequestFailedWithStatus), statusCode);
     public static string GoogleDocumentAiRequestFailed => GetRequiredResource(nameof(GoogleDocumentAiRequestFailed));

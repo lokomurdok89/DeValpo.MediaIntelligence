@@ -13,6 +13,7 @@ using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -86,6 +87,7 @@ builder.Services.Configure<UploadValidationOptions>(builder.Configuration.GetSec
 builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
 builder.Services.Configure<WebhookDeliveryOptions>(builder.Configuration.GetSection("WebhookDelivery"));
+builder.Services.Configure<ReadinessOptions>(builder.Configuration.GetSection("Readiness"));
 builder.Services.AddHostedService<AnalysisJobWorker>();
 builder.Services.AddHostedService<WebhookDeliveryWorker>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
@@ -94,8 +96,9 @@ var connectionString = builder.Configuration.GetConnectionString("MediaIntellige
     ?? throw new InvalidOperationException(ApiResourceText.ConnectionStringRequired);
 
 builder.Services.AddHealthChecks()
-    .AddCheck<PostgresHealthCheck>("postgres")
-    .AddCheck<LocalStorageHealthCheck>("local-storage");
+    .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"])
+    .AddCheck<LocalStorageHealthCheck>("local-storage", tags: ["ready"])
+    .AddCheck<GoogleDocumentAiReadinessHealthCheck>("google-document-ai", tags: ["ready"]);
 
 var app = builder.Build();
 
@@ -126,9 +129,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseMiddleware<RequestLogContextMiddleware>();
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+        diagnosticContext.Set("ClientKey", httpContext.User.FindFirst(AuthClaimTypes.ClientKey)?.Value);
+    };
+});
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health").AllowAnonymous();
+app.MapGet("/health", () => Results.Text(ApiResourceText.HealthStatusHealthy))
+    .AllowAnonymous()
+    .ExcludeFromDescription();
+app.MapHealthChecks(
+        "/ready",
+        new HealthCheckOptions
+        {
+            Predicate = registration => registration.Tags.Contains("ready"),
+            ResponseWriter = HealthCheckResponseWriter.WriteJsonAsync
+        })
+    .AllowAnonymous();
 
 await ApplyMigrationsIfConfiguredAsync(app);
 

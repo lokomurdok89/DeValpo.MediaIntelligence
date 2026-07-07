@@ -4,18 +4,56 @@ using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using Google.Cloud.DocumentAI.V1;
 using Grpc.Core;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Infrastructure.Skills.Documents;
 
 public sealed class GoogleDocumentAiStatusService(
     IOptions<GoogleDocumentAiOptions> options,
-    IGoogleDocumentAiClientFactory clientFactory) : IGoogleDocumentAiStatusService
+    IGoogleDocumentAiClientFactory clientFactory,
+    IMemoryCache? memoryCache = null,
+    IOptions<GoogleDocumentAiStatusCacheOptions>? cacheOptions = null) : IGoogleDocumentAiStatusService
 {
+    private const string RemoteStatusCacheKeyPrefix = "google-document-ai-status";
+
     /// <summary>
     /// Evaluates local provider settings and optionally verifies the configured processor remotely.
     /// </summary>
     public async Task<GoogleDocumentAiStatusResponse> GetStatusAsync(
+        bool checkRemote,
+        CancellationToken cancellationToken)
+    {
+        if (!checkRemote || memoryCache is null)
+        {
+            return await EvaluateStatusAsync(checkRemote, cancellationToken);
+        }
+
+        var config = options.Value;
+        var cacheKey = string.Join(
+            "|",
+            RemoteStatusCacheKeyPrefix,
+            config.Enabled,
+            config.ProjectId,
+            config.Location,
+            config.ProcessorId,
+            config.CredentialsPath);
+
+        if (memoryCache.TryGetValue(cacheKey, out GoogleDocumentAiStatusResponse? cached) && cached is not null)
+        {
+            return cached;
+        }
+
+        var status = await EvaluateStatusAsync(checkRemote: true, cancellationToken);
+        memoryCache.Set(
+            cacheKey,
+            status,
+            TimeSpan.FromSeconds(Math.Max(cacheOptions?.Value.RemoteStatusTtlSeconds ?? 60, 1)));
+
+        return status;
+    }
+
+    private async Task<GoogleDocumentAiStatusResponse> EvaluateStatusAsync(
         bool checkRemote,
         CancellationToken cancellationToken)
     {
@@ -67,13 +105,16 @@ public sealed class GoogleDocumentAiStatusService(
 
         try
         {
-            var client = await clientFactory.CreateAsync(config, cancellationToken);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(cacheOptions?.Value.RemoteStatusTimeoutSeconds ?? 10, 1)));
+
+            var client = await clientFactory.CreateAsync(config, timeoutCts.Token);
             await client.GetProcessorAsync(
                 new GetProcessorRequest
                 {
                     Name = clientFactory.CreateProcessorName(config).ToString()
                 },
-                cancellationToken);
+                timeoutCts.Token);
 
             return CreateResponse(
                 config,
@@ -81,6 +122,15 @@ public sealed class GoogleDocumentAiStatusService(
                 credentialFilePresent,
                 missingFields,
                 InfrastructureResourceText.GoogleDocumentAiProcessorReachable);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return CreateResponse(
+                config,
+                configured: false,
+                credentialFilePresent,
+                missingFields,
+                InfrastructureResourceText.GoogleDocumentAiRemoteCheckTimedOut);
         }
         catch (Exception exception)
         {

@@ -35,6 +35,11 @@ internal static class ApplicationResourceText
     public static string WebhookTargetUrlInvalid => GetRequiredResource(nameof(WebhookTargetUrlInvalid));
     public static string WebhookSigningSecretRequired => GetRequiredResource(nameof(WebhookSigningSecretRequired));
     public static string WebhookTargetAlreadyExists(string targetKey, string clientKey) => Format(nameof(WebhookTargetAlreadyExists), targetKey, clientKey);
+    public static string AnalysisJobQueuedLogMessage => GetRequiredResource(nameof(AnalysisJobQueuedLogMessage));
+    public static string AnalysisJobProcessingStartedLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingStartedLogMessage));
+    public static string AnalysisJobProcessingCompletedLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingCompletedLogMessage));
+    public static string AnalysisJobProcessingRetryLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingRetryLogMessage));
+    public static string AnalysisJobProcessingFailedLogMessage => GetRequiredResource(nameof(AnalysisJobProcessingFailedLogMessage));
     public static string CapabilityResourceMissing(string name) => Format(nameof(CapabilityResourceMissing), name);
     public static string ClientDisplayNameRequired => GetRequiredResource(nameof(ClientDisplayNameRequired));
     public static string ClientAlreadyExists(string clientKey) => Format(nameof(ClientAlreadyExists), clientKey);

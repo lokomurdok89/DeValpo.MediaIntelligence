@@ -13,7 +13,7 @@ public sealed class HealthController : ControllerBase
     /// Returns a lightweight anonymous API health response.
     /// </summary>
     /// <remarks>
-    /// Anonymous liveness endpoint for quick API checks. Use /health for full registered health checks.
+    /// Anonymous liveness endpoint for quick API checks. Use /ready for dependency readiness checks.
     /// </remarks>
     /// <response code="200">Returns a healthy status and request trace identifier.</response>
     [HttpGet]
