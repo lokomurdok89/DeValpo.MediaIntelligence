@@ -21,6 +21,42 @@ Regla simple:
 4. Para documentos reales, usa `POST /api/v1/analyze`.
 5. Para resultados, consulta `/api/v1/analysis-jobs/{jobId}` y luego `/result`.
 
+=== "Cliente"
+
+    Ruta principal:
+
+    1. `POST /api/v1/auth/token`
+    2. `POST /api/v1/analyze`
+    3. `GET /api/v1/analysis-jobs/{jobId}`
+    4. `GET /api/v1/analysis-jobs/{jobId}/result`
+
+=== "Admin"
+
+    Ruta principal:
+
+    1. `POST /api/v1/admin/clients`
+    2. Rotar o revocar API keys cuando corresponda.
+    3. Configurar webhook targets.
+    4. Revisar auditoria y retencion.
+
+=== "Operador"
+
+    Ruta principal:
+
+    1. `GET /ready`
+    2. `GET /api/v1/operations/metrics`
+    3. `GET /api/v1/human-review-tasks`
+    4. Resolver tareas de revision.
+
+=== "QA"
+
+    Ruta principal:
+
+    1. Validar `401` sin token.
+    2. Validar `200` con token correcto.
+    3. Subir documento real.
+    4. Validar resultado, review y webhook si aplica.
+
 ## Mapa Rapido
 
 | Grupo | Endpoints | Seguridad |

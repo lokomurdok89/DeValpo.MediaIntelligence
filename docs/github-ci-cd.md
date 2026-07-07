@@ -19,6 +19,26 @@ It validates:
 
 It does not deploy automatically.
 
+## Documentation Pages
+
+Documentation is built by `.github/workflows/docs.yml`.
+
+The docs workflow:
+
+- installs Python documentation dependencies from `requirements-docs.txt`
+- runs `mkdocs build --strict`
+- uploads the generated `site` artifact
+- deploys GitHub Pages only on pushes to `main`
+
+The GitHub Pages source should be configured as **GitHub Actions** in the repository settings. Pull requests build the documentation but do not deploy it.
+
+Local validation:
+
+```powershell
+pip install -r requirements-docs.txt
+mkdocs build --strict
+```
+
 ## Railway extension
 
 Future Railway deployment should reuse the Dockerfile and provide environment variables for PostgreSQL, storage and Google Document AI. Automatic deploy secrets are intentionally not configured yet.

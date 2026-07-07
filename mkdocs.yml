@@ -1,0 +1,105 @@
+site_name: DeValpo MediaIntelligence Docs
+site_description: Documentacion tecnica y operativa de DeValpo MediaIntelligence.
+site_url: https://lokomurdok89.github.io/DeValpo.MediaIntelligence/
+repo_url: https://github.com/lokomurdok89/DeValpo.MediaIntelligence
+repo_name: lokomurdok89/DeValpo.MediaIntelligence
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: es
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - toc.follow
+    - content.tabs.link
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      languages:
+        - locale: es
+          name: Espanol
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+          site_description: Technical and operational documentation for DeValpo MediaIntelligence.
+          nav_translations:
+            Inicio: Home
+            Primeros pasos: Getting started
+            API: API
+            Arquitectura: Architecture
+            Modelo de datos: Data model
+            Seguridad: Security
+            Operacion: Operations
+            QA: QA
+            Roadmap: Roadmap
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Inicio: index.md
+  - Primeros pasos: getting-started.md
+  - API:
+      - API: api.md
+      - Flujos de endpoints: api-endpoint-flows.md
+  - Arquitectura:
+      - Arquitectura: architecture.md
+      - Modelo de datos: data-model.md
+  - Seguridad: security.md
+  - Operacion: operations.md
+  - QA: qa.md
+  - Roadmap: roadmap.md
+
+not_in_nav: |
+  client-onboarding-guide.md
+  github-ci-cd*.md
+  local-tokens-and-google-secrets.md
+  product-final-phase-plan.md
+  productization-plan.md
+  profiles.md
+  qa-phase-*.md
+  qa-review.md
+  release-scope-v0.1.0-rc.1.md
+  skills.md
+  devalpo-mediaintelligence-qa/*.md
+  devalpo-mediaintelligence-qa/references/*.md
+  runbooks/*.md

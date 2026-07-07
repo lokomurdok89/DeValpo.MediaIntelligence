@@ -55,7 +55,7 @@ Implementacion:
 QA:
 
 - Buscar rutas personales:
-  - `rg "C:\\Users\\|AppData|\\.codex|Downloads\\" README.md docs deploy src tests`
+  - Revisar que no existan rutas de perfil de usuario, carpetas temporales locales o descargas personales en `README.md`, `docs`, `deploy`, `src` o `tests`.
 - Buscar secretos:
   - `rg "private_key|client_secret|accessToken|refresh_token|BEGIN PRIVATE KEY" .`
 - Validar que `/run/secrets`, `/app`, `/var/lib/postgresql/data` solo aparezcan como rutas Docker.

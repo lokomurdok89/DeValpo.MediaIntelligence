@@ -1,16 +1,16 @@
-# Architecture
+# Arquitectura
 
-DeValpo.MediaIntelligence is a standalone API for analyzing documents, images, videos and future live-video buffers.
+DeValpo.MediaIntelligence es una API independiente para analizar documentos, imagenes, videos y futuros buffers de video en vivo.
 
-## Layers
+## Capas
 
-- `Contracts`: public DTOs and API-facing enums.
-- `Domain`: persistence entities and core data model.
-- `Application`: use cases, orchestration, profile resolution and provider/storage abstractions.
-- `Infrastructure`: EF Core, PostgreSQL, local storage, Google Document AI and mock skills.
-- `Api`: controllers, middleware, Swagger, health checks and composition.
+- `Contracts`: DTOs publicos y enums expuestos por API.
+- `Domain`: entidades de persistencia y modelo principal.
+- `Application`: casos de uso, orquestacion, perfiles y abstracciones de proveedores/storage.
+- `Infrastructure`: EF Core, PostgreSQL, storage local, Google Document AI y skills.
+- `Api`: controladores, middleware, Swagger, health checks y composicion.
 
-Dependency direction:
+Direccion de dependencias:
 
 ```text
 Domain
@@ -20,25 +20,38 @@ Infrastructure -> Application + Domain + Contracts
 Api -> Application + Infrastructure + Contracts
 ```
 
-## End-to-end flow
+## Flujo End-To-End
 
-```text
-Controller
-  -> Application Service
-    -> MediaAnalysisOrchestrator
-      -> IMediaAnalysisSkill
-        -> Provider or mock implementation
-    -> Repository + UnitOfWork
+```mermaid
+flowchart TD
+    A["Client app"] --> B["JWT Bearer request"]
+    B --> C["API controller"]
+    C --> D["Application service"]
+    D --> E["Media storage"]
+    D --> F["PostgreSQL"]
+    D --> G["Analysis orchestrator"]
+    G --> H["Profile resolver"]
+    G --> I["Skills"]
+    I --> J["Google Document AI"]
+    G --> K["Normalized result"]
+    K --> F
 ```
 
-The API stores file metadata and local storage paths. It does not store binary files in PostgreSQL.
+## Componentes En Runtime
 
-## Separation from Contador
+```mermaid
+flowchart LR
+    API["ASP.NET Core API"] --> App["Application services"]
+    Worker["Background workers"] --> App
+    App --> Storage["Local storage"]
+    App --> DB["PostgreSQL"]
+    App --> Orchestrator["MediaAnalysisOrchestrator"]
+    Orchestrator --> Skills["Skills"]
+    Skills --> Google["Google Document AI"]
+```
 
-This repository does not depend on `Contador` entities, DTOs, endpoints, database or frontend. Future Contador integration should happen through HTTP/API consumption of public contracts.
+## Profiles, Skills Y Capabilities
 
-## Capabilities, skills and profiles
-
-- A capability describes a technical ability such as OCR or stamp detection.
-- A skill is an executable analysis unit.
-- A profile selects skills, order, thresholds and review rules for a client or use case.
+- Una capability describe que puede hacer la plataforma.
+- Un skill es una unidad ejecutable que produce campos, labels, entidades, clips o issues.
+- Un profile selecciona skills, orden, umbrales y reglas de revision para un caso de uso.
