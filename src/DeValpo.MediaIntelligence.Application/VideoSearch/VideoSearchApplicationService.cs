@@ -280,7 +280,7 @@ public sealed class VideoSearchApplicationService(
             throw new ArgumentException(ApplicationResourceText.VideoSearchMergeGapInvalid);
         }
 
-        if (!document.RootElement.TryGetProperty("targets", out var targetsElement) ||
+        if (!TryGetProperty(document.RootElement, "targets", out var targetsElement) ||
             targetsElement.ValueKind != JsonValueKind.Array)
         {
             throw new ArgumentException(ApplicationResourceText.VideoSearchTargetsRequired);
@@ -465,7 +465,7 @@ public sealed class VideoSearchApplicationService(
 
     private static string GetRequiredString(JsonElement element, string propertyName, string message)
     {
-        if (!element.TryGetProperty(propertyName, out var property) ||
+        if (!TryGetProperty(element, propertyName, out var property) ||
             property.ValueKind != JsonValueKind.String ||
             string.IsNullOrWhiteSpace(property.GetString()))
         {
@@ -477,16 +477,31 @@ public sealed class VideoSearchApplicationService(
 
     private static bool? GetOptionalBoolean(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var property)
+        return TryGetProperty(element, propertyName, out var property)
             ? property.GetBoolean()
             : null;
     }
 
     private static decimal? GetOptionalDecimal(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var property)
+        return TryGetProperty(element, propertyName, out var property)
             ? property.GetDecimal()
             : null;
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement property)
+    {
+        foreach (var candidate in element.EnumerateObject())
+        {
+            if (string.Equals(candidate.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                property = candidate.Value;
+                return true;
+            }
+        }
+
+        property = default;
+        return false;
     }
 
     private static string NormalizeNumber(string value)

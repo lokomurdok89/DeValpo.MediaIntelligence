@@ -128,3 +128,19 @@ Rules:
 - No personal names, national IDs, emails, or user identifiers.
 - Face matching disabled by default.
 - Google `VisibleNumber` matches and AWS `FaceReference` matches stay separated in the result model.
+
+## Real Smoke Test Evidence
+
+Local smoke test validated on 2026-07-07:
+
+| Item | Result |
+| --- | --- |
+| Provider | Google Video Intelligence |
+| Real video | 774.23 MB |
+| Video count | 1 |
+| Remote GCS bucket | Reachable |
+| Final job status | `Completed` |
+| Attempts | 1 |
+| Approximate duration | 24 minutes 50 seconds |
+
+The full result was exported locally for functional review, but it must not be committed because it may contain data derived from a real video.
