@@ -4,6 +4,37 @@ Reusable multi-client media and document intelligence engine.
 
 This repository is intentionally separate from the Contador repository. It exposes public DTOs through `DeValpo.MediaIntelligence.Contracts` and keeps providers, storage and persistence behind Application abstractions.
 
+## Start Here
+
+GitHub README files do not support real tabs. To keep this readable, the README is the front page and the long endpoint documentation lives in separate pages.
+
+| Icon | Page | What You Use It For |
+| --- | --- | --- |
+| 🧭 | [Architecture overview](#architecture-overview) | Understand the main components and end-to-end flow. |
+| 🚀 | [Run with Docker](#run-with-docker) | Start PostgreSQL and the API with one command. |
+| 🔐 | [Local tokens and Google secrets setup](docs/local-tokens-and-google-secrets.md) | Generate local JWT tokens and configure Google credentials safely. |
+| 📡 | [API endpoint flows](docs/api-endpoint-flows.md) | See every endpoint grouped with sequence diagrams and usage notes. |
+| 🧪 | [Product final phase plan](docs/product-final-phase-plan.md) | Follow the phase-by-phase QA and product completion plan. |
+| 📦 | [Release scope v0.1.0-rc.1](docs/release-scope-v0.1.0-rc.1.md) | Know what is included in the current release candidate. |
+| 🧰 | [Runbooks](docs/runbooks) | Operate Google, PostgreSQL, storage, security and releases. |
+
+## Endpoint Flow Groups
+
+For the detailed diagrams, open [API endpoint flows](docs/api-endpoint-flows.md). It is grouped like this:
+
+| Group | What Is Inside |
+| --- | --- |
+| 🟢 Health and readiness | `/health`, `/api/v1/health`, `/ready` |
+| 🔐 Authentication | local dev token, client API key to JWT token |
+| 🛡️ Client administration | create client, rotate key, revoke key |
+| 📚 Catalog | capabilities, profiles and skills |
+| 📄 Analysis | upload, create job, poll job, get result, cancel |
+| ☁️ Google Document AI | provider status and remote processor check |
+| 🧑‍💼 Human review | list, open, start and complete review tasks |
+| 🔔 Webhooks | configure targets, inspect deliveries, understand outbound delivery |
+| 📊 Operations | metrics and support counters |
+| 🛡️ Governance | audit events and retention policy |
+
 ## Requirements
 
 - .NET SDK 10.0.x
@@ -969,6 +1000,7 @@ GitHub Actions validates restore, build, tests, Docker build and Docker Compose 
 
 The remaining work to move from MVP to product is tracked in:
 
+- [API endpoint flows](docs/api-endpoint-flows.md)
 - [Productization plan](docs/productization-plan.md)
 - [Product final phase plan](docs/product-final-phase-plan.md)
 - [Release scope v0.1.0-rc.1](docs/release-scope-v0.1.0-rc.1.md)
