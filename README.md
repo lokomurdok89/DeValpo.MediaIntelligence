@@ -6,9 +6,10 @@ The product exposes a secure API for clients to upload real documents, run confi
 
 ## Documentation
 
-The full documentation is published as a MkDocs Material site with navigation tabs, search, Mermaid diagrams and bilingual pages:
+The full documentation is built as a MkDocs Material site with navigation tabs, search, Mermaid diagrams and bilingual pages:
 
-- Documentation site: [DeValpo MediaIntelligence Docs](https://lokomurdok89.github.io/DeValpo.MediaIntelligence/)
+- Local preview: `python -m mkdocs serve`
+- GitHub Pages URL when enabled: [DeValpo MediaIntelligence Docs](https://lokomurdok89.github.io/DeValpo.MediaIntelligence/)
 - Local documentation source: [docs/index.md](docs/index.md)
 - Endpoint sequence diagrams: [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md)
 
@@ -55,7 +56,7 @@ mkdocs serve
 mkdocs build --strict
 ```
 
-GitHub Pages is built and deployed by `.github/workflows/docs.yml` from `main`.
+`.github/workflows/docs.yml` builds the documentation on every push and pull request. GitHub Pages deploy is gated by the repository variable `DEPLOY_GITHUB_PAGES=true`, because private repositories require a GitHub plan that supports Pages.
 
 ## Safety
 

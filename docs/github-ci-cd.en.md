@@ -27,10 +27,10 @@ The docs workflow:
 
 - installs Python documentation dependencies from `requirements-docs.txt`
 - runs `mkdocs build --strict`
-- uploads the generated `site` artifact
-- deploys GitHub Pages only on pushes to `main`
+- uploads the generated `site` artifact as `mkdocs-site`
+- deploys GitHub Pages only on pushes to `main` when repository variable `DEPLOY_GITHUB_PAGES` is `true`
 
-The GitHub Pages source should be configured as **GitHub Actions** in the repository settings. Pull requests build the documentation but do not deploy it.
+The current repository is private. If the GitHub account plan does not support Pages for private repositories, the public Pages URL will return `404`. To publish Pages, either make the repository public or use a plan that supports private Pages, then configure Pages source as **GitHub Actions** and set repository variable `DEPLOY_GITHUB_PAGES=true`.
 
 Local validation:
 
