@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.AnalysisResults;
@@ -15,8 +16,10 @@ public sealed class VideoSearchApplicationService(
     IAnalysisProfileResolver profileResolver,
     IVideoSearchJobRepository jobRepository,
     IVideoSearchProvider provider,
+    IAssetReferenceResolver assetReferenceResolver,
     IUnitOfWork unitOfWork,
     IOptions<VideoAnalysisOptions> options,
+    IOptions<CloudAssetOptions> cloudAssetOptions,
     ILogger<VideoSearchApplicationService> logger) : IVideoSearchApplicationService
 {
     private const string ProfileKey = "event-video-target-search-v1";
@@ -39,26 +42,14 @@ public sealed class VideoSearchApplicationService(
 
         await jobRepository.AddAsync(job, cancellationToken);
 
-        var index = 1;
-        foreach (var video in command.Videos)
+        if (command.AssetSelector is not null &&
+            !string.Equals(command.AssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase))
         {
-            var storedAsset = await storage.SaveAsync(
-                video.Content,
-                video.OriginalFileName,
-                video.ContentType,
-                cancellationToken);
-
-            job.Assets.Add(new VideoSearchAsset
-            {
-                JobId = job.Id,
-                AssetKey = $"video-{index}",
-                AssetRole = "SourceVideo",
-                OriginalFileName = video.OriginalFileName,
-                StoragePath = storedAsset.StoragePath,
-                ContentType = storedAsset.ContentType,
-                SizeInBytes = storedAsset.SizeInBytes
-            });
-            index++;
+            await AddCloudAssetsAsync(job, command.AssetSelector, "SourceVideo", cloudAssetOptions.Value.MaxVideosPerJob, cancellationToken);
+        }
+        else
+        {
+            await StoreUploadsAsync(job, command.Videos, cancellationToken);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -145,12 +136,7 @@ public sealed class VideoSearchApplicationService(
         var providerResult = await provider.AnalyzeAsync(
             new VideoSearchProviderRequest(
                 job.Id,
-                job.Assets.Select(asset => new VideoSearchProviderAsset(
-                    asset.Id,
-                    asset.AssetKey,
-                    asset.OriginalFileName,
-                    asset.StoragePath,
-                    asset.ContentType)).ToArray(),
+                job.Assets.Select(ToProviderAsset).ToArray(),
                 manifest.DetectFaces,
                 manifest.DetectNumbers),
             cancellationToken);
@@ -213,12 +199,15 @@ public sealed class VideoSearchApplicationService(
             throw new ArgumentException(ApplicationResourceText.VideoSearchProfileRequired(ProfileKey), nameof(command));
         }
 
-        if (command.Videos.Count == 0)
+        var usesCloudReferences = command.AssetSelector is not null &&
+            !string.Equals(command.AssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase);
+
+        if (!usesCloudReferences && command.Videos.Count == 0)
         {
             throw new ArgumentException(ApplicationResourceText.VideoSearchVideosRequired, nameof(command));
         }
 
-        if (command.Videos.Count > options.Value.MaxVideosPerJob)
+        if (!usesCloudReferences && command.Videos.Count > options.Value.MaxVideosPerJob)
         {
             throw new ArgumentException(ApplicationResourceText.VideoSearchMaxVideosExceeded(options.Value.MaxVideosPerJob), nameof(command));
         }
@@ -232,6 +221,90 @@ public sealed class VideoSearchApplicationService(
         }
 
         return VideoSearchManifestParser.Parse(command.ManifestJson, options.Value);
+    }
+
+    private async Task StoreUploadsAsync(
+        VideoSearchJob job,
+        IReadOnlyCollection<VideoSearchUpload> videos,
+        CancellationToken cancellationToken)
+    {
+        var index = 1;
+        foreach (var video in videos)
+        {
+            var storedAsset = await storage.SaveAsync(
+                video.Content,
+                video.OriginalFileName,
+                video.ContentType,
+                cancellationToken);
+
+            job.Assets.Add(new VideoSearchAsset
+            {
+                JobId = job.Id,
+                AssetKey = $"video-{index}",
+                AssetRole = "SourceVideo",
+                OriginalFileName = video.OriginalFileName,
+                StoragePath = storedAsset.StoragePath,
+                InputMode = CloudAssetInputModes.MultipartUpload,
+                ContentType = storedAsset.ContentType,
+                SizeInBytes = storedAsset.SizeInBytes
+            });
+            index++;
+        }
+    }
+
+    private async Task AddCloudAssetsAsync(
+        VideoSearchJob job,
+        CloudAssetSelector selector,
+        string role,
+        int maxAssets,
+        CancellationToken cancellationToken)
+    {
+        var resolvedAssets = await assetReferenceResolver.ResolveAsync(selector, maxAssets, cancellationToken);
+        foreach (var asset in resolvedAssets)
+        {
+            job.Assets.Add(new VideoSearchAsset
+            {
+                JobId = job.Id,
+                AssetKey = asset.AssetKey,
+                AssetRole = role,
+                OriginalFileName = asset.FileName,
+                StoragePath = ToCloudUri(asset.StorageProvider, asset.BucketName, asset.ObjectKey),
+                InputMode = CloudAssetInputModes.CloudReference,
+                StorageProvider = asset.StorageProvider,
+                BucketName = asset.BucketName,
+                ObjectKey = asset.ObjectKey,
+                Prefix = selector.Prefix,
+                Region = asset.Region,
+                Location = asset.Location,
+                Checksum = asset.Checksum,
+                VersionId = asset.VersionId,
+                Generation = asset.Generation,
+                ContentType = asset.ContentType,
+                SizeInBytes = asset.SizeInBytes
+            });
+        }
+    }
+
+    private static VideoSearchProviderAsset ToProviderAsset(VideoSearchAsset asset)
+    {
+        return new VideoSearchProviderAsset(
+            asset.Id,
+            asset.AssetKey,
+            asset.OriginalFileName,
+            asset.StoragePath,
+            asset.ContentType,
+            asset.StorageProvider,
+            asset.BucketName,
+            asset.ObjectKey,
+            asset.VersionId,
+            asset.Generation);
+    }
+
+    private static string ToCloudUri(string storageProvider, string bucketName, string objectKey)
+    {
+        return string.Equals(storageProvider, CloudStorageProviders.S3, StringComparison.OrdinalIgnoreCase)
+            ? $"s3://{bucketName}/{objectKey}"
+            : $"gs://{bucketName}/{objectKey}";
     }
 
     private static IReadOnlyCollection<VideoSearchTargetMatchSegment> BuildTargetSegments(

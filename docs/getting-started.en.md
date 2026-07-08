@@ -50,7 +50,7 @@ gcloud auth application-default set-quota-project <project-id>
 Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\google-application-default-credentials.json
 ```
 
-More detail: [local tokens and Google secrets](local-tokens-and-google-secrets.md).
+More detail: [local tokens and Google secrets](reference/local-tokens-and-google-secrets.md).
 
 That document explains the full path from installing Google Cloud CLI to obtaining the ADC credential this API uses to call Document AI.
 

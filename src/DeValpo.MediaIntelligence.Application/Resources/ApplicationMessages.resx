@@ -222,9 +222,6 @@
   <data name="FaceSearchReferenceImagesRequired" xml:space="preserve">
     <value>At least one reference image is required for face search.</value>
   </data>
-  <data name="FaceSearchConsentReferenceRequired" xml:space="preserve">
-    <value>consentReferenceId is required.</value>
-  </data>
   <data name="FaceSearchManifestRequired" xml:space="preserve">
     <value>manifestJson is required.</value>
   </data>
@@ -266,5 +263,131 @@
   </data>
   <data name="FaceSearchJobProcessingCompletedLogMessage" xml:space="preserve">
     <value>Face search job processing completed.</value>
+  </data>
+  <data name="ImageBatchSearchDescription" xml:space="preserve">
+    <value>Image batch search profile for visible numbers and consented reference-face matching.</value>
+  </data>
+  <data name="ImageBatchSearchProfileRequired" xml:space="preserve">
+    <value>Image batch search requires profile '{0}'.</value>
+  </data>
+  <data name="ImageBatchSearchImagesRequired" xml:space="preserve">
+    <value>At least one source image is required.</value>
+  </data>
+  <data name="ImageBatchSearchReferenceImagesRequired" xml:space="preserve">
+    <value>At least one reference image is required for face-reference targets.</value>
+  </data>
+  <data name="ImageBatchSearchMaxImagesExceeded" xml:space="preserve">
+    <value>The image batch search request exceeds the maximum of {0} images per job.</value>
+  </data>
+  <data name="ImageBatchSearchMaxTargetsExceeded" xml:space="preserve">
+    <value>The image batch search request exceeds the maximum of {0} targets per job.</value>
+  </data>
+  <data name="ImageBatchSearchManifestRequired" xml:space="preserve">
+    <value>manifestJson is required.</value>
+  </data>
+  <data name="ImageBatchSearchManifestMustBeObject" xml:space="preserve">
+    <value>manifestJson must be a JSON object.</value>
+  </data>
+  <data name="ImageBatchSearchManifestPropertyUnsupported" xml:space="preserve">
+    <value>manifestJson property '{0}' is not supported.</value>
+  </data>
+  <data name="ImageBatchSearchPersonalDataNotAllowed" xml:space="preserve">
+    <value>manifestJson cannot include personal data property '{0}'. Use opaque target keys only.</value>
+  </data>
+  <data name="ImageBatchSearchTargetsRequired" xml:space="preserve">
+    <value>At least one image batch search target is required.</value>
+  </data>
+  <data name="ImageBatchSearchTargetMustBeObject" xml:space="preserve">
+    <value>Each image batch search target must be a JSON object.</value>
+  </data>
+  <data name="ImageBatchSearchTargetKeyRequired" xml:space="preserve">
+    <value>targetKey is required.</value>
+  </data>
+  <data name="ImageBatchSearchQueryTypeRequired" xml:space="preserve">
+    <value>queryType is required.</value>
+  </data>
+  <data name="ImageBatchSearchQueryTypeUnsupported" xml:space="preserve">
+    <value>queryType '{0}' is not supported.</value>
+  </data>
+  <data name="ImageBatchSearchVisibleNumberRequired" xml:space="preserve">
+    <value>visibleNumber is required for VisibleNumber targets.</value>
+  </data>
+  <data name="ImageBatchSearchVisibleNumberMustContainDigit" xml:space="preserve">
+    <value>visibleNumber must contain at least one digit.</value>
+  </data>
+  <data name="ImageBatchSearchReferenceImageKeyRequired" xml:space="preserve">
+    <value>referenceImageKey is required for FaceReference targets.</value>
+  </data>
+  <data name="ImageBatchSearchTargetReferenceImageMissing" xml:space="preserve">
+    <value>referenceImageKey '{0}' does not match an uploaded reference image.</value>
+  </data>
+  <data name="ImageBatchSearchMinConfidenceInvalid" xml:space="preserve">
+    <value>minConfidence must be between 0 and 1.</value>
+  </data>
+  <data name="ImageBatchSearchMinSimilarityInvalid" xml:space="preserve">
+    <value>minSimilarity must be between 0 and 100.</value>
+  </data>
+  <data name="ImageBatchSearchProvidersMustBeArray" xml:space="preserve">
+    <value>providers must be a JSON array.</value>
+  </data>
+  <data name="ImageBatchSearchJobQueuedLogMessage" xml:space="preserve">
+    <value>Image batch search job queued.</value>
+  </data>
+  <data name="ImageBatchSearchJobProcessingRetryLogMessage" xml:space="preserve">
+    <value>Image batch search job processing failed and will be retried.</value>
+  </data>
+  <data name="ImageBatchSearchJobProcessingFailedLogMessage" xml:space="preserve">
+    <value>Image batch search job processing failed permanently.</value>
+  </data>
+  <data name="ImageBatchSearchJobProcessingCompletedLogMessage" xml:space="preserve">
+    <value>Image batch search job processing completed.</value>
+  </data>
+  <data name="CloudAssetSelectorRequired" xml:space="preserve">
+    <value>assetSelectorJson is required for cloud-reference jobs.</value>
+  </data>
+  <data name="CloudAssetSelectorMustBeObject" xml:space="preserve">
+    <value>assetSelectorJson must be a JSON object.</value>
+  </data>
+  <data name="CloudAssetSelectorModeRequired" xml:space="preserve">
+    <value>assetSelectorJson.selectorMode is required.</value>
+  </data>
+  <data name="CloudAssetSelectorModeUnsupported" xml:space="preserve">
+    <value>assetSelectorJson.selectorMode '{0}' is not supported.</value>
+  </data>
+  <data name="CloudAssetStorageProviderRequired" xml:space="preserve">
+    <value>assetSelectorJson.storageProvider is required.</value>
+  </data>
+  <data name="CloudAssetStorageProviderUnsupported" xml:space="preserve">
+    <value>assetSelectorJson.storageProvider '{0}' is not supported.</value>
+  </data>
+  <data name="CloudAssetBucketRequired" xml:space="preserve">
+    <value>assetSelectorJson.bucketName is required.</value>
+  </data>
+  <data name="CloudAssetPrefixRequired" xml:space="preserve">
+    <value>assetSelectorJson.prefix is required for AllPrefix selectors.</value>
+  </data>
+  <data name="CloudAssetExplicitAssetsRequired" xml:space="preserve">
+    <value>assetSelectorJson.assets must contain at least one asset for ExplicitAssets selectors.</value>
+  </data>
+  <data name="CloudAssetMustBeObject" xml:space="preserve">
+    <value>Each cloud asset reference must be a JSON object.</value>
+  </data>
+  <data name="CloudAssetKeyRequired" xml:space="preserve">
+    <value>Cloud asset reference assetKey is required.</value>
+  </data>
+  <data name="CloudAssetObjectKeyRequired" xml:space="preserve">
+    <value>Cloud asset reference objectKey is required.</value>
+  </data>
+  <data name="CloudAssetUrlsNotAllowed" xml:space="preserve">
+    <value>Cloud asset selectors cannot include public URLs or signed URLs.</value>
+  </data>
+  <data name="CloudAssetBucketNotAllowed" xml:space="preserve">
+    <value>Bucket '{0}' is not allowed for this MediaIntelligence deployment.</value>
+  </data>
+  <data name="CloudAssetMaxAssetsExceeded" xml:space="preserve">
+    <value>The cloud asset selector resolves more than {0} assets.</value>
+  </data>
+  <data name="CloudAssetNoAssetsResolved" xml:space="preserve">
+    <value>The cloud asset selector did not resolve any assets.</value>
   </data>
 </root>

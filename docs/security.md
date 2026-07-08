@@ -53,4 +53,4 @@ No deben aparecer en logs, auditoria, Swagger examples o webhooks:
 - Texto OCR completo.
 - Contenido de documentos.
 
-Mas detalle: [tokens y secretos Google](local-tokens-and-google-secrets.md) y [runbook de seguridad](runbooks/security-governance-retention.md).
+Mas detalle: [tokens y secretos Google](reference/local-tokens-and-google-secrets.md) y [runbook de seguridad](runbooks/security-governance-retention.md).

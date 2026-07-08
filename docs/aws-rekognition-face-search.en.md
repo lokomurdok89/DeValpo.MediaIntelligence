@@ -42,8 +42,8 @@ AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
 AwsRekognition__PollingIntervalSeconds=5
 AwsRekognition__PollingTimeoutSeconds=900
-AwsRekognition__StagingPrefix=face-search
-AwsRekognition__DeleteStagedObjectsAfterProcessing=true
+AwsRekognition__StagingPrefix=staging
+AwsRekognition__DeleteStagedObjectsAfterProcessing=false
 ```
 
 Check basic status:
@@ -99,7 +99,7 @@ Allow a client to submit:
 - one or more real videos;
 - one or more reference images;
 - one opaque `targetKey` per participant;
-- a `consentReferenceId` issued outside MediaIntelligence.
+- an optional `consentReferenceId` issued outside MediaIntelligence.
 
 The system must return time ranges where AWS finds a face similar to the reference image.
 
@@ -109,7 +109,7 @@ The system must return time ranges where AWS finds a face similar to the referen
 | --- | --- |
 | AWS Account | Active account with billing enabled. |
 | Region | Single region for S3 and Rekognition. Initial recommendation: `us-east-1`. |
-| Private S3 bucket | Staging for videos and reference images. |
+| Private S3 bucket | Original assets or temporary staging for videos and reference images. |
 | Rekognition collection | Temporary facial vector container for the job. |
 | IAM app user/role | Allows upload to S3, face indexing and result lookup. |
 
@@ -120,7 +120,6 @@ V1 uses polling with `GetFaceSearch`. SNS/SQS is reserved for a later phase beca
 ```text
 s3:PutObject
 s3:GetObject
-s3:DeleteObject
 s3:GetBucketLocation
 rekognition:CreateCollection
 rekognition:DescribeCollection
@@ -217,9 +216,9 @@ sequenceDiagram
     participant Rek as AWS Rekognition
     participant Worker as FaceSearchWorker
 
-    Client->>API: POST /face-search-jobs with videos, referenceImages and consentReferenceId
-    API->>API: Validate JWT, manifest and consent
-    API->>S3: Upload videos and reference images
+    Client->>API: POST /face-search-jobs with multipart or assetSelectorJson
+    API->>API: Validate JWT, manifest and references
+    API->>S3: Use existing assets or stage temporarily
     API->>Rek: IndexFaces in collection
     API->>DB: Create Pending job with targetKey and faceId
     Worker->>Rek: StartFaceSearch
@@ -245,10 +244,12 @@ GET  /api/v1/face-search-jobs/{jobId}/result
 ```text
 clientKey
 profileKey=event-face-search-v1
-consentReferenceId
+optional consentReferenceId
 manifestJson
 videos[]
 referenceImages[]
+optional assetSelectorJson
+optional referenceAssetSelectorJson
 ```
 
 Minimum manifest:
@@ -286,14 +287,15 @@ Expected result:
 
 ## Mandatory Rules
 
-- `consentReferenceId` is required.
+- `consentReferenceId` is optional; missing consent reference does not block processing.
 - Opaque `targetKey` is required.
 - Reject `name`, `rut`, `email`, `phone`, `userId`, `personId`.
 - `FaceSearchEnabled=false` by default.
 - Do not mix Google `VisibleNumber` matches with AWS `FaceReference` matches.
 - Do not permanently store reference images without an explicit retention policy.
 - Audit consent, indexing, search, result read and deletion.
-- Delete temporary S3 objects and temporary indexed faces after completing or failing the job.
+- Do not delete staged objects from the job; file cleanup depends on bucket lifecycle policy with a short TTL.
+- Delete temporary indexed faces with `DeleteFaces` after completing or failing the job.
 - Later revocation by target/job is outside v1 because the API does not persist `FaceId`; if a persistent index is defined, that phase must add storage and consent-based deletion.
 - Do not return fake matches.
 

@@ -28,6 +28,7 @@ Componentes:
 
 ## Runbooks
 
+- [Credenciales, usuarios y perfiles cloud](reference/cloud-identities-and-provider-profiles.md)
 - [Google Document AI](runbooks/google-document-ai.md)
 - [PostgreSQL](runbooks/postgres.md)
 - [Storage](runbooks/storage.md)

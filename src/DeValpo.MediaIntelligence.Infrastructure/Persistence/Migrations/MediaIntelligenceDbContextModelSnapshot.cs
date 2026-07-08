@@ -579,6 +579,259 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.ToTable("HumanReviewTasks");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchAsset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AssetKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("AssetRole")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("BucketName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Checksum")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Generation")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("InputMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("MultipartUpload");
+
+                    b.Property<bool>("IsStaged")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ObjectKey")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("Prefix")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("ProviderInputUri")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("SizeInBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StagingCleanupStatus")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset?>("StagingExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("StorageProvider")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("VersionId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("JobId", "AssetKey")
+                        .IsUnique();
+
+                    b.ToTable("ImageBatchSearchAssets");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchIssue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("QueryType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("SourceProvider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("TargetKey")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId");
+
+                    b.ToTable("ImageBatchSearchIssues");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("ManifestJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("ProcessingAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProfileKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("ImageBatchSearchJobs");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchMatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DetectedText")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("ImageAssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImageFileName")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("ImageKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QueryType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)");
+
+                    b.Property<string>("SourceProvider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("TargetKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageAssetId");
+
+                    b.HasIndex("JobId", "TargetKey", "ImageKey");
+
+                    b.ToTable("ImageBatchSearchMatches");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.MediaAsset", b =>
                 {
                     b.Property<Guid>("Id")
@@ -682,6 +935,14 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("BucketName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Checksum")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -693,25 +954,70 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Generation")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("InputMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("MultipartUpload");
+
+                    b.Property<bool>("IsStaged")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ObjectKey")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<string>("OriginalFileName")
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
 
+                    b.Property<string>("Prefix")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
                     b.Property<string>("ProviderInputUri")
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
 
+                    b.Property<string>("Region")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<long>("SizeInBytes")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("StagingCleanupStatus")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset?>("StagingExpiresAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("StoragePath")
                         .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("StorageProvider")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("VersionId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<decimal?>("VideoDurationSeconds")
                         .HasPrecision(18, 3)
@@ -1164,6 +1470,47 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Navigation("Job");
                 });
 
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchAsset", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchJob", "Job")
+                        .WithMany("Assets")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchIssue", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchJob", "Job")
+                        .WithMany("Issues")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchMatch", b =>
+                {
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchAsset", "ImageAsset")
+                        .WithMany()
+                        .HasForeignKey("ImageAssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchJob", "Job")
+                        .WithMany("Matches")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ImageAsset");
+
+                    b.Navigation("Job");
+                });
+
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.MediaAsset", b =>
                 {
                     b.HasOne("DeValpo.MediaIntelligence.Domain.Entities.AnalysisJob", "Job")
@@ -1306,6 +1653,15 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Migrations
                     b.Navigation("RetentionPolicy");
 
                     b.Navigation("WebhookTargets");
+                });
+
+            modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.ImageBatchSearchJob", b =>
+                {
+                    b.Navigation("Assets");
+
+                    b.Navigation("Issues");
+
+                    b.Navigation("Matches");
                 });
 
             modelBuilder.Entity("DeValpo.MediaIntelligence.Domain.Entities.VideoSearchJob", b =>

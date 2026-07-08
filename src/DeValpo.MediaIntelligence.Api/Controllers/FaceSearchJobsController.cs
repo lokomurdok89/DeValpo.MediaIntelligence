@@ -4,6 +4,7 @@ using DeValpo.MediaIntelligence.Api.Options;
 using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Api.Validation;
 using DeValpo.MediaIntelligence.Application.Audit;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Contracts;
@@ -34,10 +35,12 @@ public sealed class FaceSearchJobsController(
     /// </remarks>
     /// <param name="clientKey">Client integration key that owns the face search request.</param>
     /// <param name="profileKey">Must be event-face-search-v1.</param>
-    /// <param name="consentReferenceId">External consent reference for the face search operation.</param>
+    /// <param name="consentReferenceId">Optional external consent reference for the face search operation.</param>
     /// <param name="manifestJson">JSON manifest with opaque targets and reference image keys.</param>
     /// <param name="videos">One or more MP4/MOV/AVI source videos.</param>
     /// <param name="referenceImages">One or more reference images.</param>
+    /// <param name="assetSelectorJson">Optional cloud selector for source videos.</param>
+    /// <param name="referenceAssetSelectorJson">Optional cloud selector for reference images.</param>
     /// <param name="cancellationToken">Request cancellation token.</param>
     /// <response code="202">Returns the queued face search job identifier.</response>
     /// <response code="400">The request is invalid or an uploaded file cannot be processed.</response>
@@ -54,10 +57,12 @@ public sealed class FaceSearchJobsController(
     public async Task<IActionResult> Create(
         [FromForm] string clientKey,
         [FromForm] string profileKey,
-        [FromForm] string consentReferenceId,
+        [FromForm] string? consentReferenceId,
         [FromForm] string manifestJson,
-        [FromForm] List<IFormFile> videos,
-        [FromForm] List<IFormFile> referenceImages,
+        [FromForm] List<IFormFile>? videos,
+        [FromForm] List<IFormFile>? referenceImages,
+        [FromForm] string? assetSelectorJson,
+        [FromForm] string? referenceAssetSelectorJson,
         CancellationToken cancellationToken)
     {
         if (!await accessService.CanSubmitAsync(User, clientKey, profileKey, cancellationToken))
@@ -80,7 +85,14 @@ public sealed class FaceSearchJobsController(
             return Forbid();
         }
 
-        if (videos is null || videos.Count == 0)
+        var assetSelector = CloudAssetSelectorParser.ParseOptional(assetSelectorJson);
+        var referenceAssetSelector = CloudAssetSelectorParser.ParseOptional(referenceAssetSelectorJson);
+        var usesCloudVideos = assetSelector is not null &&
+            !string.Equals(assetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase);
+        var usesCloudReferences = referenceAssetSelector is not null &&
+            !string.Equals(referenceAssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase);
+
+        if (!usesCloudVideos && (videos is null || videos.Count == 0))
         {
             return BadRequest(new ApiErrorResponse(
                 FileValidationErrorCodes.FileRequired,
@@ -88,7 +100,7 @@ public sealed class FaceSearchJobsController(
                 HttpContext.TraceIdentifier));
         }
 
-        if (videos.Count > videoOptions.Value.MaxVideosPerJob)
+        if (!usesCloudVideos && videos!.Count > videoOptions.Value.MaxVideosPerJob)
         {
             return BadRequest(new ApiErrorResponse(
                 FileValidationErrorCodes.FileTooLarge,
@@ -96,7 +108,7 @@ public sealed class FaceSearchJobsController(
                 HttpContext.TraceIdentifier));
         }
 
-        if (referenceImages is null || referenceImages.Count == 0)
+        if (!usesCloudReferences && (referenceImages is null || referenceImages.Count == 0))
         {
             return BadRequest(new ApiErrorResponse(
                 FileValidationErrorCodes.FileRequired,
@@ -104,7 +116,7 @@ public sealed class FaceSearchJobsController(
                 HttpContext.TraceIdentifier));
         }
 
-        if (referenceImages.Count > faceOptions.Value.MaxReferenceImagesPerJob)
+        if (!usesCloudReferences && referenceImages!.Count > faceOptions.Value.MaxReferenceImagesPerJob)
         {
             return BadRequest(new ApiErrorResponse(
                 FileValidationErrorCodes.FileTooLarge,
@@ -113,7 +125,7 @@ public sealed class FaceSearchJobsController(
         }
 
         var videoUploads = await ValidateUploadsAsync(
-            videos,
+            videos ?? [],
             MediaAssetType.Video,
             videoOptions.Value.MaxVideoSizeBytes,
             cancellationToken);
@@ -123,7 +135,7 @@ public sealed class FaceSearchJobsController(
         }
 
         var referenceUploads = await ValidateUploadsAsync(
-            referenceImages,
+            referenceImages ?? [],
             MediaAssetType.Image,
             uploadOptions.Value.MaxFileSizeBytes,
             cancellationToken);
@@ -143,7 +155,9 @@ public sealed class FaceSearchJobsController(
                     consentReferenceId,
                     manifestJson,
                     videoUploads.Uploads,
-                    referenceUploads.Uploads),
+                    referenceUploads.Uploads,
+                    assetSelector,
+                    referenceAssetSelector),
                 cancellationToken);
         }
         finally
@@ -163,8 +177,8 @@ public sealed class FaceSearchJobsController(
                 new Dictionary<string, string>
                 {
                     ["profileKey"] = profileKey,
-                    ["videoCount"] = videos.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    ["referenceImageCount"] = referenceImages.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["videoCount"] = (videos?.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["referenceImageCount"] = (referenceImages?.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture),
                     ["consentReferenceProvided"] = (!string.IsNullOrWhiteSpace(consentReferenceId)).ToString()
                 },
                 clientKey),

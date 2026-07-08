@@ -74,7 +74,15 @@ public sealed class StaticAnalysisProfileResolver(
             [],
             0.90m,
             true,
-            ApplicationResourceText.EventFaceSearchDescription)
+            ApplicationResourceText.EventFaceSearchDescription),
+        new(
+            "image-batch-search-v1",
+            "generic",
+            [MediaAssetType.Image],
+            [],
+            0.80m,
+            true,
+            ApplicationResourceText.ImageBatchSearchDescription)
     ];
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
@@ -17,9 +18,11 @@ public sealed class FaceSearchApplicationService(
     IAnalysisProfileResolver profileResolver,
     IFaceSearchJobRepository jobRepository,
     IFaceSearchProvider provider,
+    IAssetReferenceResolver assetReferenceResolver,
     IUnitOfWork unitOfWork,
     IOptions<VideoAnalysisOptions> videoOptions,
     IOptions<FaceSearchOptions> faceOptions,
+    IOptions<CloudAssetOptions> cloudAssetOptions,
     ILogger<FaceSearchApplicationService> logger) : IFaceSearchApplicationService
 {
     private const string ProfileKey = "event-face-search-v1";
@@ -37,14 +40,31 @@ public sealed class FaceSearchApplicationService(
             ClientKey = command.ClientKey.Trim(),
             ProfileKey = command.ProfileKey.Trim(),
             Status = AnalysisJobStatus.Pending.ToString(),
-            ConsentReferenceId = command.ConsentReferenceId.Trim(),
+            ConsentReferenceId = string.IsNullOrWhiteSpace(command.ConsentReferenceId) ? null : command.ConsentReferenceId.Trim(),
             ManifestJson = JsonSerializer.Serialize(manifest)
         };
 
         await jobRepository.AddAsync(job, cancellationToken);
 
-        await StoreAssetsAsync(job, command.Videos, "video", "SourceVideo", cancellationToken);
-        await StoreAssetsAsync(job, command.ReferenceImages, "reference", "ReferenceImage", cancellationToken);
+        if (command.AssetSelector is not null &&
+            !string.Equals(command.AssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase))
+        {
+            await AddCloudAssetsAsync(job, command.AssetSelector, "SourceVideo", cloudAssetOptions.Value.MaxVideosPerJob, cancellationToken);
+        }
+        else
+        {
+            await StoreAssetsAsync(job, command.Videos, "video", "SourceVideo", cancellationToken);
+        }
+
+        if (command.ReferenceAssetSelector is not null &&
+            !string.Equals(command.ReferenceAssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase))
+        {
+            await AddCloudAssetsAsync(job, command.ReferenceAssetSelector, "ReferenceImage", faceOptions.Value.MaxReferenceImagesPerJob, cancellationToken);
+        }
+        else
+        {
+            await StoreAssetsAsync(job, command.ReferenceImages, "reference", "ReferenceImage", cancellationToken);
+        }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -192,27 +212,27 @@ public sealed class FaceSearchApplicationService(
             throw new ArgumentException(ApplicationResourceText.FaceSearchProfileRequired(ProfileKey), nameof(command));
         }
 
-        if (string.IsNullOrWhiteSpace(command.ConsentReferenceId))
-        {
-            throw new ArgumentException(ApplicationResourceText.FaceSearchConsentReferenceRequired, nameof(command));
-        }
+        var usesCloudVideos = command.AssetSelector is not null &&
+            !string.Equals(command.AssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase);
+        var usesCloudReferences = command.ReferenceAssetSelector is not null &&
+            !string.Equals(command.ReferenceAssetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase);
 
-        if (command.Videos.Count == 0)
+        if (!usesCloudVideos && command.Videos.Count == 0)
         {
             throw new ArgumentException(ApplicationResourceText.FaceSearchVideosRequired, nameof(command));
         }
 
-        if (command.Videos.Count > videoOptions.Value.MaxVideosPerJob)
+        if (!usesCloudVideos && command.Videos.Count > videoOptions.Value.MaxVideosPerJob)
         {
             throw new ArgumentException(ApplicationResourceText.VideoSearchMaxVideosExceeded(videoOptions.Value.MaxVideosPerJob), nameof(command));
         }
 
-        if (command.ReferenceImages.Count == 0)
+        if (!usesCloudReferences && command.ReferenceImages.Count == 0)
         {
             throw new ArgumentException(ApplicationResourceText.FaceSearchReferenceImagesRequired, nameof(command));
         }
 
-        if (command.ReferenceImages.Count > faceOptions.Value.MaxReferenceImagesPerJob)
+        if (!usesCloudReferences && command.ReferenceImages.Count > faceOptions.Value.MaxReferenceImagesPerJob)
         {
             throw new ArgumentException(ApplicationResourceText.VideoSearchMaxVideosExceeded(faceOptions.Value.MaxReferenceImagesPerJob), nameof(command));
         }
@@ -231,13 +251,18 @@ public sealed class FaceSearchApplicationService(
         }
 
         var manifest = FaceSearchManifestParser.Parse(command.ManifestJson, faceOptions.Value.MinSimilarity);
-        var referenceImageKeys = Enumerable.Range(1, command.ReferenceImages.Count)
-            .Select(index => $"reference-{index}")
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var referenceImageKeys = usesCloudReferences &&
+            string.Equals(command.ReferenceAssetSelector!.SelectorMode, CloudAssetSelectorModes.AllPrefix, StringComparison.OrdinalIgnoreCase)
+            ? null
+            : usesCloudReferences
+            ? command.ReferenceAssetSelector!.Assets.Select(asset => asset.AssetKey).ToHashSet(StringComparer.OrdinalIgnoreCase)
+            : Enumerable.Range(1, command.ReferenceImages.Count)
+                .Select(index => $"reference-{index}")
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var target in manifest.Targets)
+        foreach (var target in manifest.Targets.Where(_ => referenceImageKeys is not null))
         {
-            if (!referenceImageKeys.Contains(target.ReferenceImageKey))
+            if (!referenceImageKeys!.Contains(target.ReferenceImageKey))
             {
                 throw new ArgumentException(ApplicationResourceText.FaceSearchTargetReferenceImageMissing(target.ReferenceImageKey), nameof(command));
             }
@@ -269,10 +294,44 @@ public sealed class FaceSearchApplicationService(
                 AssetRole = assetRole,
                 OriginalFileName = upload.OriginalFileName,
                 StoragePath = storedAsset.StoragePath,
+                InputMode = CloudAssetInputModes.MultipartUpload,
                 ContentType = storedAsset.ContentType,
                 SizeInBytes = storedAsset.SizeInBytes
             });
             index++;
+        }
+    }
+
+    private async Task AddCloudAssetsAsync(
+        VideoSearchJob job,
+        CloudAssetSelector selector,
+        string role,
+        int maxAssets,
+        CancellationToken cancellationToken)
+    {
+        var resolvedAssets = await assetReferenceResolver.ResolveAsync(selector, maxAssets, cancellationToken);
+        foreach (var asset in resolvedAssets)
+        {
+            job.Assets.Add(new VideoSearchAsset
+            {
+                JobId = job.Id,
+                AssetKey = asset.AssetKey,
+                AssetRole = role,
+                OriginalFileName = asset.FileName,
+                StoragePath = ToCloudUri(asset.StorageProvider, asset.BucketName, asset.ObjectKey),
+                InputMode = CloudAssetInputModes.CloudReference,
+                StorageProvider = asset.StorageProvider,
+                BucketName = asset.BucketName,
+                ObjectKey = asset.ObjectKey,
+                Prefix = selector.Prefix,
+                Region = asset.Region,
+                Location = asset.Location,
+                Checksum = asset.Checksum,
+                VersionId = asset.VersionId,
+                Generation = asset.Generation,
+                ContentType = asset.ContentType,
+                SizeInBytes = asset.SizeInBytes
+            });
         }
     }
 
@@ -283,7 +342,19 @@ public sealed class FaceSearchApplicationService(
             asset.AssetKey,
             asset.OriginalFileName,
             asset.StoragePath,
-            asset.ContentType);
+            asset.ContentType,
+            asset.StorageProvider,
+            asset.BucketName,
+            asset.ObjectKey,
+            asset.VersionId,
+            asset.Generation);
+    }
+
+    private static string ToCloudUri(string storageProvider, string bucketName, string objectKey)
+    {
+        return string.Equals(storageProvider, CloudStorageProviders.S3, StringComparison.OrdinalIgnoreCase)
+            ? $"s3://{bucketName}/{objectKey}"
+            : $"gs://{bucketName}/{objectKey}";
     }
 
     private static bool IsSourceVideo(VideoSearchAsset asset)

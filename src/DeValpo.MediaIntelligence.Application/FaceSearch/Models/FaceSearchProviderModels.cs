@@ -19,7 +19,12 @@ public sealed record FaceSearchProviderAsset(
     string AssetKey,
     string OriginalFileName,
     string StoragePath,
-    string ContentType);
+    string ContentType,
+    string? StorageProvider = null,
+    string? BucketName = null,
+    string? ObjectKey = null,
+    string? VersionId = null,
+    string? Generation = null);
 
 /// <summary>
 /// Provider-neutral result returned by face search infrastructure adapters.

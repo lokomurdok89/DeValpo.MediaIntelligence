@@ -11,7 +11,12 @@ public sealed record VideoSearchProviderAsset(
     string VideoKey,
     string OriginalFileName,
     string StoragePath,
-    string ContentType);
+    string ContentType,
+    string? StorageProvider = null,
+    string? BucketName = null,
+    string? ObjectKey = null,
+    string? VersionId = null,
+    string? Generation = null);
 
 public sealed record VideoSearchProviderResult(
     IReadOnlyCollection<VideoTextOccurrence> TextOccurrences,

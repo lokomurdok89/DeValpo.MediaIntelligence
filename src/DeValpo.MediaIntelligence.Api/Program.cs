@@ -8,6 +8,7 @@ using DeValpo.MediaIntelligence.Api.Validation;
 using DeValpo.MediaIntelligence.Api.Workers;
 using DeValpo.MediaIntelligence.Application;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
+using DeValpo.MediaIntelligence.Application.ImageBatchSearch;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure;
@@ -36,6 +37,11 @@ builder.Services.AddControllers(options =>
     if (!builder.Configuration.GetValue("AwsRekognition:FaceSearchEnabled", false))
     {
         options.Conventions.Add(new RemoveControllerConvention("FaceSearchJobs"));
+    }
+
+    if (!builder.Configuration.GetValue("ImageBatchSearch:Enabled", false))
+    {
+        options.Conventions.Add(new RemoveControllerConvention("ImageBatchSearchJobs"));
     }
 });
 builder.Services.AddEndpointsApiExplorer();
@@ -95,6 +101,7 @@ builder.Services.AddScoped<IUploadedFileThreatScanner, NoOpUploadedFileThreatSca
 builder.Services.Configure<UploadValidationOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<AnalysisProcessingOptions>(builder.Configuration.GetSection("MediaAnalysis"));
 builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
+builder.Services.Configure<ImageBatchSearchOptions>(builder.Configuration.GetSection("ImageBatchSearch"));
 builder.Services.Configure<AnalysisWorkerOptions>(builder.Configuration.GetSection("AnalysisWorker"));
 builder.Services.Configure<FaceSearchOptions>(builder.Configuration.GetSection("AwsRekognition"));
 builder.Services.Configure<WebhookDeliveryOptions>(builder.Configuration.GetSection("WebhookDelivery"));
@@ -104,6 +111,10 @@ builder.Services.AddHostedService<VideoSearchJobWorker>();
 if (builder.Configuration.GetValue("AwsRekognition:FaceSearchEnabled", false))
 {
     builder.Services.AddHostedService<FaceSearchJobWorker>();
+}
+if (builder.Configuration.GetValue("ImageBatchSearch:Enabled", false))
+{
+    builder.Services.AddHostedService<ImageBatchSearchJobWorker>();
 }
 builder.Services.AddHostedService<WebhookDeliveryWorker>();
 AddJwtAuthentication(builder.Services, builder.Configuration);
@@ -280,6 +291,11 @@ static void ValidateReleaseSafety(IWebHostEnvironment environment, IConfiguratio
     if (configuration.GetValue("GoogleVideoIntelligence:AllowUserCredentials", false))
     {
         throw new InvalidOperationException(ApiResourceText.ReleaseGoogleVideoUserCredentialsDisabled);
+    }
+
+    if (configuration.GetValue("GoogleVision:AllowUserCredentials", false))
+    {
+        throw new InvalidOperationException(ApiResourceText.ReleaseGoogleVisionUserCredentialsDisabled);
     }
 
     if (configuration.GetValue("AwsRekognition:AllowUserCredentials", false))

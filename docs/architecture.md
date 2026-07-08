@@ -54,8 +54,11 @@ flowchart LR
     Skills --> Google["Google Document AI"]
     App --> VideoSearch["VideoSearchApplicationService"]
     App --> FaceSearch["FaceSearchApplicationService"]
+    App --> ImageBatchSearch["ImageBatchSearchApplicationService"]
     VideoSearch --> GVI["Google Video Intelligence"]
     FaceSearch --> AWS["AWS Rekognition + S3"]
+    ImageBatchSearch --> AWS
+    ImageBatchSearch --> Vision["Google Vision OCR"]
 ```
 
 ## Profiles, Skills Y Capabilities
@@ -69,6 +72,7 @@ flowchart LR
 - Google Document AI procesa documentos.
 - Google Video Intelligence procesa OCR de numeros visibles y ocurrencias genericas de caras en videos.
 - AWS Rekognition procesa comparacion facial consentida contra imagenes de referencia.
+- Google Vision procesa OCR de imagenes para `image-batch-search-v1`; en v1 no hace identificacion facial por persona.
 - Cada provider vive en su propio namespace de Infrastructure y usa opciones/credenciales separadas.
 
 ## Convencion De Modelos Y Mappers

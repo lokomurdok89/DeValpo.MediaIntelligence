@@ -1,4 +1,5 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
 using DeValpo.MediaIntelligence.Infrastructure.Resources;
@@ -11,6 +12,7 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Google.VideoIntelli
 
 public sealed class GoogleVideoIntelligenceSearchProvider(
     IMediaAssetStorage mediaAssetStorage,
+    ICloudAssetReader cloudAssetReader,
     IOptions<GoogleVideoIntelligenceOptions> options) : IVideoSearchProvider
 {
     private const string SourceProvider = "GoogleVideoIntelligence";
@@ -76,9 +78,16 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
         VideoSearchProviderAsset asset,
         CancellationToken cancellationToken)
     {
+        if (string.Equals(asset.StorageProvider, CloudStorageProviders.Gcs, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(asset.BucketName, bucketName, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(asset.ObjectKey))
+        {
+            return $"gs://{bucketName}/{asset.ObjectKey}";
+        }
+
         var extension = Path.GetExtension(asset.OriginalFileName);
-        var objectName = $"video-search/{jobId:N}/{asset.VideoKey}/{Guid.NewGuid():N}{extension}";
-        await using var stream = await mediaAssetStorage.OpenReadAsync(asset.StoragePath, cancellationToken);
+        var objectName = $"staging/video-search/{jobId:N}/{asset.VideoKey}/{Guid.NewGuid():N}{extension}";
+        await using var stream = await OpenAssetReadStreamAsync(asset, cancellationToken);
         await storageClient.UploadObjectAsync(
             bucketName,
             objectName,
@@ -87,6 +96,26 @@ public sealed class GoogleVideoIntelligenceSearchProvider(
             cancellationToken: cancellationToken);
 
         return $"gs://{bucketName}/{objectName}";
+    }
+
+    private async Task<Stream> OpenAssetReadStreamAsync(
+        VideoSearchProviderAsset asset,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(asset.StorageProvider) &&
+            !string.IsNullOrWhiteSpace(asset.BucketName) &&
+            !string.IsNullOrWhiteSpace(asset.ObjectKey))
+        {
+            return await cloudAssetReader.OpenReadAsync(
+                asset.StorageProvider,
+                asset.BucketName,
+                asset.ObjectKey,
+                asset.VersionId,
+                asset.Generation,
+                cancellationToken);
+        }
+
+        return await mediaAssetStorage.OpenReadAsync(asset.StoragePath, cancellationToken);
     }
 
     private static async Task<AnnotateVideoResponse> AnnotateVideoAsync(

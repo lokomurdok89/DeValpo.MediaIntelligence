@@ -122,4 +122,4 @@ VideoAnalysis__FaceMatchingEnabled=false
 
 ## Phase 2 Facial Verification
 
-Facial verification is out of Phase 1. The product route is documented in [Real Video MVP Route](video-mvp-real-route.en.md). A future worker must stay disabled by default, require externally validated consent, use temporary embeddings and avoid storing names, national identifiers, emails or personal identity data.
+Facial verification is out of Phase 1. The product route is documented in [Real Video MVP Route](reference/video-mvp-real-route.en.md). A future worker must stay disabled by default, require externally validated consent, use temporary embeddings and avoid storing names, national identifiers, emails or personal identity data.

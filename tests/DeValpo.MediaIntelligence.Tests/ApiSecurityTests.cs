@@ -96,12 +96,51 @@ public sealed class ApiSecurityTests
     }
 
     [Fact]
+    public async Task GoogleVisionStatus_BasicCheck_RemainsAnonymous()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/providers/google-vision/status");
+        var json = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        json.Should().Contain("\"enabled\":false");
+        json.Should().Contain("\"configured\":false");
+    }
+
+    [Fact]
+    public async Task GoogleVisionStatus_RemoteCheck_RequiresBearerToken()
+    {
+        using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/providers/google-vision/status?checkRemote=true");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
     public async Task FaceSearchJobs_RequireBearerToken()
     {
         using var factory = CreateFactory();
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/api/v1/face-search-jobs/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task ImageBatchSearchJobs_RequireBearerToken()
+    {
+        using var factory = CreateFactory(new Dictionary<string, string?>
+        {
+            ["ImageBatchSearch:Enabled"] = "true"
+        });
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/image-batch-search-jobs/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -225,6 +264,7 @@ public sealed class ApiSecurityTests
         json.Should().Contain("Returns video search job metadata");
         json.Should().Contain("generic face occurrences, not identity matches");
         json.Should().Contain("Reports AWS Rekognition configuration status");
+        json.Should().Contain("Creates an image batch search job");
     }
 
     [Fact]
@@ -265,6 +305,7 @@ public sealed class ApiSecurityTests
     [InlineData("Jwt:RequireHttpsMetadata", "false")]
     [InlineData("GoogleDocumentAi:AllowUserCredentials", "true")]
     [InlineData("GoogleVideoIntelligence:AllowUserCredentials", "true")]
+    [InlineData("GoogleVision:AllowUserCredentials", "true")]
     [InlineData("AwsRekognition:AllowUserCredentials", "true")]
     [InlineData("Skills:EnableMockSkills", "true")]
     [InlineData("AnalysisProfiles:EnableMockProfiles", "true")]
@@ -313,6 +354,8 @@ public sealed class ApiSecurityTests
                         ["Swagger:Enabled"] = "true",
                         ["GoogleDocumentAi:Enabled"] = "false",
                         ["GoogleVideoIntelligence:Enabled"] = "false",
+                        ["GoogleVision:Enabled"] = "false",
+                        ["ImageBatchSearch:Enabled"] = "true",
                         ["Jwt:Issuer"] = "DeValpo.MediaIntelligence",
                         ["Jwt:Audience"] = "DeValpo.MediaIntelligence.Api",
                         ["Jwt:SigningKey"] = "test-only-jwt-signing-key-with-32-chars",
@@ -344,6 +387,9 @@ public sealed class ApiSecurityTests
             ["GoogleDocumentAi:AllowUserCredentials"] = "false",
             ["GoogleVideoIntelligence:Enabled"] = "false",
             ["GoogleVideoIntelligence:AllowUserCredentials"] = "false",
+            ["GoogleVision:Enabled"] = "false",
+            ["GoogleVision:AllowUserCredentials"] = "false",
+            ["ImageBatchSearch:Enabled"] = "false",
             ["AwsRekognition:Enabled"] = "false",
             ["AwsRekognition:FaceSearchEnabled"] = "false",
             ["AwsRekognition:AllowUserCredentials"] = "false",

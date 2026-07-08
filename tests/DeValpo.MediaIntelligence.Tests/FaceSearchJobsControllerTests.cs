@@ -33,6 +33,8 @@ public sealed class FaceSearchJobsControllerTests
             """{"targets":[{"targetKey":"target-1","referenceImageKey":"reference-1"}]}""",
             [CreateFile("race.mp4", "video/mp4")],
             [CreateFile("face.jpg", "image/jpeg")],
+            null,
+            null,
             CancellationToken.None);
 
         result.Should().BeOfType<AcceptedResult>();
@@ -64,6 +66,8 @@ public sealed class FaceSearchJobsControllerTests
             """{"targets":[{"targetKey":"target-1","referenceImageKey":"reference-1"}]}""",
             [CreateFile("race.mp4", "video/mp4")],
             [CreateFile("face.jpg", "image/jpeg")],
+            null,
+            null,
             CancellationToken.None);
 
         result.Should().BeOfType<ForbidResult>();

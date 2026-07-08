@@ -1,10 +1,14 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Infrastructure.Persistence.Repositories;
 
-public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContext) : IVideoSearchJobRepository
+public sealed class VideoSearchJobRepository(
+    MediaIntelligenceDbContext dbContext,
+    IOptions<CloudAssetOptions> cloudAssetOptions) : IVideoSearchJobRepository
 {
     private const string ProfileKey = "event-video-target-search-v1";
 
@@ -21,10 +25,19 @@ public sealed class VideoSearchJobRepository(MediaIntelligenceDbContext dbContex
     /// </summary>
     public Task<VideoSearchJob?> GetNextPendingWithAssetsAsync(CancellationToken cancellationToken)
     {
+        var maxConcurrentJobs = Math.Max(cloudAssetOptions.Value.MaxConcurrentJobsPerClient, 1);
+
         return dbContext.VideoSearchJobs
             .AsNoTracking()
             .Include(job => job.Assets)
             .Where(job => job.ProfileKey == ProfileKey && job.Status == "Pending" && job.Assets.Any())
+            .Where(job =>
+                dbContext.VideoSearchJobs.Count(candidate =>
+                    candidate.ClientKey == job.ClientKey &&
+                    candidate.Status == "Running") +
+                dbContext.ImageBatchSearchJobs.Count(candidate =>
+                    candidate.ClientKey == job.ClientKey &&
+                    candidate.Status == "Running") < maxConcurrentJobs)
             .OrderBy(job => job.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
     }

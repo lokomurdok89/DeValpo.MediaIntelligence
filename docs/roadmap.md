@@ -22,6 +22,6 @@ El objetivo es pasar de MVP local validado a producto operable para clientes rea
 
 ## Documentos Base
 
-- [Productization plan](productization-plan.md)
-- [Product final phase plan](product-final-phase-plan.md)
-- [Release scope v0.1.0-rc.1](release-scope-v0.1.0-rc.1.md)
+- [Productization plan](archive/productization-plan.md)
+- [Product final phase plan](archive/product-final-phase-plan.md)
+- [Release scope v0.1.0-rc.1](archive/release-scope-v0.1.0-rc.1.md)

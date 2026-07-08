@@ -10,4 +10,9 @@ public sealed record WebhookEventPayload(
     decimal? Confidence,
     bool? RequiresHumanReview,
     string? ResultUrl,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    string? IdempotencyKey = null,
+    string? JobType = null,
+    string? EventExternalId = null,
+    string? AssetSelector = null,
+    int Attempt = 0);

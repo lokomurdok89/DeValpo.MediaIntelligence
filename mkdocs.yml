@@ -49,12 +49,26 @@ plugins:
           site_description: Technical and operational documentation for DeValpo MediaIntelligence.
           nav_translations:
             Inicio: Home
+            Contexto: Context
+            Contexto minimo: Minimal context
+            Decisiones vigentes: Active decisions
+            Arquitectura actual: Current architecture
             Primeros pasos: Getting started
+            Modulos: Modules
+            Cloud assets: Cloud assets
+            Face search: Face search
+            Image batch search: Image batch search
+            Video search: Video search
+            Document analysis: Document analysis
+            Referencia: Reference
             Guia de implementacion: Implementation guide
+            Credenciales y perfiles cloud: Cloud credentials and profiles
+            Referencias cloud y staging: Cloud references and staging
             API: API
             Busqueda de targets en video: Video target search
             Ruta MVP video real: Real video MVP route
             AWS Rekognition face search: AWS Rekognition face search
+            Image batch search: Image batch search
             Arquitectura: Architecture
             Modelo de datos: Data model
             Seguridad: Security
@@ -81,15 +95,24 @@ markdown_extensions:
 
 nav:
   - Inicio: index.md
+  - Contexto:
+      - Contexto minimo: context/codex-minimal.md
+      - Decisiones vigentes: context/active-decisions.md
+      - Arquitectura actual: context/architecture-current.md
   - Primeros pasos:
       - Primeros pasos: getting-started.md
-      - Guia de implementacion: implementation-guide.md
+      - Referencias cloud y staging: cloud-asset-references-and-staging.md
+  - Modulos:
+      - Cloud assets: modules/cloud-assets.md
+      - Face search: modules/face-search.md
+      - Image batch search: modules/image-batch-search.md
+      - Video search: modules/video-search.md
+      - Document analysis: modules/document-analysis.md
   - API:
       - API: api.md
-      - Flujos de endpoints: api-endpoint-flows.md
       - Busqueda de targets en video: video-target-search.md
-      - Ruta MVP video real: video-mvp-real-route.md
       - AWS Rekognition face search: aws-rekognition-face-search.md
+      - Image batch search: image-batch-search.md
   - Arquitectura:
       - Arquitectura: architecture.md
       - Modelo de datos: data-model.md
@@ -97,17 +120,19 @@ nav:
   - Operacion: operations.md
   - QA: qa.md
   - Roadmap: roadmap.md
+  - Referencia:
+      - Guia de implementacion: reference/implementation-guide.md
+      - Credenciales y perfiles cloud: reference/cloud-identities-and-provider-profiles.md
+      - Flujos de endpoints: reference/api-endpoint-flows.md
+      - Ruta MVP video real: reference/video-mvp-real-route.md
 
 not_in_nav: |
   client-onboarding-guide.md
   github-ci-cd*.md
-  local-tokens-and-google-secrets.md
-  product-final-phase-plan.md
-  productization-plan.md
+  reference/local-tokens-and-google-secrets.md
+  archive/*.md
   profiles.md
-  qa-phase-*.md
   qa-review.md
-  release-scope-v0.1.0-rc.1.md
   skills.md
   devalpo-mediaintelligence-qa/*.md
   devalpo-mediaintelligence-qa/references/*.md

@@ -212,3 +212,32 @@ Expected result:
 - Secret and release config checks pass.
 - Compose config is valid.
 - Real AWS smoke remains pending credentials/resources only.
+
+## Image Batch Search QA
+
+Review date: 2026-07-08
+
+### Scope
+
+This review covers the new `image-batch-search-v1` workflow: batch image uploads, target-key grouping, AWS Rekognition text/face providers, Google Vision OCR provider, Google Vision face-reference unsupported behavior, EF persistence and endpoint security.
+
+### Validation Commands
+
+```powershell
+dotnet build DeValpo.MediaIntelligence.sln
+dotnet test DeValpo.MediaIntelligence.sln
+dotnet ef migrations has-pending-model-changes --project src/DeValpo.MediaIntelligence.Infrastructure --startup-project src/DeValpo.MediaIntelligence.Api
+python -m mkdocs build --strict
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ci\secret-scan.ps1 -Root .
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ci\validate-release-config.ps1 -Root .
+docker compose -f deploy\docker-compose.yml config --quiet
+```
+
+Expected result:
+
+- Build and tests pass.
+- EF reports no pending model changes.
+- Docs build succeeds.
+- Secret and release config checks pass.
+- Compose config is valid.
+- Real provider smoke requires consented image files plus AWS/Google credentials and enabled providers.

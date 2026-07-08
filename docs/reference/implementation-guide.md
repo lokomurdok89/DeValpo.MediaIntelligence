@@ -518,12 +518,12 @@ Errores comunes:
 
 | Tema | Documento |
 | --- | --- |
-| Inicio | [index.md](index.md) |
-| Primeros pasos | [getting-started.md](getting-started.md) |
-| API | [api.md](api.md) |
+| Inicio | [index.md](../index.md) |
+| Primeros pasos | [getting-started.md](../getting-started.md) |
+| API | [api.md](../api.md) |
 | Flujos por endpoint | [api-endpoint-flows.md](api-endpoint-flows.md) |
-| Arquitectura | [architecture.md](architecture.md) |
-| Seguridad | [security.md](security.md) |
-| Operacion | [operations.md](operations.md) |
-| QA | [qa.md](qa.md) |
-| Roadmap | [roadmap.md](roadmap.md) |
+| Arquitectura | [architecture.md](../architecture.md) |
+| Seguridad | [security.md](../security.md) |
+| Operacion | [operations.md](../operations.md) |
+| QA | [qa.md](../qa.md) |
+| Roadmap | [roadmap.md](../roadmap.md) |

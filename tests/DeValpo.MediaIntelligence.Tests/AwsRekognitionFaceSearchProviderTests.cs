@@ -5,6 +5,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 using DeValpo.MediaIntelligence.Application.Models;
@@ -55,6 +56,18 @@ public sealed class AwsRekognitionFaceSearchProviderTests
         logger.Messages.Should().Contain(message => message.Contains("temporary indexed faces", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task AnalyzeAsync_DoesNotDeleteStagedS3ObjectsAfterProcessing()
+    {
+        var faceId = Guid.Parse("33333333-3333-3333-3333-333333333333").ToString();
+        var s3Client = new TestS3Client();
+        var provider = CreateProvider(s3Client, new TestRekognitionClient(faceId));
+
+        await provider.AnalyzeAsync(CreateRequest("target-1", includeVideo: false), CancellationToken.None);
+
+        s3Client.DeleteObjectCallCount.Should().Be(0);
+    }
+
     private static AwsRekognitionFaceSearchProvider CreateProvider(
         TestS3Client s3Client,
         TestRekognitionClient rekognitionClient,
@@ -62,6 +75,7 @@ public sealed class AwsRekognitionFaceSearchProviderTests
     {
         return new AwsRekognitionFaceSearchProvider(
             new FakeStorage(),
+            new FakeCloudAssetReader(),
             Options.Create(new AwsRekognitionOptions
             {
                 Enabled = true,
@@ -71,7 +85,7 @@ public sealed class AwsRekognitionFaceSearchProviderTests
                 CollectionId = "face-search-test",
                 PollingIntervalSeconds = 1,
                 PollingTimeoutSeconds = 1,
-                DeleteStagedObjectsAfterProcessing = true
+                DeleteStagedObjectsAfterProcessing = false
             }),
             new TestClientFactory(s3Client, rekognitionClient),
             logger ?? new ListLogger<AwsRekognitionFaceSearchProvider>());
@@ -125,6 +139,20 @@ public sealed class AwsRekognitionFaceSearchProviderTests
         }
     }
 
+    private sealed class FakeCloudAssetReader : ICloudAssetReader
+    {
+        public Task<Stream> OpenReadAsync(
+            string storageProvider,
+            string bucketName,
+            string objectKey,
+            string? versionId,
+            string? generation,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult<Stream>(new MemoryStream([0x00, 0x00, 0x00, 0x18]));
+        }
+    }
+
     private sealed class TestClientFactory(
         IAmazonS3 s3Client,
         IAmazonRekognition rekognitionClient) : IAwsRekognitionClientFactory
@@ -136,6 +164,8 @@ public sealed class AwsRekognitionFaceSearchProviderTests
 
     private sealed class TestS3Client : AmazonS3Client
     {
+        public int DeleteObjectCallCount { get; private set; }
+
         public TestS3Client()
             : base(new AnonymousAWSCredentials(), RegionEndpoint.USEast1)
         {
@@ -148,6 +178,7 @@ public sealed class AwsRekognitionFaceSearchProviderTests
 
         public override Task<DeleteObjectResponse> DeleteObjectAsync(DeleteObjectRequest request, CancellationToken cancellationToken = default)
         {
+            DeleteObjectCallCount++;
             return Task.FromResult(new DeleteObjectResponse());
         }
     }

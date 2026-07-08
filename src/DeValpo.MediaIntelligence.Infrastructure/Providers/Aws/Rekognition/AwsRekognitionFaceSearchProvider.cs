@@ -4,6 +4,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
@@ -17,6 +18,7 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
 
 public sealed class AwsRekognitionFaceSearchProvider(
     IMediaAssetStorage mediaAssetStorage,
+    ICloudAssetReader cloudAssetReader,
     IOptions<AwsRekognitionOptions> options,
     IAwsRekognitionClientFactory clientFactory,
     ILogger<AwsRekognitionFaceSearchProvider> logger) : IFaceSearchProvider
@@ -44,7 +46,6 @@ public sealed class AwsRekognitionFaceSearchProvider(
         using var rekognitionClient = clientFactory.CreateRekognitionClient(config);
 
         var providerUris = new Dictionary<Guid, string>();
-        var stagedObjectKeys = new List<string>();
         var indexedFaceIds = new List<string>();
         var videoDurations = new Dictionary<Guid, decimal>();
         var issues = new List<FaceSearchProviderIssue>();
@@ -55,7 +56,6 @@ public sealed class AwsRekognitionFaceSearchProvider(
             foreach (var referenceImage in request.ReferenceImages)
             {
                 var objectKey = await StageAssetAsync(s3Client, config, request.JobId, referenceImage, cancellationToken);
-                stagedObjectKeys.Add(objectKey);
                 providerUris[referenceImage.AssetId] = ToS3Uri(config.BucketName, objectKey);
                 stagedReferenceImages[referenceImage.AssetKey] = objectKey;
             }
@@ -81,7 +81,6 @@ public sealed class AwsRekognitionFaceSearchProvider(
             foreach (var video in request.Videos)
             {
                 var objectKey = await StageAssetAsync(s3Client, config, request.JobId, video, cancellationToken);
-                stagedObjectKeys.Add(objectKey);
                 providerUris[video.AssetId] = ToS3Uri(config.BucketName, objectKey);
                 stagedVideos[video] = objectKey;
             }
@@ -121,7 +120,7 @@ public sealed class AwsRekognitionFaceSearchProvider(
         }
         finally
         {
-            await CleanupAsync(s3Client, rekognitionClient, config, stagedObjectKeys, indexedFaceIds, cancellationToken);
+            await CleanupAsync(rekognitionClient, config, indexedFaceIds, cancellationToken);
         }
     }
 
@@ -132,9 +131,16 @@ public sealed class AwsRekognitionFaceSearchProvider(
         FaceSearchProviderAsset asset,
         CancellationToken cancellationToken)
     {
+        if (string.Equals(asset.StorageProvider, CloudStorageProviders.S3, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(asset.BucketName, config.BucketName, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(asset.ObjectKey))
+        {
+            return asset.ObjectKey;
+        }
+
         var extension = Path.GetExtension(asset.OriginalFileName);
-        var objectKey = $"{NormalizePrefix(config.StagingPrefix)}/{jobId:N}/{asset.AssetKey}/{Guid.NewGuid():N}{extension}";
-        await using var stream = await mediaAssetStorage.OpenReadAsync(asset.StoragePath, cancellationToken);
+        var objectKey = $"{NormalizePrefix(config.StagingPrefix)}/face-search/{jobId:N}/{asset.AssetKey}/{Guid.NewGuid():N}{extension}";
+        await using var stream = await OpenAssetReadStreamAsync(asset, cancellationToken);
         await s3Client.PutObjectAsync(
             new PutObjectRequest
             {
@@ -146,6 +152,26 @@ public sealed class AwsRekognitionFaceSearchProvider(
             cancellationToken);
 
         return objectKey;
+    }
+
+    private async Task<Stream> OpenAssetReadStreamAsync(
+        FaceSearchProviderAsset asset,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(asset.StorageProvider) &&
+            !string.IsNullOrWhiteSpace(asset.BucketName) &&
+            !string.IsNullOrWhiteSpace(asset.ObjectKey))
+        {
+            return await cloudAssetReader.OpenReadAsync(
+                asset.StorageProvider,
+                asset.BucketName,
+                asset.ObjectKey,
+                asset.VersionId,
+                asset.Generation,
+                cancellationToken);
+        }
+
+        return await mediaAssetStorage.OpenReadAsync(asset.StoragePath, cancellationToken);
     }
 
     private async Task<Dictionary<string, AwsIndexedTargetFace>> IndexTargetFacesAsync(
@@ -302,10 +328,8 @@ public sealed class AwsRekognitionFaceSearchProvider(
     }
 
     private async Task CleanupAsync(
-        IAmazonS3 s3Client,
         IAmazonRekognition rekognitionClient,
         AwsRekognitionOptions config,
-        IReadOnlyCollection<string> stagedObjectKeys,
         IReadOnlyCollection<string> indexedFaceIds,
         CancellationToken cancellationToken)
     {
@@ -328,29 +352,6 @@ public sealed class AwsRekognitionFaceSearchProvider(
             }
         }
 
-        if (!config.DeleteStagedObjectsAfterProcessing || stagedObjectKeys.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var objectKey in stagedObjectKeys)
-        {
-            try
-            {
-                await s3Client.DeleteObjectAsync(
-                    new DeleteObjectRequest
-                    {
-                        BucketName = config.BucketName,
-                        Key = objectKey
-                    },
-                    cancellationToken);
-            }
-            catch (Exception exception)
-            {
-                // Cleanup failure must not hide the provider result or original processing error.
-                logger.LogWarning(exception, InfrastructureResourceText.AwsRekognitionCleanupFailedFor("staged S3 object"));
-            }
-        }
     }
 
     private static decimal? ToDurationSeconds(VideoMetadata? metadata)
@@ -362,7 +363,7 @@ public sealed class AwsRekognitionFaceSearchProvider(
 
     private static string NormalizePrefix(string prefix)
     {
-        var normalized = string.IsNullOrWhiteSpace(prefix) ? "face-search" : prefix.Trim();
+        var normalized = string.IsNullOrWhiteSpace(prefix) ? "staging" : prefix.Trim();
         return normalized.Trim('/').Replace('\\', '/');
     }
 

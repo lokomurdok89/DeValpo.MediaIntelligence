@@ -15,12 +15,15 @@ GitHub Pages is not currently published for this repository because it is privat
 | --- | --- |
 | Start from the documentation home | [docs/index.md](docs/index.md) |
 | Run the product locally | [docs/getting-started.md](docs/getting-started.md) |
-| Generate Google credentials and tokens | [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md) |
-| Implement the application end-to-end | [docs/implementation-guide.md](docs/implementation-guide.md) |
-| See endpoint flows and sequence diagrams | [docs/api-endpoint-flows.md](docs/api-endpoint-flows.md) |
+| Configure Google/AWS users, credentials and profiles | [docs/reference/cloud-identities-and-provider-profiles.md](docs/reference/cloud-identities-and-provider-profiles.md) |
+| Configure cloud references and staging | [docs/cloud-asset-references-and-staging.md](docs/cloud-asset-references-and-staging.md) |
+| Generate Google credentials and tokens | [docs/reference/local-tokens-and-google-secrets.md](docs/reference/local-tokens-and-google-secrets.md) |
+| Implement the application end-to-end | [docs/reference/implementation-guide.md](docs/reference/implementation-guide.md) |
+| See endpoint flows and sequence diagrams | [docs/reference/api-endpoint-flows.md](docs/reference/api-endpoint-flows.md) |
 | Search visible targets in event videos | [docs/video-target-search.md](docs/video-target-search.md) |
-| Prepare the real video MVP test | [docs/video-mvp-real-route.md](docs/video-mvp-real-route.md) |
+| Prepare the real video MVP test | [docs/reference/video-mvp-real-route.md](docs/reference/video-mvp-real-route.md) |
 | Run AWS Rekognition face search | [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md) |
+| Search targets in image batches | [docs/image-batch-search.md](docs/image-batch-search.md) |
 | Understand the API | [docs/api.md](docs/api.md) |
 | Review architecture and components | [docs/architecture.md](docs/architecture.md) |
 | Review security, JWT and secrets | [docs/security.md](docs/security.md) |
@@ -77,8 +80,8 @@ flowchart LR
     G --> H["Read result"]
 ```
 
-Google CLI, ADC credential generation and Document AI validation are documented in [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md).
-AWS Rekognition face search is documented in [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md). V1 is polling-only, uses externally mounted AWS credentials and deletes temporary S3 objects plus indexed faces after each job; the remaining deployment step is configuring real credentials, bucket and collection for a smoke test.
+Google CLI, ADC credential generation and Document AI validation are documented in [docs/reference/local-tokens-and-google-secrets.md](docs/reference/local-tokens-and-google-secrets.md).
+AWS Rekognition face search is documented in [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md). V1 is polling-only, uses externally mounted AWS credentials, keeps staged files for bucket lifecycle cleanup, and deletes temporary indexed faces after each job. Cloud-reference jobs and staging policy are documented in [docs/cloud-asset-references-and-staging.md](docs/cloud-asset-references-and-staging.md). Image batch search is documented in [docs/image-batch-search.md](docs/image-batch-search.md); AWS supports visible numbers and face references, while Google Vision v1 supports visible numbers/OCR and returns `Unsupported` for identity face matching.
 
 ## Repository Map
 

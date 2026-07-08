@@ -1,9 +1,11 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.Auth;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.AnalysisJobs;
 using DeValpo.MediaIntelligence.Application.Capabilities;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.HumanReview;
+using DeValpo.MediaIntelligence.Application.ImageBatchSearch;
 using DeValpo.MediaIntelligence.Application.MediaAnalysis;
 using DeValpo.MediaIntelligence.Application.Operations;
 using DeValpo.MediaIntelligence.Application.Profiles;
@@ -39,6 +41,9 @@ public static class DependencyInjection
         services.AddScoped<IMediaAnalysisApplicationService, MediaAnalysisApplicationService>();
         services.AddScoped<IVideoSearchApplicationService, VideoSearchApplicationService>();
         services.AddScoped<IFaceSearchApplicationService, FaceSearchApplicationService>();
+        services.AddScoped<IImageBatchSearchApplicationService, ImageBatchSearchApplicationService>();
+        services.AddScoped<IAssetReferenceResolver, AssetReferenceResolver>();
+        services.AddSingleton<IProviderRoutingPolicy, ProviderRoutingPolicy>();
         services.AddSingleton<IAnalysisProfileResolver, StaticAnalysisProfileResolver>();
         services.AddScoped<IMediaAnalysisOrchestrator, MediaAnalysisOrchestrator>();
 

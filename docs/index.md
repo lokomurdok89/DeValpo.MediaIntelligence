@@ -1,63 +1,53 @@
-# DeValpo MediaIntelligence
+# DeValpo MediaIntelligence Docs
 
-Motor reutilizable para inteligencia documental y multimedia con API multi-cliente, JWT, jobs persistidos, Google Document AI, revision humana, webhooks y operacion Docker.
+Esta documentacion esta organizada para leer poco contexto y llegar rapido al modulo correcto.
 
-=== "Cliente"
+## Lectura minima para Codex
 
-    Usa la API para subir documentos reales, consultar jobs y leer resultados normalizados.
+1. [Contexto minimo](context/codex-minimal.md)
+2. [Decisiones vigentes](context/active-decisions.md)
+3. [Arquitectura actual](context/architecture-current.md)
+4. [API](api.md)
+5. Un modulo bajo `modules/` segun la tarea.
 
-    - Solicita tu `clientKey` y API key.
-    - Cambia la API key por un JWT.
-    - Sube el documento con `POST /api/v1/analyze`.
-    - Consulta el resultado con `/api/v1/analysis-jobs/{jobId}/result`.
+## Backend
 
-=== "Admin"
+- [Arquitectura actual](context/architecture-current.md)
+- [API](api.md)
+- [Modelo de datos](data-model.md)
+- [Operacion](operations.md)
 
-    Crea clientes, rota API keys, configura webhooks y define retencion.
+## AWS
 
-    - Usa un token con scope `media-intelligence:admin`.
-    - Crea clientes desde `/api/v1/admin/clients`.
-    - Registra webhooks por cliente.
-    - Revisa auditoria y politicas de retencion.
+- [Face search](modules/face-search.md)
+- [Cloud assets](modules/cloud-assets.md)
+- [AWS Rekognition face search](aws-rekognition-face-search.md)
+- [Runbook AWS Rekognition](runbooks/aws-rekognition.md)
 
-=== "Operador"
+## Google
 
-    Valida salud, readiness, metricas y tareas de revision humana.
+- [Document analysis](modules/document-analysis.md)
+- [Video search](modules/video-search.md)
+- [Google Document AI runbook](runbooks/google-document-ai.md)
+- [Tokens y secretos Google](reference/local-tokens-and-google-secrets.md)
 
-    - `/health` confirma proceso vivo.
-    - `/ready` valida dependencias.
-    - `/api/v1/operations/metrics` entrega contadores.
-    - `/api/v1/human-review-tasks` permite gestionar revisiones.
+## QA y release
 
-=== "QA"
+- [QA](qa.md)
+- [QA Review](qa-review.md)
+- [Release y migraciones](runbooks/release-and-migrations.md)
+- [GitHub CI/CD](github-ci-cd.md)
 
-    Prueba flujos reales, no mocks, usando documentos reales y Google Document AI.
+## CloudAssets
 
-    - Valida Docker Compose.
-    - Valida JWT y scopes.
-    - Valida OCR real.
-    - Valida webhooks y retencion.
+- [Cloud assets](modules/cloud-assets.md)
+- [Referencias cloud y staging](cloud-asset-references-and-staging.md)
+- [Credenciales y perfiles cloud](reference/cloud-identities-and-provider-profiles.md)
 
-## Ruta Rapida
+## Referencia larga
 
-```mermaid
-flowchart LR
-    A["Levantar Docker"] --> B["Configurar Google"]
-    B --> C["Generar token"]
-    C --> D["Subir PDF real"]
-    D --> E["Consultar job"]
-    E --> F["Leer resultado"]
-    F --> G["Revisar webhook o QA"]
-```
+Los documentos extensos viven en [reference](reference/api-endpoint-flows.md) y solo deben abrirse cuando una tarea lo requiera.
 
-## Paginas Clave
+## Archivo historico
 
-- [Primeros pasos](getting-started.md): comandos minimos para levantar y probar.
-- [Guia de implementacion](implementation-guide.md): pasos completos para integrar clientes, endpoints, servicios y validacion real.
-- [API](api.md): contratos, autenticacion y uso por rol.
-- [Flujos de endpoints](api-endpoint-flows.md): diagramas de secuencia por endpoint.
-- [Arquitectura](architecture.md): componentes y flujo interno.
-- [Seguridad](security.md): JWT, API keys, secretos y datos sensibles.
-- [Operacion](operations.md): health, readiness, Docker, Google y runbooks.
-- [QA](qa.md): validacion real y fases de certificacion.
-- [Roadmap](roadmap.md): camino de MVP a producto.
+Planes antiguos, QA por fases y scopes cerrados viven en `archive/`.

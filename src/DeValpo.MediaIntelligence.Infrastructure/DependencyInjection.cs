@@ -1,12 +1,16 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
+using DeValpo.MediaIntelligence.Application.ImageBatchSearch;
 using DeValpo.MediaIntelligence.Application.Profiles;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
+using DeValpo.MediaIntelligence.Infrastructure.CloudAssets;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence;
 using DeValpo.MediaIntelligence.Infrastructure.Persistence.Repositories;
 using DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
 using DeValpo.MediaIntelligence.Infrastructure.Providers.Google.DocumentAi;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Google.Vision;
 using DeValpo.MediaIntelligence.Infrastructure.Providers.Google.VideoIntelligence;
 using DeValpo.MediaIntelligence.Infrastructure.Resources;
 using DeValpo.MediaIntelligence.Infrastructure.Skills;
@@ -28,8 +32,10 @@ public static class DependencyInjection
     {
         services.Configure<StorageOptions>(configuration.GetSection("Storage"));
         services.Configure<GoogleDocumentAiOptions>(configuration.GetSection("GoogleDocumentAi"));
+        services.Configure<GoogleVisionOptions>(configuration.GetSection("GoogleVision"));
         services.Configure<GoogleVideoIntelligenceOptions>(configuration.GetSection("GoogleVideoIntelligence"));
         services.Configure<AwsRekognitionOptions>(configuration.GetSection("AwsRekognition"));
+        services.Configure<CloudAssetOptions>(configuration.GetSection("CloudAssets"));
         services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
         services.Configure<SkillRegistrationOptions>(configuration.GetSection("Skills"));
         services.Configure<AnalysisProfileOptions>(configuration.GetSection("AnalysisProfiles"));
@@ -54,19 +60,28 @@ public static class DependencyInjection
         services.AddScoped<IRetentionRepository, RetentionRepository>();
         services.AddScoped<IVideoSearchJobRepository, VideoSearchJobRepository>();
         services.AddScoped<IFaceSearchJobRepository, FaceSearchJobRepository>();
+        services.AddScoped<IImageBatchSearchJobRepository, ImageBatchSearchJobRepository>();
         services.AddScoped<IWebhookSignatureService, WebhookSignatureService>();
         services.AddScoped<IWebhookDeliveryProcessor, WebhookDeliveryProcessor>();
         services.AddHttpClient<IWebhookDeliverySender, WebhookDeliverySender>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMediaAssetStorage, LocalMediaAssetStorage>();
+        services.AddScoped<ICloudAssetBrowser, S3AssetBrowser>();
+        services.AddScoped<ICloudAssetBrowser, GcsAssetBrowser>();
+        services.AddScoped<ICloudAssetReader, CloudAssetReader>();
         services.AddScoped<IGoogleCredentialProvider, GoogleCredentialProvider>();
         services.AddScoped<IGoogleDocumentAiClientFactory, GoogleDocumentAiClientFactory>();
         services.AddScoped<IGoogleDocumentAiStatusService, GoogleDocumentAiStatusService>();
         services.AddScoped<IGoogleVideoIntelligenceStatusService, GoogleVideoIntelligenceStatusService>();
+        services.AddScoped<IGoogleVisionStatusService, GoogleVisionStatusService>();
         services.AddScoped<IAwsCredentialProvider, AwsCredentialProvider>();
         services.AddScoped<IAwsRekognitionClientFactory, AwsRekognitionClientFactory>();
         services.AddScoped<IAwsRekognitionStatusService, AwsRekognitionStatusService>();
         services.AddScoped<IFaceSearchProvider, AwsRekognitionFaceSearchProvider>();
+        services.AddScoped<IImageBatchTextSearchProvider, AwsRekognitionImageBatchSearchProvider>();
+        services.AddScoped<IImageBatchFaceSearchProvider, AwsRekognitionImageBatchSearchProvider>();
+        services.AddScoped<IImageBatchTextSearchProvider, GoogleVisionImageBatchSearchProvider>();
+        services.AddScoped<IImageBatchFaceSearchProvider, GoogleVisionImageBatchSearchProvider>();
         services.AddScoped<IVideoSearchProvider, GoogleVideoIntelligenceSearchProvider>();
 
         var skillRegistrationOptions = configuration.GetSection("Skills").Get<SkillRegistrationOptions>() ?? new SkillRegistrationOptions();
@@ -101,6 +116,10 @@ public static class DependencyInjection
                 InfrastructureResourceText.GoogleVideoIntelligenceRemoteOperationTimeoutRequired)
             .ValidateOnStart();
 
+        services.AddOptions<GoogleVisionOptions>()
+            .Bind(configuration.GetSection("GoogleVision"))
+            .ValidateOnStart();
+
         services.AddOptions<AwsRekognitionOptions>()
             .Bind(configuration.GetSection("AwsRekognition"))
             .Validate(options => !options.Enabled || !options.FaceSearchEnabled ||
@@ -110,6 +129,18 @@ public static class DependencyInjection
                  options.MinSimilarity is > 0m and <= 100m &&
                  options.UsePolling),
                 InfrastructureResourceText.MissingAwsRekognitionConfiguration("Region, BucketName, CollectionId, MinSimilarity, UsePolling"))
+            .ValidateOnStart();
+
+        services.AddOptions<CloudAssetOptions>()
+            .Bind(configuration.GetSection("CloudAssets"))
+            .Validate(options => options.MinStagingTtlDays > 0 &&
+                options.DefaultStagingTtlDays >= options.MinStagingTtlDays &&
+                options.DefaultStagingTtlDays <= options.MaxStagingTtlDays,
+                "CloudAssets staging TTL must be between the configured min and max values.")
+            .Validate(options => options.MaxAssetsPerJob > 0 &&
+                options.MaxConcurrentJobsPerClient > 0 &&
+                options.MaxConcurrentProviderCallsPerClient > 0,
+                "CloudAssets limits must be greater than zero.")
             .ValidateOnStart();
 
         services.AddHostedService<SkillRegistryValidationHostedService>();
