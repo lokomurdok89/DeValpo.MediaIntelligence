@@ -2,6 +2,8 @@
 
 This guide documents how Google Cloud and AWS identities are obtained and configured for `DeValpo.MediaIntelligence`, and how they connect to the API's internal profiles. It is the baseline for future integrations and production rollouts.
 
+For the staging/production checklist, key rotation and runtime permissions, see [Production cloud credentials](production-cloud-credentials.en.md).
+
 ## Concepts That Must Not Be Mixed
 
 | Concept | Where it lives | Purpose |
