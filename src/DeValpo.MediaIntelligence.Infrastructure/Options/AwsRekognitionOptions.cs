@@ -14,8 +14,8 @@ public sealed class AwsRekognitionOptions
     public bool UsePolling { get; set; } = true;
     public int PollingIntervalSeconds { get; set; } = 5;
     public int PollingTimeoutSeconds { get; set; } = 900;
-    public string StagingPrefix { get; set; } = "face-search";
-    public bool DeleteStagedObjectsAfterProcessing { get; set; } = true;
+    public string StagingPrefix { get; set; } = "staging";
+    public bool DeleteStagedObjectsAfterProcessing { get; set; }
     public string SnsTopicArn { get; set; } = string.Empty;
     public string RoleArn { get; set; } = string.Empty;
 }

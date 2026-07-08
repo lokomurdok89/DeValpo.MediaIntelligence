@@ -57,6 +57,7 @@ internal static class ApplicationResourceText
     public static string InvoiceExtractionDescription => GetRequiredResource(nameof(InvoiceExtractionDescription));
     public static string EventVideoTargetSearchDescription => GetRequiredResource(nameof(EventVideoTargetSearchDescription));
     public static string EventFaceSearchDescription => GetRequiredResource(nameof(EventFaceSearchDescription));
+    public static string ImageBatchSearchDescription => GetRequiredResource(nameof(ImageBatchSearchDescription));
     public static string VideoSearchProfileRequired(string profileKey) => Format(nameof(VideoSearchProfileRequired), profileKey);
     public static string VideoSearchVideosRequired => GetRequiredResource(nameof(VideoSearchVideosRequired));
     public static string VideoSearchMaxVideosExceeded(int maxVideos) => Format(nameof(VideoSearchMaxVideosExceeded), maxVideos);
@@ -80,7 +81,6 @@ internal static class ApplicationResourceText
     public static string FaceSearchProfileRequired(string profileKey) => Format(nameof(FaceSearchProfileRequired), profileKey);
     public static string FaceSearchVideosRequired => GetRequiredResource(nameof(FaceSearchVideosRequired));
     public static string FaceSearchReferenceImagesRequired => GetRequiredResource(nameof(FaceSearchReferenceImagesRequired));
-    public static string FaceSearchConsentReferenceRequired => GetRequiredResource(nameof(FaceSearchConsentReferenceRequired));
     public static string FaceSearchManifestRequired => GetRequiredResource(nameof(FaceSearchManifestRequired));
     public static string FaceSearchManifestMustBeObject => GetRequiredResource(nameof(FaceSearchManifestMustBeObject));
     public static string FaceSearchManifestPropertyUnsupported(string propertyName) => Format(nameof(FaceSearchManifestPropertyUnsupported), propertyName);
@@ -95,6 +95,47 @@ internal static class ApplicationResourceText
     public static string FaceSearchJobProcessingRetryLogMessage => GetRequiredResource(nameof(FaceSearchJobProcessingRetryLogMessage));
     public static string FaceSearchJobProcessingFailedLogMessage => GetRequiredResource(nameof(FaceSearchJobProcessingFailedLogMessage));
     public static string FaceSearchJobProcessingCompletedLogMessage => GetRequiredResource(nameof(FaceSearchJobProcessingCompletedLogMessage));
+    public static string ImageBatchSearchProfileRequired(string profileKey) => Format(nameof(ImageBatchSearchProfileRequired), profileKey);
+    public static string ImageBatchSearchImagesRequired => GetRequiredResource(nameof(ImageBatchSearchImagesRequired));
+    public static string ImageBatchSearchReferenceImagesRequired => GetRequiredResource(nameof(ImageBatchSearchReferenceImagesRequired));
+    public static string ImageBatchSearchMaxImagesExceeded(int maxImages) => Format(nameof(ImageBatchSearchMaxImagesExceeded), maxImages);
+    public static string ImageBatchSearchMaxTargetsExceeded(int maxTargets) => Format(nameof(ImageBatchSearchMaxTargetsExceeded), maxTargets);
+    public static string ImageBatchSearchManifestRequired => GetRequiredResource(nameof(ImageBatchSearchManifestRequired));
+    public static string ImageBatchSearchManifestMustBeObject => GetRequiredResource(nameof(ImageBatchSearchManifestMustBeObject));
+    public static string ImageBatchSearchManifestPropertyUnsupported(string propertyName) => Format(nameof(ImageBatchSearchManifestPropertyUnsupported), propertyName);
+    public static string ImageBatchSearchPersonalDataNotAllowed(string propertyName) => Format(nameof(ImageBatchSearchPersonalDataNotAllowed), propertyName);
+    public static string ImageBatchSearchTargetsRequired => GetRequiredResource(nameof(ImageBatchSearchTargetsRequired));
+    public static string ImageBatchSearchTargetMustBeObject => GetRequiredResource(nameof(ImageBatchSearchTargetMustBeObject));
+    public static string ImageBatchSearchTargetKeyRequired => GetRequiredResource(nameof(ImageBatchSearchTargetKeyRequired));
+    public static string ImageBatchSearchQueryTypeRequired => GetRequiredResource(nameof(ImageBatchSearchQueryTypeRequired));
+    public static string ImageBatchSearchQueryTypeUnsupported(string queryType) => Format(nameof(ImageBatchSearchQueryTypeUnsupported), queryType);
+    public static string ImageBatchSearchVisibleNumberRequired => GetRequiredResource(nameof(ImageBatchSearchVisibleNumberRequired));
+    public static string ImageBatchSearchVisibleNumberMustContainDigit => GetRequiredResource(nameof(ImageBatchSearchVisibleNumberMustContainDigit));
+    public static string ImageBatchSearchReferenceImageKeyRequired => GetRequiredResource(nameof(ImageBatchSearchReferenceImageKeyRequired));
+    public static string ImageBatchSearchTargetReferenceImageMissing(string referenceImageKey) => Format(nameof(ImageBatchSearchTargetReferenceImageMissing), referenceImageKey);
+    public static string ImageBatchSearchMinConfidenceInvalid => GetRequiredResource(nameof(ImageBatchSearchMinConfidenceInvalid));
+    public static string ImageBatchSearchMinSimilarityInvalid => GetRequiredResource(nameof(ImageBatchSearchMinSimilarityInvalid));
+    public static string ImageBatchSearchProvidersMustBeArray => GetRequiredResource(nameof(ImageBatchSearchProvidersMustBeArray));
+    public static string ImageBatchSearchJobQueuedLogMessage => GetRequiredResource(nameof(ImageBatchSearchJobQueuedLogMessage));
+    public static string ImageBatchSearchJobProcessingRetryLogMessage => GetRequiredResource(nameof(ImageBatchSearchJobProcessingRetryLogMessage));
+    public static string ImageBatchSearchJobProcessingFailedLogMessage => GetRequiredResource(nameof(ImageBatchSearchJobProcessingFailedLogMessage));
+    public static string ImageBatchSearchJobProcessingCompletedLogMessage => GetRequiredResource(nameof(ImageBatchSearchJobProcessingCompletedLogMessage));
+    public static string CloudAssetSelectorRequired => GetRequiredResource(nameof(CloudAssetSelectorRequired));
+    public static string CloudAssetSelectorMustBeObject => GetRequiredResource(nameof(CloudAssetSelectorMustBeObject));
+    public static string CloudAssetSelectorModeRequired => GetRequiredResource(nameof(CloudAssetSelectorModeRequired));
+    public static string CloudAssetSelectorModeUnsupported(string selectorMode) => Format(nameof(CloudAssetSelectorModeUnsupported), selectorMode);
+    public static string CloudAssetStorageProviderRequired => GetRequiredResource(nameof(CloudAssetStorageProviderRequired));
+    public static string CloudAssetStorageProviderUnsupported(string storageProvider) => Format(nameof(CloudAssetStorageProviderUnsupported), storageProvider);
+    public static string CloudAssetBucketRequired => GetRequiredResource(nameof(CloudAssetBucketRequired));
+    public static string CloudAssetPrefixRequired => GetRequiredResource(nameof(CloudAssetPrefixRequired));
+    public static string CloudAssetExplicitAssetsRequired => GetRequiredResource(nameof(CloudAssetExplicitAssetsRequired));
+    public static string CloudAssetMustBeObject => GetRequiredResource(nameof(CloudAssetMustBeObject));
+    public static string CloudAssetKeyRequired => GetRequiredResource(nameof(CloudAssetKeyRequired));
+    public static string CloudAssetObjectKeyRequired => GetRequiredResource(nameof(CloudAssetObjectKeyRequired));
+    public static string CloudAssetUrlsNotAllowed => GetRequiredResource(nameof(CloudAssetUrlsNotAllowed));
+    public static string CloudAssetBucketNotAllowed(string bucketName) => Format(nameof(CloudAssetBucketNotAllowed), bucketName);
+    public static string CloudAssetMaxAssetsExceeded(int maxAssets) => Format(nameof(CloudAssetMaxAssetsExceeded), maxAssets);
+    public static string CloudAssetNoAssetsResolved => GetRequiredResource(nameof(CloudAssetNoAssetsResolved));
 
     private static string GetRequiredResource(string name)
     {

@@ -1,4 +1,5 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 using DeValpo.MediaIntelligence.Application.Models;
@@ -54,6 +55,26 @@ public sealed class FaceSearchApplicationServiceTests
     }
 
     [Fact]
+    public async Task EnqueueAsync_AllowsMissingConsentReference()
+    {
+        var repository = new FakeFaceSearchJobRepository();
+        var service = CreateService(repository);
+
+        await service.EnqueueAsync(
+            new CreateFaceSearchJobCommand(
+                "generic",
+                "event-face-search-v1",
+                null,
+                """{"targets":[{"targetKey":"target-1","referenceImageKey":"reference-1"}]}""",
+                [CreateUpload("race.mp4", "video/mp4")],
+                [CreateUpload("face.jpg", "image/jpeg")]),
+            CancellationToken.None);
+
+        repository.Job.Should().NotBeNull();
+        repository.Job!.ConsentReferenceId.Should().BeNull();
+    }
+
+    [Fact]
     public async Task ProcessNextPendingAsync_PersistsAwsFaceReferenceMatches()
     {
         var repository = new FakeFaceSearchJobRepository { Job = CreatePendingJob() };
@@ -95,9 +116,11 @@ public sealed class FaceSearchApplicationServiceTests
             new FakeProfileResolver(),
             repository ?? new FakeFaceSearchJobRepository(),
             provider ?? new FakeFaceSearchProvider(),
+            new FakeAssetReferenceResolver(),
             new FakeUnitOfWork(),
             Options.Create(new VideoAnalysisOptions()),
             Options.Create(new FaceSearchOptions()),
+            Options.Create(new CloudAssetOptions()),
             NullLogger<FaceSearchApplicationService>.Instance);
     }
 
@@ -157,6 +180,17 @@ public sealed class FaceSearchApplicationServiceTests
         public Task<bool> DeleteAsync(string storagePath, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
+        }
+    }
+
+    private sealed class FakeAssetReferenceResolver : IAssetReferenceResolver
+    {
+        public Task<IReadOnlyCollection<ResolvedJobAsset>> ResolveAsync(
+            CloudAssetSelector selector,
+            int maxAssets,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<ResolvedJobAsset>>([]);
         }
     }
 

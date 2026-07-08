@@ -169,7 +169,7 @@ GET /api/v1/providers/google-video-intelligence/status?checkRemote=true
 
 ## Fase 2 Facial
 
-La verificacion facial queda fuera de Fase 1. La ruta tecnica de producto esta en [Ruta MVP Video Real](video-mvp-real-route.md). Para implementarla despues:
+La verificacion facial queda fuera de Fase 1. La ruta tecnica de producto esta en [Ruta MVP Video Real](reference/video-mvp-real-route.md). Para implementarla despues:
 
 1. Mantener `FaceMatchingEnabled=false` por defecto.
 2. Recibir imagenes de referencia solo con consentimiento externo valido.

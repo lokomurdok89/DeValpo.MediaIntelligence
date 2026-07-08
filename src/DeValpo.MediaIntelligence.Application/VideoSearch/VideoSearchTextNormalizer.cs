@@ -1,6 +1,6 @@
 namespace DeValpo.MediaIntelligence.Application.VideoSearch;
 
-internal static class VideoSearchTextNormalizer
+public static class VideoSearchTextNormalizer
 {
     public static string NormalizeNumber(string value)
     {

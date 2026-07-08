@@ -1,6 +1,7 @@
 using DeValpo.MediaIntelligence.Api.Auth;
 using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Api.Validation;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Contracts;
 using DeValpo.MediaIntelligence.Contracts.VideoSearch;
@@ -29,6 +30,7 @@ public sealed class VideoSearchJobsController(
     /// <param name="profileKey">Must be event-video-target-search-v1.</param>
     /// <param name="manifestJson">JSON manifest with targets and detection options.</param>
     /// <param name="videos">One or more MP4/MOV/AVI source videos.</param>
+    /// <param name="assetSelectorJson">Optional cloud asset selector for production reference-based jobs.</param>
     /// <param name="cancellationToken">Request cancellation token.</param>
     /// <response code="202">Returns the queued video search job identifier.</response>
     /// <response code="400">The request is invalid or a video cannot be processed.</response>
@@ -46,7 +48,8 @@ public sealed class VideoSearchJobsController(
         [FromForm] string clientKey,
         [FromForm] string profileKey,
         [FromForm] string manifestJson,
-        [FromForm] List<IFormFile> videos,
+        [FromForm] List<IFormFile>? videos,
+        [FromForm] string? assetSelectorJson,
         CancellationToken cancellationToken)
     {
         if (!await accessService.CanSubmitAsync(User, clientKey, profileKey, cancellationToken))
@@ -54,7 +57,11 @@ public sealed class VideoSearchJobsController(
             return Forbid();
         }
 
-        if (videos is null || videos.Count == 0)
+        var assetSelector = CloudAssetSelectorParser.ParseOptional(assetSelectorJson);
+        var usesCloudReferences = assetSelector is not null &&
+            !string.Equals(assetSelector.SelectorMode, CloudAssetSelectorModes.MultipartUpload, StringComparison.OrdinalIgnoreCase);
+
+        if (!usesCloudReferences && (videos is null || videos.Count == 0))
         {
             return BadRequest(new ApiErrorResponse(
                 FileValidationErrorCodes.FileRequired,
@@ -62,7 +69,7 @@ public sealed class VideoSearchJobsController(
                 HttpContext.TraceIdentifier));
         }
 
-        if (videos.Count > videoOptions.Value.MaxVideosPerJob)
+        if (!usesCloudReferences && videos!.Count > videoOptions.Value.MaxVideosPerJob)
         {
             return BadRequest(new ApiErrorResponse(
                 FileValidationErrorCodes.FileTooLarge,
@@ -71,7 +78,7 @@ public sealed class VideoSearchJobsController(
         }
 
         var uploads = new List<VideoSearchUpload>();
-        foreach (var video in videos)
+        foreach (var video in videos ?? [])
         {
             var validation = await fileValidationService.ValidateAsync(
                 video,
@@ -94,7 +101,7 @@ public sealed class VideoSearchJobsController(
         try
         {
             response = await service.EnqueueAsync(
-                new CreateVideoSearchJobCommand(clientKey, profileKey, manifestJson, uploads),
+                new CreateVideoSearchJobCommand(clientKey, profileKey, manifestJson, uploads, assetSelector),
                 cancellationToken);
         }
         finally

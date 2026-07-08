@@ -1,4 +1,5 @@
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.Models;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Contracts;
@@ -114,8 +115,10 @@ public sealed class VideoSearchApplicationServiceTests
             new FakeProfileResolver(),
             repository ?? new FakeVideoSearchJobRepository(),
             provider ?? new FakeVideoSearchProvider(),
+            new FakeAssetReferenceResolver(),
             new FakeUnitOfWork(),
             Options.Create(new VideoAnalysisOptions()),
+            Options.Create(new CloudAssetOptions()),
             NullLogger<VideoSearchApplicationService>.Instance);
     }
 
@@ -163,6 +166,17 @@ public sealed class VideoSearchApplicationServiceTests
         public Task<bool> DeleteAsync(string storagePath, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
+        }
+    }
+
+    private sealed class FakeAssetReferenceResolver : IAssetReferenceResolver
+    {
+        public Task<IReadOnlyCollection<ResolvedJobAsset>> ResolveAsync(
+            CloudAssetSelector selector,
+            int maxAssets,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<ResolvedJobAsset>>([]);
         }
     }
 

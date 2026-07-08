@@ -4,6 +4,8 @@ Esta pagina define la arquitectura y los requisitos de Fase 2 para busqueda faci
 
 La Fase 2 no reemplaza Google Video Intelligence. Google sigue siendo el flujo base para OCR de numeros visibles y deteccion generica de caras. AWS Rekognition se agrega como provider separado para comparar imagenes de referencia contra caras detectadas en videos.
 
+Para el paso a paso completo de cuenta AWS, IAM user, IAM group, named profile, access key local, bucket, collection y diferencias con produccion, ver [Credenciales, usuarios y perfiles cloud](reference/cloud-identities-and-provider-profiles.md).
+
 Referencias oficiales:
 
 - [Amazon Rekognition collections](https://docs.aws.amazon.com/rekognition/latest/dg/collections.html)
@@ -42,8 +44,8 @@ AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
 AwsRekognition__PollingIntervalSeconds=5
 AwsRekognition__PollingTimeoutSeconds=900
-AwsRekognition__StagingPrefix=face-search
-AwsRekognition__DeleteStagedObjectsAfterProcessing=true
+AwsRekognition__StagingPrefix=staging
+AwsRekognition__DeleteStagedObjectsAfterProcessing=false
 ```
 
 Validar status basico:
@@ -99,7 +101,7 @@ Permitir que un cliente envie:
 - uno o mas videos reales;
 - una o mas imagenes de referencia;
 - un `targetKey` opaco por participante;
-- un `consentReferenceId` emitido fuera de MediaIntelligence.
+- un `consentReferenceId` opcional emitido fuera de MediaIntelligence.
 
 El sistema debe devolver rangos de tiempo donde AWS encuentra una cara similar a la referencia.
 
@@ -109,7 +111,7 @@ El sistema debe devolver rangos de tiempo donde AWS encuentra una cara similar a
 | --- | --- |
 | AWS Account | Cuenta activa con billing habilitado. |
 | Region | Region unica para S3 y Rekognition. Recomendado inicial: `us-east-1`. |
-| S3 bucket privado | Staging para videos e imagenes de referencia. |
+| S3 bucket privado | Assets originales o staging temporal para videos e imagenes de referencia. |
 | Rekognition collection | Contenedor temporal de vectores faciales para el job. |
 | IAM user/role app | Permite subir a S3, indexar caras y consultar resultados. |
 
@@ -120,7 +122,6 @@ V1 usa polling con `GetFaceSearch`. SNS/SQS queda reservado para una fase poster
 ```text
 s3:PutObject
 s3:GetObject
-s3:DeleteObject
 s3:GetBucketLocation
 rekognition:CreateCollection
 rekognition:DescribeCollection
@@ -217,9 +218,9 @@ sequenceDiagram
     participant Rek as AWS Rekognition
     participant Worker as FaceSearchWorker
 
-    Client->>API: POST /face-search-jobs con videos, referenceImages y consentReferenceId
-    API->>API: Valida JWT, manifest y consentimiento
-    API->>S3: Sube videos e imagenes de referencia
+    Client->>API: POST /face-search-jobs con multipart o assetSelectorJson
+    API->>API: Valida JWT, manifest y referencias
+    API->>S3: Usa assets existentes o stagea temporalmente
     API->>Rek: IndexFaces en collection
     API->>DB: Crea job Pending con targetKey y faceId
     Worker->>Rek: StartFaceSearch
@@ -245,10 +246,12 @@ GET  /api/v1/face-search-jobs/{jobId}/result
 ```text
 clientKey
 profileKey=event-face-search-v1
-consentReferenceId
+consentReferenceId opcional
 manifestJson
 videos[]
 referenceImages[]
+assetSelectorJson opcional
+referenceAssetSelectorJson opcional
 ```
 
 Manifest minimo:
@@ -286,14 +289,15 @@ Resultado esperado:
 
 ## Reglas Obligatorias
 
-- `consentReferenceId` obligatorio.
+- `consentReferenceId` opcional; si no viene, no bloquea procesamiento.
 - `targetKey` opaco obligatorio.
 - Rechazar `name`, `rut`, `email`, `phone`, `userId`, `personId`.
 - `FaceSearchEnabled=false` por defecto.
 - No mezclar resultados de Google `VisibleNumber` con AWS `FaceReference`.
 - No guardar imagenes de referencia permanentemente salvo definicion explicita de retencion.
 - Registrar auditoria de consentimiento, indexacion, busqueda, resultado leido y borrado.
-- Borrar objetos temporales de S3 y caras indexadas temporales despues de completar o fallar el job.
+- No borrar objetos staged desde el job; la limpieza de archivos depende de lifecycle policy del bucket con TTL corto.
+- Borrar caras indexadas temporales con `DeleteFaces` despues de completar o fallar el job.
 - La revocacion posterior por target/job queda fuera de v1 porque la API no persiste `FaceId`; si se define un indice persistente, esa fase debe agregar almacenamiento y borrado por consentimiento.
 - No devolver coincidencias fake.
 
@@ -330,5 +334,5 @@ Antes de ejecutar un smoke test real:
 3. Rekognition collection creada.
 4. Permisos IAM definidos.
 5. `UsePolling=true` configurado; SNS/SQS no aplica a v1.
-6. Existe forma externa de emitir `consentReferenceId`.
+6. Si existe `consentReferenceId`, se envia como referencia externa; si no, el job igual procesa.
 7. Existe imagen real de referencia y video real para smoke test local.

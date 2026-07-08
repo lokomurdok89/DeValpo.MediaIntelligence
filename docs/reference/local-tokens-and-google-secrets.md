@@ -4,6 +4,8 @@ This guide explains how to install Google Cloud CLI, generate the Google credent
 
 Follow the steps in order.
 
+For the broader production view of Google/AWS identities, users, named profiles, IAM groups, service accounts and MediaIntelligence profile keys, see [Cloud credentials, users and profiles](cloud-identities-and-provider-profiles.md).
+
 ## What You Need
 
 - Windows PowerShell.

@@ -50,7 +50,10 @@ gcloud auth application-default set-quota-project <project-id>
 Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\google-application-default-credentials.json
 ```
 
-Mas detalle: [tokens y secretos Google](local-tokens-and-google-secrets.md).
+Mas detalle:
+
+- [Credenciales, usuarios y perfiles cloud](reference/cloud-identities-and-provider-profiles.md)
+- [Tokens y secretos Google](reference/local-tokens-and-google-secrets.md)
 
 Ese documento explica desde instalar Google Cloud CLI hasta obtener la credencial ADC que usa esta API para llamar Document AI.
 
@@ -64,6 +67,8 @@ Copy-Item "$env:USERPROFILE\.aws\credentials" secrets\aws-credentials
 ```
 
 El archivo queda montado por Docker en `/run/secrets/aws-credentials`. No pegues access keys en `deploy/.env` ni las subas al repositorio.
+
+La guia completa de IAM user, IAM group, AWS named profile, bucket, collection y permisos minimos esta en [credenciales, usuarios y perfiles cloud](reference/cloud-identities-and-provider-profiles.md).
 
 ## 3. Levantar Docker
 

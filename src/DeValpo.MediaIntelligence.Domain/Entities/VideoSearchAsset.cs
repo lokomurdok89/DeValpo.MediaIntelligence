@@ -9,6 +9,19 @@ public sealed class VideoSearchAsset
     public string AssetRole { get; set; } = "SourceVideo";
     public string OriginalFileName { get; set; } = string.Empty;
     public string StoragePath { get; set; } = string.Empty;
+    public string InputMode { get; set; } = "MultipartUpload";
+    public string? StorageProvider { get; set; }
+    public string? BucketName { get; set; }
+    public string? ObjectKey { get; set; }
+    public string? Prefix { get; set; }
+    public string? Region { get; set; }
+    public string? Location { get; set; }
+    public string? Checksum { get; set; }
+    public string? VersionId { get; set; }
+    public string? Generation { get; set; }
+    public bool IsStaged { get; set; }
+    public DateTimeOffset? StagingExpiresAt { get; set; }
+    public string? StagingCleanupStatus { get; set; }
     public string ContentType { get; set; } = string.Empty;
     public long SizeInBytes { get; set; }
     public string? ProviderInputUri { get; set; }

@@ -37,6 +37,17 @@ public sealed class VideoSearchAssetConfiguration : IEntityTypeConfiguration<Vid
         builder.Property(item => item.AssetRole).HasMaxLength(64).IsRequired();
         builder.Property(item => item.OriginalFileName).HasMaxLength(512).IsRequired();
         builder.Property(item => item.StoragePath).HasMaxLength(1024).IsRequired();
+        builder.Property(item => item.InputMode).HasMaxLength(32).HasDefaultValue("MultipartUpload").IsRequired();
+        builder.Property(item => item.StorageProvider).HasMaxLength(32);
+        builder.Property(item => item.BucketName).HasMaxLength(256);
+        builder.Property(item => item.ObjectKey).HasMaxLength(1024);
+        builder.Property(item => item.Prefix).HasMaxLength(1024);
+        builder.Property(item => item.Region).HasMaxLength(64);
+        builder.Property(item => item.Location).HasMaxLength(64);
+        builder.Property(item => item.Checksum).HasMaxLength(256);
+        builder.Property(item => item.VersionId).HasMaxLength(256);
+        builder.Property(item => item.Generation).HasMaxLength(256);
+        builder.Property(item => item.StagingCleanupStatus).HasMaxLength(64);
         builder.Property(item => item.ContentType).HasMaxLength(256).IsRequired();
         builder.Property(item => item.ProviderInputUri).HasMaxLength(2048);
         builder.Property(item => item.VideoDurationSeconds).HasPrecision(18, 3);

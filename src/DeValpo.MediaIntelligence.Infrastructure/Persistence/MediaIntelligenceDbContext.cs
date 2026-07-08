@@ -29,6 +29,10 @@ public sealed class MediaIntelligenceDbContext(DbContextOptions<MediaIntelligenc
     public DbSet<VideoSearchFaceOccurrenceSegment> VideoSearchFaceOccurrenceSegments => Set<VideoSearchFaceOccurrenceSegment>();
     public DbSet<VideoSearchFaceReferenceMatchSegment> VideoSearchFaceReferenceMatchSegments => Set<VideoSearchFaceReferenceMatchSegment>();
     public DbSet<VideoSearchIssue> VideoSearchIssues => Set<VideoSearchIssue>();
+    public DbSet<ImageBatchSearchJob> ImageBatchSearchJobs => Set<ImageBatchSearchJob>();
+    public DbSet<ImageBatchSearchAsset> ImageBatchSearchAssets => Set<ImageBatchSearchAsset>();
+    public DbSet<ImageBatchSearchMatch> ImageBatchSearchMatches => Set<ImageBatchSearchMatch>();
+    public DbSet<ImageBatchSearchIssue> ImageBatchSearchIssues => Set<ImageBatchSearchIssue>();
 
     /// <summary>
     /// Applies all entity mappings declared in the infrastructure assembly.

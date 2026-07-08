@@ -1,3 +1,4 @@
+using DeValpo.MediaIntelligence.Application.CloudAssets;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 
 namespace DeValpo.MediaIntelligence.Application.FaceSearch;
@@ -5,7 +6,9 @@ namespace DeValpo.MediaIntelligence.Application.FaceSearch;
 public sealed record CreateFaceSearchJobCommand(
     string ClientKey,
     string ProfileKey,
-    string ConsentReferenceId,
+    string? ConsentReferenceId,
     string ManifestJson,
     IReadOnlyCollection<VideoSearchUpload> Videos,
-    IReadOnlyCollection<VideoSearchUpload> ReferenceImages);
+    IReadOnlyCollection<VideoSearchUpload> ReferenceImages,
+    CloudAssetSelector? AssetSelector = null,
+    CloudAssetSelector? ReferenceAssetSelector = null);

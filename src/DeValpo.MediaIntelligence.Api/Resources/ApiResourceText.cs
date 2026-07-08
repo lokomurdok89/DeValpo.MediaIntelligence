@@ -43,6 +43,7 @@ internal static class ApiResourceText
     public static string ReleaseAutomaticMigrationsDisabled => GetRequiredResource(nameof(ReleaseAutomaticMigrationsDisabled));
     public static string ReleaseGoogleUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseGoogleUserCredentialsDisabled));
     public static string ReleaseGoogleVideoUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseGoogleVideoUserCredentialsDisabled));
+    public static string ReleaseGoogleVisionUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseGoogleVisionUserCredentialsDisabled));
     public static string ReleaseAwsUserCredentialsDisabled => GetRequiredResource(nameof(ReleaseAwsUserCredentialsDisabled));
     public static string ReleaseMockSkillsDisabled => GetRequiredResource(nameof(ReleaseMockSkillsDisabled));
     public static string ReleaseMockProfilesDisabled => GetRequiredResource(nameof(ReleaseMockProfilesDisabled));
@@ -50,11 +51,14 @@ internal static class ApiResourceText
     public static string AnalysisJobWorkerFailed => GetRequiredResource(nameof(AnalysisJobWorkerFailed));
     public static string VideoSearchJobWorkerFailed => GetRequiredResource(nameof(VideoSearchJobWorkerFailed));
     public static string FaceSearchJobWorkerFailed => GetRequiredResource(nameof(FaceSearchJobWorkerFailed));
+    public static string ImageBatchSearchJobWorkerFailed => GetRequiredResource(nameof(ImageBatchSearchJobWorkerFailed));
     public static string WebhookDeliveryWorkerFailed => GetRequiredResource(nameof(WebhookDeliveryWorkerFailed));
     public static string VideoFilesRequired => GetRequiredResource(nameof(VideoFilesRequired));
+    public static string ImageFilesRequired => GetRequiredResource(nameof(ImageFilesRequired));
     public static string ReferenceImagesRequired => GetRequiredResource(nameof(ReferenceImagesRequired));
     public static string ReferenceImageMaxFilesExceeded(int maxFiles) => Format(nameof(ReferenceImageMaxFilesExceeded), maxFiles);
     public static string VideoMaxFilesExceeded(int maxFiles) => Format(nameof(VideoMaxFilesExceeded), maxFiles);
+    public static string ImageMaxFilesExceeded(int maxFiles) => Format(nameof(ImageMaxFilesExceeded), maxFiles);
     public static string SwaggerBearerDescription => GetRequiredResource(nameof(SwaggerBearerDescription));
     public static string SwaggerResourceMissing(string name) => Format(nameof(SwaggerResourceMissing), name);
 

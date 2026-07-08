@@ -105,7 +105,12 @@ public sealed class WebhookDeliveryApplicationService(
                 job.AnalysisResult?.Confidence,
                 job.AnalysisResult?.RequiresHumanReview,
                 job.AnalysisResult is null ? null : string.Format(System.Globalization.CultureInfo.InvariantCulture, ResultUrlTemplate, job.Id),
-                occurredAt);
+                occurredAt,
+                $"{job.Id:N}:{eventType}:{target.TargetKey}",
+                "AnalysisJob",
+                null,
+                null,
+                0);
 
             return new WebhookDelivery
             {

@@ -43,6 +43,18 @@ foreach ($settings in @($production, $staging)) {
         throw "Release environments must not allow Google user credentials."
     }
 
+    if ($settings.GoogleVideoIntelligence.AllowUserCredentials -ne $false) {
+        throw "Release environments must not allow Google Video Intelligence user credentials."
+    }
+
+    if ($settings.GoogleVision.AllowUserCredentials -ne $false) {
+        throw "Release environments must not allow Google Vision user credentials."
+    }
+
+    if ($settings.AwsRekognition.AllowUserCredentials -ne $false) {
+        throw "Release environments must not allow AWS Rekognition user credentials."
+    }
+
     if ($settings.Skills.EnableMockSkills -ne $false) {
         throw "Release environments must not enable mock skills."
     }

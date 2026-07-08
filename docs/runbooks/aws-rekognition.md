@@ -40,8 +40,8 @@ AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
 AwsRekognition__PollingIntervalSeconds=5
 AwsRekognition__PollingTimeoutSeconds=900
-AwsRekognition__StagingPrefix=face-search
-AwsRekognition__DeleteStagedObjectsAfterProcessing=true
+AwsRekognition__StagingPrefix=staging
+AwsRekognition__DeleteStagedObjectsAfterProcessing=false
 ```
 
 V1 usa polling obligatorio con `GetFaceSearch`; `SnsTopicArn` y `RoleArn` no son usados por el worker actual.
@@ -59,7 +59,6 @@ Permisos minimos:
 ```text
 s3:PutObject
 s3:GetObject
-s3:DeleteObject
 s3:GetBucketLocation
 rekognition:DescribeCollection
 rekognition:IndexFaces
@@ -117,5 +116,5 @@ curl.exe "http://localhost:8085/api/v1/face-search-jobs/<jobId>/result" `
 - `consentReferenceId` es obligatorio y debe venir de un sistema externo.
 - No poner nombre, RUT, email, telefono, userId ni personId en el manifest.
 - El resultado no expone `FaceId`, access keys, bucket internals ni rutas de credenciales.
-- Con `DeleteStagedObjectsAfterProcessing=true`, la API elimina objetos S3 temporales al terminar o fallar el procesamiento.
+- La API no elimina objetos S3 staged al terminar. La limpieza principal debe hacerse con lifecycle policy del bucket y TTL corto.
 - Las caras indexadas se eliminan al cerrar el job; no existe indice persistente ni revocacion posterior por `targetKey` en v1.
