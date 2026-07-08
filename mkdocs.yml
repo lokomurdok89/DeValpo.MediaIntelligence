@@ -50,9 +50,20 @@ plugins:
           nav_translations:
             Inicio: Home
             Contexto: Context
+            AI onboarding: AI onboarding
+            Identidad del proyecto: Project identity
+            Estado actual: Current state
+            Decisiones IA: AI decisions
             Contexto minimo: Minimal context
             Decisiones vigentes: Active decisions
             Arquitectura actual: Current architecture
+            Specs: Specs
+            ADR: ADR
+            Prompts IA: AI prompts
+            Discovery ChatGPT: ChatGPT discovery
+            Feature Codex: Codex feature
+            Bugfix Codex: Codex bugfix
+            Review Codex: Codex review
             Primeros pasos: Getting started
             Modulos: Modules
             Cloud assets: Cloud assets
@@ -96,9 +107,20 @@ markdown_extensions:
 nav:
   - Inicio: index.md
   - Contexto:
+      - AI onboarding: context/AI_ONBOARDING.md
+      - Identidad del proyecto: context/PROJECT_IDENTITY.md
+      - Estado actual: context/CURRENT_STATE.md
+      - Decisiones IA: context/ACTIVE_DECISIONS.md
       - Contexto minimo: context/codex-minimal.md
       - Decisiones vigentes: context/active-decisions.md
       - Arquitectura actual: context/architecture-current.md
+  - Specs: specs/README.md
+  - ADR: adr/README.md
+  - Prompts IA:
+      - Discovery ChatGPT: prompts/chatgpt-discovery.md
+      - Feature Codex: prompts/codex-feature.md
+      - Bugfix Codex: prompts/codex-bugfix.md
+      - Review Codex: prompts/codex-review.md
   - Primeros pasos:
       - Primeros pasos: getting-started.md
       - Referencias cloud y staging: cloud-asset-references-and-staging.md
