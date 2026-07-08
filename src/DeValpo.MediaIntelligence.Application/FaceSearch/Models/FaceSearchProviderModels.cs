@@ -1,5 +1,8 @@
-namespace DeValpo.MediaIntelligence.Application.FaceSearch;
+namespace DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 
+/// <summary>
+/// Provider-neutral request used by infrastructure adapters to execute a face search job.
+/// </summary>
 public sealed record FaceSearchProviderRequest(
     Guid JobId,
     string ConsentReferenceId,
@@ -8,6 +11,9 @@ public sealed record FaceSearchProviderRequest(
     IReadOnlyCollection<FaceSearchTarget> Targets,
     decimal MinSimilarity);
 
+/// <summary>
+/// Provider-neutral media asset reference stored by the application before external processing.
+/// </summary>
 public sealed record FaceSearchProviderAsset(
     Guid AssetId,
     string AssetKey,
@@ -15,12 +21,18 @@ public sealed record FaceSearchProviderAsset(
     string StoragePath,
     string ContentType);
 
+/// <summary>
+/// Provider-neutral result returned by face search infrastructure adapters.
+/// </summary>
 public sealed record FaceSearchProviderResult(
     IReadOnlyCollection<FaceReferenceMatchOccurrence> FaceMatches,
     IReadOnlyCollection<FaceSearchProviderIssue> Issues,
     IReadOnlyDictionary<Guid, string> ProviderInputUris,
     IReadOnlyDictionary<Guid, decimal> VideoDurations);
 
+/// <summary>
+/// Canonical face match occurrence used before persistence and API DTO projection.
+/// </summary>
 public sealed record FaceReferenceMatchOccurrence(
     Guid AssetId,
     string TargetKey,
@@ -32,6 +44,9 @@ public sealed record FaceReferenceMatchOccurrence(
     decimal Similarity,
     string SourceProvider);
 
+/// <summary>
+/// Provider-neutral warning or error produced while running a face search job.
+/// </summary>
 public sealed record FaceSearchProviderIssue(
     string Code,
     string Message,

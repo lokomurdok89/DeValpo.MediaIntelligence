@@ -107,8 +107,9 @@ public static class DependencyInjection
                 (!string.IsNullOrWhiteSpace(options.Region) &&
                  !string.IsNullOrWhiteSpace(options.BucketName) &&
                  !string.IsNullOrWhiteSpace(options.CollectionId) &&
-                 options.MinSimilarity is > 0m and <= 100m),
-                InfrastructureResourceText.MissingAwsRekognitionConfiguration("Region, BucketName, CollectionId, MinSimilarity"))
+                 options.MinSimilarity is > 0m and <= 100m &&
+                 options.UsePolling),
+                InfrastructureResourceText.MissingAwsRekognitionConfiguration("Region, BucketName, CollectionId, MinSimilarity, UsePolling"))
             .ValidateOnStart();
 
         services.AddHostedService<SkillRegistryValidationHostedService>();

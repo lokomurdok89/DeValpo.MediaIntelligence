@@ -20,6 +20,9 @@ internal static class FaceSearchManifestParser
         "name", "fullName", "email", "rut", "dni", "phone", "telephone", "documentNumber", "personId", "userId"
     };
 
+    /// <summary>
+    /// Parses the face search manifest and rejects personal data fields.
+    /// </summary>
     public static FaceSearchManifest Parse(string manifestJson, decimal defaultMinSimilarity)
     {
         if (string.IsNullOrWhiteSpace(manifestJson))

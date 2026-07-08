@@ -92,6 +92,7 @@ internal static class InfrastructureResourceText
     public static string AwsRekognitionFaceSearchFailed => GetRequiredResource(nameof(AwsRekognitionFaceSearchFailed));
     public static string AwsRekognitionFaceSearchTimedOut => GetRequiredResource(nameof(AwsRekognitionFaceSearchTimedOut));
     public static string AwsRekognitionCleanupFailed => GetRequiredResource(nameof(AwsRekognitionCleanupFailed));
+    public static string AwsRekognitionCleanupFailedFor(string resourceType) => Format(nameof(AwsRekognitionCleanupFailedFor), resourceType);
     public static string WebhookTargetNotLoaded => GetRequiredResource(nameof(WebhookTargetNotLoaded));
     public static string WebhookRequestTimedOut => GetRequiredResource(nameof(WebhookRequestTimedOut));
     public static string ClientNotFound(string clientKey) => Format(nameof(ClientNotFound), clientKey);

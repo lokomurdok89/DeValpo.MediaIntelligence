@@ -70,3 +70,10 @@ flowchart LR
 - Google Video Intelligence processes visible-number OCR and generic face occurrences in videos.
 - AWS Rekognition processes consented face comparison against reference images.
 - Each provider lives in its own Infrastructure namespace and uses separate options and credentials.
+
+## Model And Mapper Convention
+
+- Canonical use-case models live under `Application/<Feature>/Models`.
+- External providers do not project directly to public DTOs; they first convert SDK responses to canonical Application models.
+- Mappers that know external SDKs live under `Infrastructure/Providers/<Provider>/<Service>/Mappers`.
+- Use `ToDomain...` names when converting SDK/provider data to internal models and `ToDto...` only when the result is a `Contracts` DTO.

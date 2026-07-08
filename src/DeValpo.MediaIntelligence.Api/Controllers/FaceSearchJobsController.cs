@@ -1,7 +1,9 @@
 using DeValpo.MediaIntelligence.Api.Auth;
+using DeValpo.MediaIntelligence.Api.Audit;
 using DeValpo.MediaIntelligence.Api.Options;
 using DeValpo.MediaIntelligence.Api.Resources;
 using DeValpo.MediaIntelligence.Api.Validation;
+using DeValpo.MediaIntelligence.Application.Audit;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Contracts;
@@ -19,7 +21,8 @@ public sealed class FaceSearchJobsController(
     IUploadedFileValidationService fileValidationService,
     IOptions<VideoAnalysisOptions> videoOptions,
     IOptions<FaceSearchOptions> faceOptions,
-    IOptions<UploadValidationOptions> uploadOptions) : ControllerBase
+    IOptions<UploadValidationOptions> uploadOptions,
+    IAuditApplicationService auditService) : ControllerBase
 {
     private const long MultipartRequestSizeLimitBytes = 1_610_612_736;
 
@@ -59,6 +62,21 @@ public sealed class FaceSearchJobsController(
     {
         if (!await accessService.CanSubmitAsync(User, clientKey, profileKey, cancellationToken))
         {
+            await auditService.RecordAsync(
+                AuditRequestFactory.Create(
+                    User,
+                    AuditEventTypes.FaceSearchCreated,
+                    "VideoSearchJob",
+                    null,
+                    clientKey,
+                    AuditOutcome.Denied,
+                    new Dictionary<string, string>
+                    {
+                        ["profileKey"] = profileKey,
+                        ["consentReferenceProvided"] = (!string.IsNullOrWhiteSpace(consentReferenceId)).ToString()
+                    },
+                    clientKey),
+                cancellationToken);
             return Forbid();
         }
 
@@ -134,6 +152,24 @@ public sealed class FaceSearchJobsController(
             await DisposeUploadsAsync(referenceUploads.Uploads);
         }
 
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.FaceSearchCreated,
+                "VideoSearchJob",
+                response.JobId.ToString(),
+                clientKey,
+                AuditOutcome.Success,
+                new Dictionary<string, string>
+                {
+                    ["profileKey"] = profileKey,
+                    ["videoCount"] = videos.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["referenceImageCount"] = referenceImages.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["consentReferenceProvided"] = (!string.IsNullOrWhiteSpace(consentReferenceId)).ToString()
+                },
+                clientKey),
+            cancellationToken);
+
         return Accepted($"/api/v1/face-search-jobs/{response.JobId}/result", response);
     }
 
@@ -165,10 +201,41 @@ public sealed class FaceSearchJobsController(
     public async Task<IActionResult> GetResult(Guid jobId, CancellationToken cancellationToken)
     {
         var response = await service.GetResultAsync(jobId, cancellationToken);
-        if (response is null || !accessService.CanAccessClientResource(User, response.ClientKey))
+        if (response is null)
         {
             return NotFound();
         }
+
+        if (!accessService.CanAccessClientResource(User, response.ClientKey))
+        {
+            await auditService.RecordAsync(
+                AuditRequestFactory.Create(
+                    User,
+                    AuditEventTypes.FaceSearchResultRead,
+                    "VideoSearchJob",
+                    jobId.ToString(),
+                    response.ClientKey,
+                    AuditOutcome.Denied,
+                    new Dictionary<string, string> { ["status"] = response.Status }),
+                cancellationToken);
+            return NotFound();
+        }
+
+        await auditService.RecordAsync(
+            AuditRequestFactory.Create(
+                User,
+                AuditEventTypes.FaceSearchResultRead,
+                "VideoSearchJob",
+                jobId.ToString(),
+                response.ClientKey,
+                AuditOutcome.Success,
+                new Dictionary<string, string>
+                {
+                    ["status"] = response.Status,
+                    ["matchCount"] = response.FaceMatches.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["issueCount"] = response.Issues.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                }),
+            cancellationToken);
 
         return Ok(response);
     }

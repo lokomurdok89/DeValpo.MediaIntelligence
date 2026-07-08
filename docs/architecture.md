@@ -70,3 +70,10 @@ flowchart LR
 - Google Video Intelligence procesa OCR de numeros visibles y ocurrencias genericas de caras en videos.
 - AWS Rekognition procesa comparacion facial consentida contra imagenes de referencia.
 - Cada provider vive en su propio namespace de Infrastructure y usa opciones/credenciales separadas.
+
+## Convencion De Modelos Y Mappers
+
+- Los modelos canonicos de cada caso de uso viven bajo `Application/<Feature>/Models`.
+- Los providers externos no proyectan directo a DTOs publicos; primero convierten respuestas del SDK a modelos canonicos de Application.
+- Los mappers que conocen SDKs externos viven en `Infrastructure/Providers/<Provider>/<Service>/Mappers`.
+- Usar nombres `ToDomain...` para convertir SDK/proveedor a modelo interno y `ToDto...` solo cuando el resultado sea un DTO de `Contracts`.

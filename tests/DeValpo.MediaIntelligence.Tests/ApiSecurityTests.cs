@@ -265,6 +265,7 @@ public sealed class ApiSecurityTests
     [InlineData("Jwt:RequireHttpsMetadata", "false")]
     [InlineData("GoogleDocumentAi:AllowUserCredentials", "true")]
     [InlineData("GoogleVideoIntelligence:AllowUserCredentials", "true")]
+    [InlineData("AwsRekognition:AllowUserCredentials", "true")]
     [InlineData("Skills:EnableMockSkills", "true")]
     [InlineData("AnalysisProfiles:EnableMockProfiles", "true")]
     public void Startup_Fails_InProduction_WhenUnsafeReleaseOptionIsEnabled(string key, string value)
@@ -343,6 +344,9 @@ public sealed class ApiSecurityTests
             ["GoogleDocumentAi:AllowUserCredentials"] = "false",
             ["GoogleVideoIntelligence:Enabled"] = "false",
             ["GoogleVideoIntelligence:AllowUserCredentials"] = "false",
+            ["AwsRekognition:Enabled"] = "false",
+            ["AwsRekognition:FaceSearchEnabled"] = "false",
+            ["AwsRekognition:AllowUserCredentials"] = "false",
             ["Skills:EnableMockSkills"] = "false",
             ["AnalysisProfiles:EnableMockProfiles"] = "false",
             ["Jwt:Issuer"] = "DeValpo.MediaIntelligence",

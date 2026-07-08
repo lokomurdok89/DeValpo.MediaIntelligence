@@ -78,6 +78,7 @@ flowchart LR
 ```
 
 Google CLI, ADC credential generation and Document AI validation are documented in [docs/local-tokens-and-google-secrets.md](docs/local-tokens-and-google-secrets.md).
+AWS Rekognition face search is documented in [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md). V1 is polling-only, uses externally mounted AWS credentials and deletes temporary S3 objects plus indexed faces after each job; the remaining deployment step is configuring real credentials, bucket and collection for a smoke test.
 
 ## Repository Map
 
