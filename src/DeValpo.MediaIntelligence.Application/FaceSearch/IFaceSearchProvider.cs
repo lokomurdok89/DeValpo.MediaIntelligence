@@ -1,3 +1,5 @@
+using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
+
 namespace DeValpo.MediaIntelligence.Application.FaceSearch;
 
 public interface IFaceSearchProvider

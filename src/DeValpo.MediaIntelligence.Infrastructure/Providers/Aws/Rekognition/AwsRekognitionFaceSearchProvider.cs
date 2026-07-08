@@ -5,8 +5,12 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using DeValpo.MediaIntelligence.Application.Abstractions;
 using DeValpo.MediaIntelligence.Application.FaceSearch;
+using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 using DeValpo.MediaIntelligence.Infrastructure.Options;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition.Mappers;
+using DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition.Models;
 using DeValpo.MediaIntelligence.Infrastructure.Resources;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
@@ -14,7 +18,8 @@ namespace DeValpo.MediaIntelligence.Infrastructure.Providers.Aws.Rekognition;
 public sealed class AwsRekognitionFaceSearchProvider(
     IMediaAssetStorage mediaAssetStorage,
     IOptions<AwsRekognitionOptions> options,
-    IAwsRekognitionClientFactory clientFactory) : IFaceSearchProvider
+    IAwsRekognitionClientFactory clientFactory,
+    ILogger<AwsRekognitionFaceSearchProvider> logger) : IFaceSearchProvider
 {
     private const string SourceProvider = "AwsRekognition";
 
@@ -143,7 +148,7 @@ public sealed class AwsRekognitionFaceSearchProvider(
         return objectKey;
     }
 
-    private async Task<Dictionary<string, IndexedTargetFace>> IndexTargetFacesAsync(
+    private async Task<Dictionary<string, AwsIndexedTargetFace>> IndexTargetFacesAsync(
         IAmazonRekognition rekognitionClient,
         AwsRekognitionOptions config,
         IReadOnlyCollection<FaceSearchTarget> targets,
@@ -151,14 +156,13 @@ public sealed class AwsRekognitionFaceSearchProvider(
         List<string> indexedFaceIds,
         CancellationToken cancellationToken)
     {
-        var indexedTargets = new Dictionary<string, IndexedTargetFace>(StringComparer.OrdinalIgnoreCase);
+        var indexedTargets = new Dictionary<string, AwsIndexedTargetFace>(StringComparer.OrdinalIgnoreCase);
         foreach (var target in targets)
         {
             var response = await rekognitionClient.IndexFacesAsync(
                 new IndexFacesRequest
                 {
                     CollectionId = config.CollectionId,
-                    ExternalImageId = target.TargetKey,
                     MaxFaces = 1,
                     QualityFilter = QualityFilter.AUTO,
                     Image = new Image
@@ -175,25 +179,25 @@ public sealed class AwsRekognitionFaceSearchProvider(
             var faceId = response.FaceRecords.FirstOrDefault()?.Face.FaceId;
             if (string.IsNullOrWhiteSpace(faceId))
             {
-                indexedTargets[target.TargetKey] = new IndexedTargetFace(target.TargetKey, target.ReferenceImageKey, string.Empty);
+                indexedTargets[target.TargetKey] = new AwsIndexedTargetFace(target.TargetKey, target.ReferenceImageKey, string.Empty);
                 continue;
             }
 
             indexedFaceIds.Add(faceId);
-            indexedTargets[target.TargetKey] = new IndexedTargetFace(target.TargetKey, target.ReferenceImageKey, faceId);
+            indexedTargets[target.TargetKey] = new AwsIndexedTargetFace(target.TargetKey, target.ReferenceImageKey, faceId);
         }
 
         return indexedTargets;
     }
 
-    private async Task<SearchVideoResult> SearchVideoAsync(
+    private async Task<AwsFaceSearchVideoResult> SearchVideoAsync(
         IAmazonRekognition rekognitionClient,
         AwsRekognitionOptions config,
         Guid jobId,
         FaceSearchProviderAsset video,
         string videoObjectKey,
         decimal minSimilarity,
-        IReadOnlyDictionary<string, IndexedTargetFace> targetFaceIds,
+        IReadOnlyDictionary<string, AwsIndexedTargetFace> targetFaceIds,
         CancellationToken cancellationToken)
     {
         var indexedTargetsByFaceId = targetFaceIds.Values
@@ -202,7 +206,7 @@ public sealed class AwsRekognitionFaceSearchProvider(
 
         if (indexedTargetsByFaceId.Count == 0)
         {
-            return new SearchVideoResult([], null);
+            return new AwsFaceSearchVideoResult([], null);
         }
 
         var startResponse = await rekognitionClient.StartFaceSearchAsync(
@@ -257,12 +261,12 @@ public sealed class AwsRekognitionFaceSearchProvider(
         throw new TimeoutException(InfrastructureResourceText.AwsRekognitionFaceSearchTimedOut);
     }
 
-    private static async Task<SearchVideoResult> CollectSucceededResultAsync(
+    private static async Task<AwsFaceSearchVideoResult> CollectSucceededResultAsync(
         IAmazonRekognition rekognitionClient,
         string jobId,
         GetFaceSearchResponse firstPage,
         FaceSearchProviderAsset video,
-        IReadOnlyDictionary<string, IndexedTargetFace> indexedTargetsByFaceId,
+        IReadOnlyDictionary<string, AwsIndexedTargetFace> indexedTargetsByFaceId,
         CancellationToken cancellationToken)
     {
         var matches = new List<FaceReferenceMatchOccurrence>();
@@ -271,7 +275,11 @@ public sealed class AwsRekognitionFaceSearchProvider(
 
         while (true)
         {
-            MapPage(video, currentPage, indexedTargetsByFaceId, matches);
+            matches.AddRange(AwsRekognitionFaceSearchMapper.ToDomainMatches(
+                video,
+                currentPage,
+                indexedTargetsByFaceId,
+                SourceProvider));
 
             if (string.IsNullOrWhiteSpace(currentPage.NextToken))
             {
@@ -290,39 +298,7 @@ public sealed class AwsRekognitionFaceSearchProvider(
             durationSeconds ??= ToDurationSeconds(currentPage.VideoMetadata);
         }
 
-        return new SearchVideoResult(matches, durationSeconds);
-    }
-
-    private static void MapPage(
-        FaceSearchProviderAsset video,
-        GetFaceSearchResponse response,
-        IReadOnlyDictionary<string, IndexedTargetFace> indexedTargetsByFaceId,
-        List<FaceReferenceMatchOccurrence> matches)
-    {
-        foreach (var person in response.Persons)
-        {
-            var timestampSeconds = Math.Round((decimal)person.Timestamp.GetValueOrDefault() / 1000m, 3);
-            foreach (var faceMatch in person.FaceMatches)
-            {
-                var faceId = faceMatch.Face?.FaceId;
-                if (string.IsNullOrWhiteSpace(faceId) ||
-                    !indexedTargetsByFaceId.TryGetValue(faceId, out var target))
-                {
-                    continue;
-                }
-
-                matches.Add(new FaceReferenceMatchOccurrence(
-                    video.AssetId,
-                    target.TargetKey,
-                    target.ReferenceImageKey,
-                    video.AssetKey,
-                    video.OriginalFileName,
-                    timestampSeconds,
-                    timestampSeconds,
-                    Math.Round((decimal)faceMatch.Similarity.GetValueOrDefault(), 2),
-                    SourceProvider));
-            }
-        }
+        return new AwsFaceSearchVideoResult(matches, durationSeconds);
     }
 
     private async Task CleanupAsync(
@@ -345,9 +321,10 @@ public sealed class AwsRekognitionFaceSearchProvider(
                     },
                     cancellationToken);
             }
-            catch
+            catch (Exception exception)
             {
                 // Cleanup failure must not hide the provider result or original processing error.
+                logger.LogWarning(exception, InfrastructureResourceText.AwsRekognitionCleanupFailedFor("indexed faces"));
             }
         }
 
@@ -368,9 +345,10 @@ public sealed class AwsRekognitionFaceSearchProvider(
                     },
                     cancellationToken);
             }
-            catch
+            catch (Exception exception)
             {
                 // Cleanup failure must not hide the provider result or original processing error.
+                logger.LogWarning(exception, InfrastructureResourceText.AwsRekognitionCleanupFailedFor("staged S3 object"));
             }
         }
     }
@@ -412,9 +390,4 @@ public sealed class AwsRekognitionFaceSearchProvider(
         };
     }
 
-    private sealed record IndexedTargetFace(string TargetKey, string ReferenceImageKey, string FaceId);
-
-    private sealed record SearchVideoResult(
-        IReadOnlyCollection<FaceReferenceMatchOccurrence> FaceMatches,
-        decimal? DurationSeconds);
 }

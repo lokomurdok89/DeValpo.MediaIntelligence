@@ -62,6 +62,25 @@ public sealed class AwsRekognitionStatusServiceTests
         status.Message.Should().Contain("local configuration is complete");
     }
 
+    [Fact]
+    public async Task GetStatusAsync_ReturnsMissingUsePolling_WhenPollingIsDisabled()
+    {
+        var service = CreateService(new AwsRekognitionOptions
+        {
+            Enabled = true,
+            FaceSearchEnabled = true,
+            Region = "us-east-1",
+            BucketName = "bucket-that-is-not-contacted",
+            CollectionId = "collection-that-is-not-contacted",
+            UsePolling = false
+        });
+
+        var status = await service.GetStatusAsync(checkRemote: false, CancellationToken.None);
+
+        status.Configured.Should().BeFalse();
+        status.MissingFields.Should().Contain(nameof(AwsRekognitionOptions.UsePolling));
+    }
+
     private static AwsRekognitionStatusService CreateService(AwsRekognitionOptions options)
     {
         return new AwsRekognitionStatusService(

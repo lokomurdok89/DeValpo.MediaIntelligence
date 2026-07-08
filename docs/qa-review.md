@@ -163,3 +163,52 @@ Expected result:
 - Docs build succeeds.
 - Compose config succeeds.
 - Secret scan passes.
+
+## AWS Face Search Credential-Ready QA
+
+Review date: 2026-07-07
+
+Branch: `agent/video-e2e-aws-face-gating-fixes`
+
+### Scope
+
+This review closes the AWS Face Search gaps found before credential integration: safe AWS request shape, sanitized audit events, release safety coverage, polling-only documentation and no persistent face index.
+
+### Findings And Remediation
+
+No Blocker or Critical findings remain for the no-credentials path.
+
+**[Major] Raw `targetKey` could violate AWS `ExternalImageId` constraints**
+
+Fix: the provider no longer sends raw `targetKey` as `ExternalImageId`. The API keeps `targetKey` as the domain/result identifier and maps Rekognition matches through temporary `FaceId` values only during the job.
+
+**[Major] Face search audit requirements were documented but not wired**
+
+Fix: the face search controller now records sanitized `face_search.created` and `face_search.result_read` audit events. Metadata contains profile/status/count fields only, not manifest content, consent IDs, S3 paths, `FaceId` or credentials.
+
+**[Minor] AWS release safety lacked a direct regression case**
+
+Fix: production safety tests now include `AwsRekognition:AllowUserCredentials=true` as a forbidden option.
+
+### Credential Boundary
+
+The repository is ready for credential integration, but a real AWS smoke test remains intentionally pending until external credentials, a private S3 bucket and a Rekognition collection are provided.
+
+### Validation Commands
+
+```powershell
+dotnet build DeValpo.MediaIntelligence.sln
+dotnet test DeValpo.MediaIntelligence.sln
+python -m mkdocs build --strict
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ci\secret-scan.ps1 -Root .
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ci\validate-release-config.ps1 -Root .
+docker compose -f deploy\docker-compose.yml config --quiet
+```
+
+Expected result:
+
+- Build and tests pass.
+- Docs build succeeds.
+- Secret and release config checks pass.
+- Compose config is valid.
+- Real AWS smoke remains pending credentials/resources only.

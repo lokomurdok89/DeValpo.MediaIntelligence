@@ -258,6 +258,9 @@
   <data name="AwsRekognitionCleanupFailed" xml:space="preserve">
     <value>AWS Rekognition cleanup failed.</value>
   </data>
+  <data name="AwsRekognitionCleanupFailedFor" xml:space="preserve">
+    <value>AWS Rekognition cleanup failed for temporary {0}.</value>
+  </data>
   <data name="WebhookTargetNotLoaded" xml:space="preserve">
     <value>Webhook target was not loaded.</value>
   </data>

@@ -102,6 +102,11 @@ public sealed class AwsRekognitionStatusService(
             missing.Add(nameof(options.MinSimilarity));
         }
 
+        if (!options.UsePolling)
+        {
+            missing.Add(nameof(options.UsePolling));
+        }
+
         return missing;
     }
 

@@ -40,6 +40,9 @@ internal sealed class AwsCredentialProvider : IAwsCredentialProvider
         return credentials;
     }
 
+    /// <summary>
+    /// Checks whether an AWS credential source exists without loading secret values.
+    /// </summary>
     public bool IsCredentialSourcePresent(AwsRekognitionOptions options)
     {
         if (!string.IsNullOrWhiteSpace(options.CredentialsPath))
@@ -66,6 +69,9 @@ internal sealed class AwsCredentialProvider : IAwsCredentialProvider
             File.Exists(Path.Combine(home, ".aws", "credentials"));
     }
 
+    /// <summary>
+    /// Checks whether the configured shared credentials file exists.
+    /// </summary>
     public bool IsCredentialFilePresent(AwsRekognitionOptions options)
     {
         return !string.IsNullOrWhiteSpace(options.CredentialsPath) && File.Exists(options.CredentialsPath);

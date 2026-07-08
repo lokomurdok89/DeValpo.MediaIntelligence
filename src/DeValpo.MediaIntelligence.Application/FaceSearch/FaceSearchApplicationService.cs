@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DeValpo.MediaIntelligence.Application.Abstractions;
+using DeValpo.MediaIntelligence.Application.FaceSearch.Models;
 using DeValpo.MediaIntelligence.Application.Resources;
 using DeValpo.MediaIntelligence.Application.VideoSearch;
 using DeValpo.MediaIntelligence.Contracts;

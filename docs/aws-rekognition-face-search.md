@@ -44,8 +44,6 @@ AwsRekognition__PollingIntervalSeconds=5
 AwsRekognition__PollingTimeoutSeconds=900
 AwsRekognition__StagingPrefix=face-search
 AwsRekognition__DeleteStagedObjectsAfterProcessing=true
-AwsRekognition__SnsTopicArn=
-AwsRekognition__RoleArn=
 ```
 
 Validar status basico:
@@ -110,15 +108,12 @@ El sistema debe devolver rangos de tiempo donde AWS encuentra una cara similar a
 | Recurso | Uso |
 | --- | --- |
 | AWS Account | Cuenta activa con billing habilitado. |
-| Region | Region unica para S3, Rekognition, SNS/SQS. Recomendado inicial: `us-east-1`. |
+| Region | Region unica para S3 y Rekognition. Recomendado inicial: `us-east-1`. |
 | S3 bucket privado | Staging para videos e imagenes de referencia. |
-| Rekognition collection | Contenedor de vectores faciales indexados por `targetKey`. |
+| Rekognition collection | Contenedor temporal de vectores faciales para el job. |
 | IAM user/role app | Permite subir a S3, indexar caras y consultar resultados. |
-| IAM service role | Permite a Rekognition Video publicar en SNS si se usa modo async con notificaciones. |
-| SNS topic | Notificacion de termino de analisis de video. |
-| SQS queue | Cola suscrita a SNS para que el worker procese completions. |
 
-Para MVP rapido se puede usar polling con `GetFaceSearch` y dejar SNS/SQS para la fase producto.
+V1 usa polling con `GetFaceSearch`. SNS/SQS queda reservado para una fase posterior porque requiere infraestructura adicional.
 
 ## Permisos Minimos
 
@@ -134,16 +129,6 @@ rekognition:DeleteFaces
 rekognition:ListFaces
 rekognition:StartFaceSearch
 rekognition:GetFaceSearch
-iam:PassRole
-```
-
-Si se habilita SNS/SQS:
-
-```text
-sns:Publish
-sqs:ReceiveMessage
-sqs:DeleteMessage
-sqs:GetQueueAttributes
 ```
 
 ## Configuracion Con AWS Real
@@ -156,13 +141,14 @@ AwsRekognition__FaceSearchEnabled=true
 AwsRekognition__Region=<aws-region>
 AwsRekognition__BucketName=<private-s3-bucket>
 AwsRekognition__CollectionId=<rekognition-collection-id>
+AwsRekognition__CredentialsPath=/run/secrets/aws-credentials
+AwsRekognition__ProfileName=<profile-name>
 AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
-AwsRekognition__SnsTopicArn=
-AwsRekognition__RoleArn=
 ```
 
 No versionar access keys. Para desarrollo local usar AWS CLI profile o variables seguras fuera del repo. Para produccion usar roles administrados o secret manager.
+`UsePolling=true` es obligatorio en v1; `SnsTopicArn` y `RoleArn` no son usados por el worker actual.
 
 Validar remoto:
 
@@ -307,8 +293,8 @@ Resultado esperado:
 - No mezclar resultados de Google `VisibleNumber` con AWS `FaceReference`.
 - No guardar imagenes de referencia permanentemente salvo definicion explicita de retencion.
 - Registrar auditoria de consentimiento, indexacion, busqueda, resultado leido y borrado.
-- Borrar objetos temporales de S3 despues de completar o fallar el job.
-- Permitir `DeleteFaces` por target/job cuando el consentimiento se revoque.
+- Borrar objetos temporales de S3 y caras indexadas temporales despues de completar o fallar el job.
+- La revocacion posterior por target/job queda fuera de v1 porque la API no persiste `FaceId`; si se define un indice persistente, esa fase debe agregar almacenamiento y borrado por consentimiento.
 - No devolver coincidencias fake.
 
 ## QA Sin Credenciales
@@ -343,6 +329,6 @@ Antes de ejecutar un smoke test real:
 2. S3 bucket privado creado.
 3. Rekognition collection creada.
 4. Permisos IAM definidos.
-5. Se decide si MVP usa polling o SNS/SQS.
+5. `UsePolling=true` configurado; SNS/SQS no aplica a v1.
 6. Existe forma externa de emitir `consentReferenceId`.
 7. Existe imagen real de referencia y video real para smoke test local.

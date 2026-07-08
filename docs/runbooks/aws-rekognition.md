@@ -44,6 +44,8 @@ AwsRekognition__StagingPrefix=face-search
 AwsRekognition__DeleteStagedObjectsAfterProcessing=true
 ```
 
+V1 usa polling obligatorio con `GetFaceSearch`; `SnsTopicArn` y `RoleArn` no son usados por el worker actual.
+
 ## Validar Recursos AWS
 
 ```powershell
@@ -116,3 +118,4 @@ curl.exe "http://localhost:8085/api/v1/face-search-jobs/<jobId>/result" `
 - No poner nombre, RUT, email, telefono, userId ni personId en el manifest.
 - El resultado no expone `FaceId`, access keys, bucket internals ni rutas de credenciales.
 - Con `DeleteStagedObjectsAfterProcessing=true`, la API elimina objetos S3 temporales al terminar o fallar el procesamiento.
+- Las caras indexadas se eliminan al cerrar el job; no existe indice persistente ni revocacion posterior por `targetKey` en v1.
