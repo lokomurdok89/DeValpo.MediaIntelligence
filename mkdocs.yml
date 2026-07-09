@@ -74,6 +74,7 @@ plugins:
             Referencia: Reference
             Guia de implementacion: Implementation guide
             Credenciales y perfiles cloud: Cloud credentials and profiles
+            Credenciales cloud para produccion: Production cloud credentials
             Referencias cloud y staging: Cloud references and staging
             API: API
             Busqueda de targets en video: Video target search
@@ -145,6 +146,7 @@ nav:
   - Referencia:
       - Guia de implementacion: reference/implementation-guide.md
       - Credenciales y perfiles cloud: reference/cloud-identities-and-provider-profiles.md
+      - Credenciales cloud para produccion: reference/production-cloud-credentials.md
       - Flujos de endpoints: reference/api-endpoint-flows.md
       - Ruta MVP video real: reference/video-mvp-real-route.md
 

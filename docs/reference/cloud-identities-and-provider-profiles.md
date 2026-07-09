@@ -2,6 +2,8 @@
 
 Esta guia documenta como se obtienen y configuran las identidades de Google Cloud y AWS usadas por `DeValpo.MediaIntelligence`, y como se conectan con los perfiles internos de la API. Sirve como base para futuras integraciones y puestas en produccion.
 
+Para el checklist operativo de staging/produccion, rotacion de llaves y permisos runtime, ver [Credenciales cloud para produccion](production-cloud-credentials.md).
+
 ## Conceptos Que No Deben Mezclarse
 
 | Concepto | Donde vive | Uso |

@@ -1,5 +1,7 @@
 # Google Document AI Runbook
 
+For production credential rules, service account handling and key rotation, see [Production cloud credentials](../reference/production-cloud-credentials.md).
+
 ## Symptoms
 
 - `/ready` reports `google-document-ai` as `Unhealthy`.

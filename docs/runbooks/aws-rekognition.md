@@ -2,6 +2,8 @@
 
 Esta guia deja AWS funcionando igual que Google: credenciales fuera del repo, montadas como secreto local y configuradas por variables.
 
+Para el paso a produccion, permisos runtime y rotacion de llaves, ver [Credenciales cloud para produccion](../reference/production-cloud-credentials.md).
+
 ## Archivos
 
 Seguro para versionar:
@@ -59,6 +61,7 @@ Permisos minimos:
 ```text
 s3:PutObject
 s3:GetObject
+s3:ListBucket
 s3:GetBucketLocation
 rekognition:DescribeCollection
 rekognition:IndexFaces
@@ -66,6 +69,8 @@ rekognition:DeleteFaces
 rekognition:StartFaceSearch
 rekognition:GetFaceSearch
 ```
+
+Nota: para el flujo de video `StartFaceSearch`/`GetFaceSearch`, AWS puede requerir `Resource: "*"` en esas acciones de job. Mantener ese wildcard solo para esas acciones y no extenderlo a S3 ni a permisos administrativos.
 
 ## Validar API
 
