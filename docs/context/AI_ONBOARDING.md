@@ -5,7 +5,7 @@ other AI agent working in `DeValpo.MediaIntelligence`.
 
 ## Read First
 
-1. `docs/context/PROJECT_IDENTITY.md`
+1. `docs/context/PROJECT_CONTEXT.md`
 2. `docs/context/ACTIVE_DECISIONS.md`
 3. `docs/context/CURRENT_STATE.md`
 4. `README.md` for user-facing repo entry points.
@@ -34,7 +34,7 @@ other AI agent working in `DeValpo.MediaIntelligence`.
 
 ## Choose Documentation By Task
 
-- General orientation: use this file plus `PROJECT_IDENTITY`, `ACTIVE_DECISIONS`
+- General orientation: use this file plus `PROJECT_CONTEXT`, `ACTIVE_DECISIONS`
   and `CURRENT_STATE`.
 - Feature work: create or update a spec in `docs/specs/` first.
 - API work: read `docs/api.md` and the matching contract/controller files.

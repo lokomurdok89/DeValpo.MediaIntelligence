@@ -4,15 +4,15 @@ This documentation is organized to keep context small and route quickly to the r
 
 ## Minimal Codex reading
 
-1. [Minimal context](context/codex-minimal.md)
-2. [Active decisions](context/active-decisions.md)
-3. [Current architecture](context/architecture-current.md)
+1. [Project context](context/PROJECT_CONTEXT.md)
+2. [Active decisions](context/ACTIVE_DECISIONS.md)
+3. [Implemented architecture](architecture/ARCHITECTURE.md)
 4. [API](api.md)
 5. One module under `modules/` for the current task.
 
 ## Backend
 
-- [Current architecture](context/architecture-current.md)
+- [Processing flows](architecture/PROCESSING_FLOWS.md)
 - [API](api.md)
 - [Data model](data-model.md)
 - [Operations](operations.md)

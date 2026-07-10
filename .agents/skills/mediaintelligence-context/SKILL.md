@@ -13,7 +13,7 @@ description: Use for orientation in DeValpo.MediaIntelligence before feature, bu
 ## Read
 
 - `docs/context/AI_ONBOARDING.md`
-- `docs/context/PROJECT_IDENTITY.md`
+- `docs/context/PROJECT_CONTEXT.md`
 - `docs/context/ACTIVE_DECISIONS.md`
 - `docs/context/CURRENT_STATE.md`
 - Task-specific module docs only after the first pass.

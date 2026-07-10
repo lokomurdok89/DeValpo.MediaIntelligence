@@ -51,12 +51,17 @@ plugins:
             Inicio: Home
             Contexto: Context
             AI onboarding: AI onboarding
-            Identidad del proyecto: Project identity
+            Contexto del proyecto: Project context
             Estado actual: Current state
             Decisiones IA: AI decisions
-            Contexto minimo: Minimal context
-            Decisiones vigentes: Active decisions
-            Arquitectura actual: Current architecture
+            Desarrollo: Development
+            Guia de desarrollo: Development guide
+            Guia de configuracion: Configuration guide
+            Estrategia de testing: Testing strategy
+            Estandares: Standards
+            Guia de revision: Code review guide
+            Definition of Done: Definition of Done
+            Backlog de ingenieria: Engineering backlog
             Specs: Specs
             ADR: ADR
             Prompts IA: AI prompts
@@ -109,12 +114,9 @@ nav:
   - Inicio: index.md
   - Contexto:
       - AI onboarding: context/AI_ONBOARDING.md
-      - Identidad del proyecto: context/PROJECT_IDENTITY.md
+      - Contexto del proyecto: context/PROJECT_CONTEXT.md
       - Estado actual: context/CURRENT_STATE.md
       - Decisiones IA: context/ACTIVE_DECISIONS.md
-      - Contexto minimo: context/codex-minimal.md
-      - Decisiones vigentes: context/active-decisions.md
-      - Arquitectura actual: context/architecture-current.md
   - Specs: specs/README.md
   - ADR: adr/README.md
   - Prompts IA:
@@ -138,7 +140,18 @@ nav:
       - Image batch search: image-batch-search.md
   - Arquitectura:
       - Arquitectura: architecture.md
+      - Arquitectura implementada: architecture/ARCHITECTURE.md
+      - Flujos de procesamiento: architecture/PROCESSING_FLOWS.md
       - Modelo de datos: data-model.md
+  - Desarrollo:
+      - Guia de desarrollo: development/DEVELOPMENT_GUIDE.md
+      - Guia de configuracion: development/CONFIGURATION_GUIDE.md
+  - Testing:
+      - Estrategia de testing: testing/TESTING_STRATEGY.md
+  - Estandares:
+      - Guia de revision: standards/CODE_REVIEW_GUIDE.md
+      - Definition of Done: standards/DEFINITION_OF_DONE.md
+  - Backlog de ingenieria: backlog/ENGINEERING_BACKLOG.md
   - Seguridad: security.md
   - Operacion: operations.md
   - QA: qa.md

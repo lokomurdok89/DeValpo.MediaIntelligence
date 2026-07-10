@@ -4,15 +4,15 @@ Esta documentacion esta organizada para leer poco contexto y llegar rapido al mo
 
 ## Lectura minima para Codex
 
-1. [Contexto minimo](context/codex-minimal.md)
-2. [Decisiones vigentes](context/active-decisions.md)
-3. [Arquitectura actual](context/architecture-current.md)
+1. [Contexto del proyecto](context/PROJECT_CONTEXT.md)
+2. [Decisiones vigentes](context/ACTIVE_DECISIONS.md)
+3. [Arquitectura implementada](architecture/ARCHITECTURE.md)
 4. [API](api.md)
 5. Un modulo bajo `modules/` segun la tarea.
 
 ## Backend
 
-- [Arquitectura actual](context/architecture-current.md)
+- [Flujos de procesamiento](architecture/PROCESSING_FLOWS.md)
 - [API](api.md)
 - [Modelo de datos](data-model.md)
 - [Operacion](operations.md)

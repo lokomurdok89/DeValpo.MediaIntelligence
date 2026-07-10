@@ -1,14 +1,10 @@
 # Current State
 
-## Branch
+## Live Git State
 
-`agent/video-e2e-aws-face-gating-fixes`
-
-## Latest Implemented Module
-
-The latest local commit is `Add cloud asset staging and image batch search`.
-Recent work also includes AWS Rekognition face search hardening and video E2E
-guardrails.
+This document intentionally does not store a branch name, commit SHA, pull
+request count or working-tree status. Those values are temporary: verify them
+with `git branch --show-current`, `git status --short --branch` and `git log`.
 
 ## Operating State
 
@@ -18,10 +14,6 @@ guardrails.
 - Docs use MkDocs Material through `mkdocs.yml`.
 - Active modules include document analysis, video search, face search, image
   batch search and cloud assets.
-
-## Open PRs
-
-No open PRs were returned by `gh pr list` during this onboarding update.
 
 ## Recommended Next Work
 
@@ -37,6 +29,7 @@ No open PRs were returned by `gh pr list` during this onboarding update.
   credentials outside `secrets/`.
 - Cross-cloud staging must preserve lifecycle-owned cleanup semantics.
 - Public contract terms must stay stable, especially `targetKey`.
+- Production readiness gaps are tracked in `../backlog/ENGINEERING_BACKLOG.md`.
 
 ## Known Validations
 

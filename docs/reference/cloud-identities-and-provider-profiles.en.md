@@ -113,8 +113,8 @@ Runtime settings:
 AwsRekognition__Enabled=true
 AwsRekognition__FaceSearchEnabled=true
 AwsRekognition__Region=us-east-1
-AwsRekognition__BucketName=devalpo-mediaintelligence-dev-aws-rekognition-<account-id>
-AwsRekognition__CollectionId=devalpo-mediaintelligence-dev-face-search
+AwsRekognition__BucketName=<aws-rekognition-staging-bucket>
+AwsRekognition__CollectionId=<aws-rekognition-collection-id>
 AwsRekognition__CredentialsPath=/run/secrets/aws-credentials
 AwsRekognition__ProfileName=devalpo-mediaintelligence-dev
 AwsRekognition__AllowUserCredentials=true
