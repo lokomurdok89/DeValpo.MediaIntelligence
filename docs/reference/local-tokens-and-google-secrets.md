@@ -460,7 +460,7 @@ Open `deploy\.env` and set:
 ```text
 ASPNETCORE_ENVIRONMENT=Development
 ASPNETCORE_URLS=http://+:8080
-ConnectionStrings__MediaIntelligence=Host=postgres;Port=5432;Database=media_intelligence;Username=postgres;Password=postgres
+ConnectionStrings__MediaIntelligence=Host=postgres;Port=5432;Database=media_intelligence;Username=postgres;Password=<local-postgres-password>
 Database__ApplyMigrationsOnStartup=true
 Storage__Provider=Local
 Storage__LocalRootPath=/app/storage/media-assets
@@ -474,14 +474,14 @@ GoogleDocumentAi__AllowUserCredentials=true
 
 Jwt__Issuer=DeValpo.MediaIntelligence
 Jwt__Audience=DeValpo.MediaIntelligence.Api
-Jwt__SigningKey=local-dev-secret-change-me-1234567890
+Jwt__SigningKey=REPLACE_WITH_LOCAL_DEV_JWT_SIGNING_KEY_AT_LEAST_32_BYTES
 Jwt__RequireHttpsMetadata=false
 
 MediaAnalysis__MaxFileSizeBytes=104857600
 Swagger__Enabled=true
 POSTGRES_DB=media_intelligence
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
+POSTGRES_PASSWORD=<local-postgres-password>
 ```
 
 The JWT signing key must have at least 32 characters.

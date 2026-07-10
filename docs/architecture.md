@@ -1,6 +1,9 @@
 # Arquitectura
 
-DeValpo.MediaIntelligence es una API independiente para analizar documentos, imagenes, videos y futuros buffers de video en vivo.
+DeValpo.MediaIntelligence es una API independiente para analizar documentos,
+imagenes y videos. Este documento es el resumen de producto; la arquitectura
+implementada y los flujos de runtime viven en [Arquitectura implementada](architecture/ARCHITECTURE.md)
+y [Flujos de procesamiento](architecture/PROCESSING_FLOWS.md).
 
 ## Capas
 

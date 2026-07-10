@@ -7,7 +7,7 @@ Implement one feature only in this conversation.
 
 Read first:
 - docs/context/AI_ONBOARDING.md
-- docs/context/PROJECT_IDENTITY.md
+- docs/context/PROJECT_CONTEXT.md
 - docs/context/ACTIVE_DECISIONS.md
 - docs/context/CURRENT_STATE.md
 - The relevant docs/specs file for this feature

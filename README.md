@@ -15,6 +15,10 @@ GitHub Pages is not currently published for this repository because it is privat
 | --- | --- |
 | Start from the documentation home | [docs/index.md](docs/index.md) |
 | Run the product locally | [docs/getting-started.md](docs/getting-started.md) |
+| Develop or configure the service | [docs/development/DEVELOPMENT_GUIDE.md](docs/development/DEVELOPMENT_GUIDE.md) and [configuration guide](docs/development/CONFIGURATION_GUIDE.md) |
+| Understand implemented architecture and flows | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) and [processing flows](docs/architecture/PROCESSING_FLOWS.md) |
+| Follow testing, review and completion standards | [docs/testing/TESTING_STRATEGY.md](docs/testing/TESTING_STRATEGY.md) and [docs/standards/](docs/standards/) |
+| Review engineering gaps | [docs/backlog/ENGINEERING_BACKLOG.md](docs/backlog/ENGINEERING_BACKLOG.md) |
 | Configure Google/AWS users, credentials and profiles | [docs/reference/cloud-identities-and-provider-profiles.md](docs/reference/cloud-identities-and-provider-profiles.md) |
 | Configure cloud references and staging | [docs/cloud-asset-references-and-staging.md](docs/cloud-asset-references-and-staging.md) |
 | Generate Google credentials and tokens | [docs/reference/local-tokens-and-google-secrets.md](docs/reference/local-tokens-and-google-secrets.md) |
@@ -129,3 +133,6 @@ Run the secret scan before pushing:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ci\secret-scan.ps1 -Root .
 ```
+
+Agent instructions and current technical context start at [AGENTS.md](AGENTS.md)
+and [docs/context/AI_ONBOARDING.md](docs/context/AI_ONBOARDING.md).
