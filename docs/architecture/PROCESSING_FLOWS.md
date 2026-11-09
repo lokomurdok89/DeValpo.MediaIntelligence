@@ -49,3 +49,93 @@ The resolver rejects public/signed URLs and buckets outside configured allow-lis
 Human-review tasks are created and progressed through protected endpoints.
 Webhook targets are admin-managed; deliveries contain a normalized event payload
 and are signed with HMAC-SHA256 before sending.
+
+## Document Analysis Overview
+
+Implementation diagrams, not recordings of a new execution. Authentication is
+covered by the [API access sequence](../api.md).
+
+```mermaid
+flowchart TD
+    A["Admin creates client"] --> B["Client receives API key once"]
+    B --> C["Client requests JWT"]
+    C --> D["Client uploads document"]
+    D --> E["API validates file and permissions"]
+    E --> F["API creates AnalysisJob Pending"]
+    F --> G["API stores MediaAsset"]
+    G --> H["Worker claims job"]
+    H --> I["Orchestrator resolves profile"]
+    I --> J["Skill calls Google Document AI"]
+    J --> K["Normalized result"]
+    K --> L{"Requires review?"}
+    L -- "yes" --> M["HumanReviewTask"]
+    L -- "no" --> N["Job Completed"]
+    M --> O["Operator resolves review"]
+    O -- "Approve / Correct" --> N
+    O -- "Reject" --> R["Job Failed"]
+    R --> P
+    N --> P["Client reads result"]
+    N --> Q["Optional webhook"]
+```
+
+## Document Analysis Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Client App
+    participant API as AnalyzeController
+    participant Access as RequestClientAccessService
+    participant Validation as UploadedFileValidationService
+    participant App as MediaAnalysisApplicationService
+    participant Storage as LocalMediaAssetStorage
+    participant DB as PostgreSQL
+    participant Worker as AnalysisJobWorker
+    participant Orchestrator as MediaAnalysisOrchestrator
+    participant Skill as GoogleDocumentAiDocumentOcrSkill
+    participant Google as Google Document AI
+
+    Client->>API: POST /api/v1/analyze
+    API->>Validation: Validate file
+    Validation-->>API: Valid
+    API->>Access: Validate client/profile access
+    Access-->>API: Allowed
+    API->>App: EnqueueAsync
+    App->>DB: Insert AnalysisJob Pending
+    App->>Storage: Save file
+    App->>DB: Insert MediaAsset
+    App-->>API: jobId
+    API-->>Client: 202 Accepted
+    Worker->>DB: Claim Pending job
+    Worker->>Storage: Open file
+    Worker->>Orchestrator: Analyze profile
+    Orchestrator->>Skill: Execute OCR skill
+    Skill->>Google: ProcessDocument
+    Google-->>Skill: OCR response
+    Skill-->>Orchestrator: Extracted fields and issues
+    Orchestrator-->>Worker: Normalized result
+    Worker->>DB: Persist result and status
+```
+
+## Webhook Delivery Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Admin
+    participant API as API
+    participant DB as PostgreSQL
+    participant Worker as WebhookDeliveryWorker
+    participant Signer as WebhookSignatureService
+    participant Receiver as Client Webhook
+
+    Admin->>API: POST /api/v1/admin/clients/{clientKey}/webhook-targets
+    API->>DB: Store target and signing secret
+    API-->>Admin: 201 Created
+    DB-->>Worker: Pending delivery
+    Worker->>Signer: Sign timestamp + dot + raw payload
+    Signer-->>Worker: sha256 signature
+    Worker->>Receiver: POST analysis.completed
+    Receiver-->>Worker: 2xx
+    Worker->>DB: Mark delivery Delivered
+```

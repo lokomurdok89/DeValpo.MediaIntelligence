@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Búsqueda configurable · Admisión propuesta",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": ".archify/sequence-busqueda-configurable-20261109-124422/alta/alta.html",
+    "repository": {
+      "url": "https://github.com/lokomurdok89/DeValpo.MediaIntelligence.git",
+      "revision": "2c27a288e459378514b52f676c16080c95be250e",
+      "link_mode": "local-only"
+    },
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "cliente",
+      "type": "external",
+      "label": "Cliente",
+      "sublabel": "Integrador",
+      "sources": [
+        {
+          "path": "docs/api.md",
+          "line": 5,
+          "end_line": 24,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API",
+      "sublabel": "HTTP y JWT",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Api/Controllers/ImageBatchSearchJobsController.cs",
+          "line": 40,
+          "end_line": 137,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "type": "security",
+      "label": "Aplicación",
+      "sublabel": "Tipo y política",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Application/CloudAssets/AssetReferenceResolver.cs",
+          "line": 13,
+          "end_line": 63,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "gcs",
+      "type": "cloud",
+      "label": "GCS",
+      "sublabel": "Objetos",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/CloudAssets/GcsAssetBrowser.cs",
+          "line": 17,
+          "end_line": 86,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Job y snapshot",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/Persistence/Repositories/ImageBatchSearchJobRepository.cs",
+          "line": 17,
+          "end_line": 20,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 185,
+      "to": 325,
+      "label": "Validación · rechazo terminal si no autorizado"
+    },
+    {
+      "from": 340,
+      "to": 560,
+      "label": "Solo solicitud autorizada y dentro de límites"
+    }
+  ],
+  "messages": [
+    {
+      "id": "post",
+      "from": "cliente",
+      "to": "api",
+      "y": 200,
+      "label": "POST targets",
+      "variant": "emphasis"
+    },
+    {
+      "id": "validate",
+      "from": "api",
+      "to": "app",
+      "y": 235,
+      "label": "Tipo + acceso",
+      "variant": "security"
+    },
+    {
+      "id": "deny",
+      "from": "app",
+      "to": "api",
+      "y": 270,
+      "label": "403 si no",
+      "variant": "security"
+    },
+    {
+      "id": "reject",
+      "from": "api",
+      "to": "cliente",
+      "y": 305,
+      "label": "403; fin",
+      "variant": "return"
+    },
+    {
+      "id": "resolve",
+      "from": "app",
+      "to": "gcs",
+      "y": 355,
+      "label": "Si OK: listar",
+      "variant": "security"
+    },
+    {
+      "id": "metadata",
+      "from": "gcs",
+      "to": "app",
+      "y": 390,
+      "label": "Metadata",
+      "variant": "return"
+    },
+    {
+      "id": "snapshot",
+      "from": "app",
+      "to": "db",
+      "y": 425,
+      "label": "Si límites OK: guardar",
+      "variant": "emphasis"
+    },
+    {
+      "id": "commit",
+      "from": "db",
+      "to": "app",
+      "y": 460,
+      "label": "Commit: Pending",
+      "variant": "return"
+    },
+    {
+      "id": "accepted",
+      "from": "app",
+      "to": "api",
+      "y": 495,
+      "label": "jobId",
+      "variant": "return"
+    },
+    {
+      "id": "return",
+      "from": "api",
+      "to": "cliente",
+      "y": 530,
+      "label": "202 + id",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "api",
+      "from": 200,
+      "to": 535,
+      "type": "backend"
+    },
+    {
+      "participant": "app",
+      "from": 235,
+      "to": 500,
+      "type": "security"
+    },
+    {
+      "participant": "gcs",
+      "from": 350,
+      "to": 395,
+      "type": "cloud"
+    },
+    {
+      "participant": "db",
+      "from": 420,
+      "to": 465,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Propuesta F0 · pendiente de aprobación",
+      "items": [
+        "Las fuentes ubican responsabilidades existentes; no certifican este comportamiento objetivo.",
+        "Reglas, límites, cobertura y políticas nuevas requieren aprobación e implementación posterior.",
+        "No es una captura de ejecución. El visor puede conservar controles en inglés."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Condiciones de admisión",
+      "items": [
+        "JWT válido antes de llamar a Aplicación; sin JWT válido: 401 y fin.",
+        "Ramas excluyentes: 403 termina la solicitud y no hay lectura GCS ni OCR.",
+        "Autorizar cliente, perfil, bucket, prefijo y cada objeto antes de resolver.",
+        "Formato/proveedor inválido: 400; bytes: 413; capacidad: 429; indisponible: 503.",
+        "Validar compatibilidad: OCR numérico/palabras/códigos o FaceReference con AWS; nunca fallback silencioso."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Solicitud aceptada",
+      "items": [
+        "Sólo después de validar límites e identidad, persistir snapshot con generation.",
+        "Límites del primer piloto: 200 fotos, 20 dorsales, 10 MiB/foto y 200 MiB/lote; no son límites faciales.",
+        "202 confirma persistencia, no resultado OCR. El worker procesa después.",
+        "Esta admisión GCS corresponde a OCR; la ruta facial y sus referencias se detallan en el diagrama facial."
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Producto amplio · piloto acotado",
+      "items": [
+        "VisibleNumber y FaceReference existen; palabras/códigos y matchingPolicy son propuestas, no valores API actuales.",
+        "El perfil decide modos habilitados: primero dorsales; luego palabras/códigos con contratos y evaluación propios.",
+        "Persistir política efectiva junto al snapshot es una propuesta; 202 nunca certifica coincidencias."
+      ]
+    }
+  ]
+}

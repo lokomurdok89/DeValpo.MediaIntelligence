@@ -1,9 +1,8 @@
 # Arquitectura
 
 DeValpo.MediaIntelligence es una API independiente para analizar documentos,
-imagenes y videos. Este documento es el resumen de producto; la arquitectura
-implementada y los flujos de runtime viven en [Arquitectura implementada](architecture/ARCHITECTURE.md)
-y [Flujos de procesamiento](architecture/PROCESSING_FLOWS.md).
+imagenes y videos. Esta es la referencia canónica de arquitectura; las secuencias
+de runtime están en [Flujos de procesamiento](architecture/PROCESSING_FLOWS.md).
 
 ## Capas
 
@@ -84,3 +83,41 @@ flowchart LR
 - Los providers externos no proyectan directo a DTOs publicos; primero convierten respuestas del SDK a modelos canonicos de Application.
 - Los mappers que conocen SDKs externos viven en `Infrastructure/Providers/<Provider>/<Service>/Mappers`.
 - Usar nombres `ToDomain...` para convertir SDK/proveedor a modelo interno y `ToDto...` solo cuando el resultado sea un DTO de `Contracts`.
+
+## Composición Y Límites
+
+La solución contiene cinco proyectos productivos y uno de tests.
+`Api/Program.cs` compone `AddApplication()` y `AddInfrastructure()`, vincula
+opciones y configura JWT, Serilog, salud, controladores y workers activados por
+configuración. Los workers hoy se alojan en la API, no en servicios independientes.
+
+- Los controladores validan solicitudes/acceso y llaman a los casos de uso.
+- Application define interfaces de proveedor/storage y puede depender de Domain y Contracts, no de modelos SDK cloud.
+- Infrastructure implementa esas interfaces y concentra los mapeos SDK/EF.
+- Domain guarda estado normalizado, no credenciales ni respuestas crudas.
+- Contracts no expone tipos EF ni de proveedores cloud.
+
+## Persistencia Y Sistemas Externos
+
+`MediaIntelligenceDbContext` persiste clientes, hashes de API keys, perfiles,
+trabajos, metadatos de assets, resultados normalizados, revisiones, auditoría,
+retención y webhooks, además de entidades de video e imágenes por lotes.
+Las migraciones pertenecen a `Infrastructure/Persistence/Migrations`;
+PostgreSQL no almacena los binarios multimedia. Los uploads usan storage local
+configurado. Las referencias S3/GCS respetan allowlists de buckets y se realiza
+staging compatible con el proveedor cuando hace falta.
+
+## Puntos De Entrada Internos
+
+| Área | Servicios / interfaces principales |
+| --- | --- |
+| Acceso de clientes | `IClientAccessApplicationService`, `IClientAccessTokenService`, `IRequestClientAccessService` |
+| Ingesta / trabajos | `IUploadedFileValidationService`, `IMediaAnalysisApplicationService`, `IAnalysisJobApplicationService`, `IMediaAssetStorage` |
+| Orquestación | `IMediaAnalysisOrchestrator`, `IAnalysisProfileResolver`, `IMediaAnalysisSkill` |
+| Credenciales / clientes Google | `IGoogleCredentialProvider`, `IGoogleDocumentAiClientFactory`, `IGoogleDocumentAiStatusService` |
+| Revisión / callbacks | `IHumanReviewApplicationService`, `IWebhookDeliveryApplicationService`, `IWebhookDeliveryProcessor` |
+| Operación / gobierno | `IOperationalMetricsApplicationService`, `IAuditApplicationService`, `IRetentionApplicationService` |
+
+Las interfaces neutrales están separadas de sus implementaciones Infrastructure.
+[Configuración](development/CONFIGURATION_GUIDE.md) y
+[modelo de datos](data-model.md) detallan las opciones operativas y entidades.

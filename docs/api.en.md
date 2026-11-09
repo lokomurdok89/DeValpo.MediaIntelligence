@@ -90,3 +90,52 @@ It accepts multipart uploads for compatibility and `assetSelectorJson` / `refere
 - `/ready` validates dependencies.
 - `/api/v1/dev/token` exists only in `Development`.
 - Raw API keys are returned once; only their hash is stored afterwards.
+
+## Document Jobs, Review And Callbacks
+
+[Client onboarding](client-onboarding-guide.md) contains the create-client,
+one-time API key, JWT exchange and document upload examples. Document jobs use
+`POST /api/v1/analyze` (file plus profile) or `POST /api/v1/analysis-jobs`
+(job metadata without a file); read `/api/v1/analysis-jobs/{jobId}` and `/result`.
+`POST /api/v1/analysis-jobs/{jobId}/cancel` cancels a nonterminal document job.
+This lifecycle is not a claim that every search module exposes identical states.
+
+| Document state | Meaning |
+| --- | --- |
+| `Pending` / `Running` | Awaiting work / processing |
+| `Completed` | Result available; inspect `issues` as well |
+| `RequiresReview` | Human review required |
+| `Failed` / `Cancelled` | Terminal failure / cancellation |
+
+Document result fields include `confidence`, `requiresHumanReview`,
+`extractedFields`, `detectedEntities`, `detectedLabels`, `generatedClips` and
+`issues`. An empty `generatedClips` collection does not imply physical clips exist.
+`metadataJson` on upload accepts flat string metadata; keep sensitive data out.
+
+An operator/admin lists `/api/v1/human-review-tasks?status=Pending`, reads
+`/{taskId}`, then POSTs to `/{taskId}/start` and `/{taskId}/complete`.
+The completion body uses `decision` (`Approve`, `Correct` or `Reject`) and a
+`comment`; correction details follow the endpoint contract. See
+[endpoint flows](reference/api-endpoint-flows.md) for review and administration.
+
+Optional `analysis.completed` deliveries are signed with HMAC-SHA256 over the
+UTF-8 string `timestamp + "." + rawPayload`. Receiver headers:
+
+```text
+X-DeValpo-Event-Id: <delivery-id>
+X-DeValpo-Event-Type: analysis.completed
+X-DeValpo-Timestamp: <unix-seconds>
+X-DeValpo-Signature: sha256=<hex-hmac>
+```
+
+The payload contains `eventType`, `jobId`, `clientKey`, `profileKey`, `jobStatus`,
+`confidence`, `requiresHumanReview` and a relative `resultUrl`, not full OCR,
+raw provider data or credentials. Configure targets under
+`/api/v1/admin/clients/{clientKey}/webhook-targets`; inspect
+`/api/v1/webhook-deliveries` for delivery status. Do not assume this document
+callback contract covers every search workflow.
+
+Admin key rotation/revocation use POST
+`/api/v1/admin/clients/{clientKey}/api-keys/{apiKeyId}/rotate` and `/revoke`.
+Audit and retention routes are documented in the endpoint flows and onboarding
+guide; do not include raw API keys, face identifiers or OCR in shared logs.

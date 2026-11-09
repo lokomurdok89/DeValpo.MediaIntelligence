@@ -1,6 +1,6 @@
 # Release And Migration Runbook
 
-This runbook covers the Phase 10 release path for staging and production.
+This runbook covers the release path for staging and production.
 
 Cloud runtime identities, key rotation and minimum AWS/GCP permissions are covered in [Production cloud credentials](../reference/production-cloud-credentials.md).
 

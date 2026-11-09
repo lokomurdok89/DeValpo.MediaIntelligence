@@ -1,53 +1,46 @@
-# DeValpo MediaIntelligence Docs
+# MediaIntelligence
 
-Esta documentacion esta organizada para leer poco contexto y llegar rapido al modulo correcto.
+**Encuentra momentos en tus videos mediante una foto de referencia.**
+Un backend cloud-first que recibe referencias a medios privados, procesa
+trabajos asíncronos y devuelve coincidencias que tu interfaz puede mostrar.
 
-## Lectura minima para Codex
+![Vista ilustrada de resultados reales con video privado protegido](assets/demo/preview.svg)
 
-1. [Contexto del proyecto](context/PROJECT_CONTEXT.md)
-2. [Decisiones vigentes](context/ACTIVE_DECISIONS.md)
-3. [Arquitectura implementada](architecture/ARCHITECTURE.md)
-4. [API](api.md)
-5. Un modulo bajo `modules/` segun la tarea.
+## Pruébalo Sin Cloud
 
-## Backend
+La muestra incluida usa **39 registros reales en 32 timestamps** de una búsqueda
+AWS guardada. El video es un **reemplazo generado y etiquetado**: no incluye
+fotogramas, audio ni identidades del original. Muestra la navegación, no acredita
+precisión de reconocimiento facial.
 
-- [Flujos de procesamiento](architecture/PROCESSING_FLOWS.md)
-- [API](api.md)
-- [Modelo de datos](data-model.md)
-- [Operacion](operations.md)
+Desde la raíz del repositorio, con Python 3.10+:
 
-## AWS
+```powershell
+python scripts/local-viewer/serve.py --video docs/assets/demo/public-demo-media-withheld.mp4 --result docs/assets/demo/public-result.json
+```
 
-- [Face search](modules/face-search.md)
-- [Cloud assets](modules/cloud-assets.md)
-- [AWS Rekognition face search](aws-rekognition-face-search.md)
-- [Runbook AWS Rekognition](runbooks/aws-rekognition.md)
+Abre la URL `Visor local:` que imprime la terminal. Selecciona un hallazgo y pulsa
+**Reproducir desde aquí**. No necesitas cuenta AWS, credenciales, API ni base de datos.
 
-## Google
+## Explora El Proyecto
 
-- [Document analysis](modules/document-analysis.md)
-- [Video search](modules/video-search.md)
-- [Google Document AI runbook](runbooks/google-document-ai.md)
-- [Tokens y secretos Google](reference/local-tokens-and-google-secrets.md)
+| Quieres entender… | Empieza aquí |
+| --- | --- |
+| Qué devolvió la ejecución real | [Resultados y procedencia](examples/video-result-evidence.md) |
+| Cómo funciona cloud-first | [Arquitectura](architecture.md) y [referencias S3/GCS](cloud-asset-references-and-staging.md) |
+| Cómo consumirlo | [API](api.md) y [primeros pasos](getting-started.md) |
+| Cómo configurar reconocimiento facial | [AWS Rekognition](aws-rekognition-face-search.md) |
+| Qué aporta Google | [Búsqueda de video](video-target-search.md) y [análisis documental](modules/document-analysis.md) |
+| Cómo operarlo y proteger datos | [Operación](operations.md) y [seguridad](security.md) |
 
-## QA y release
+El recorrido demostrado es facial en video S3. Dorsales, palabras y códigos
+siguen el [alcance y dirección documentados](roadmap.md); no se presentan como
+una experiencia completa ya entregada. Los workers se alojan con la API:
+no se afirma autoescalado desplegado ni capacidad de carga medida.
 
-- [QA](qa.md)
-- [QA Review](qa-review.md)
-- [Release y migraciones](runbooks/release-and-migrations.md)
-- [GitHub CI/CD](github-ci-cd.md)
+## Para Colaboradores E IA
 
-## CloudAssets
-
-- [Cloud assets](modules/cloud-assets.md)
-- [Referencias cloud y staging](cloud-asset-references-and-staging.md)
-- [Credenciales y perfiles cloud](reference/cloud-identities-and-provider-profiles.md)
-
-## Referencia larga
-
-Los documentos extensos viven en [reference](reference/api-endpoint-flows.md) y solo deben abrirse cuando una tarea lo requiera.
-
-## Archivo historico
-
-Planes antiguos, QA por fases y scopes cerrados viven en `archive/`.
+[Contexto del proyecto](context/PROJECT_CONTEXT.md) ·
+[Decisiones vigentes](context/ACTIVE_DECISIONS.md) ·
+[Guía de desarrollo](development/DEVELOPMENT_GUIDE.md) ·
+[Flujos de procesamiento](architecture/PROCESSING_FLOWS.md)

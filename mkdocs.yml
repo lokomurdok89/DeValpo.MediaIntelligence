@@ -58,17 +58,11 @@ plugins:
             Guia de desarrollo: Development guide
             Guia de configuracion: Configuration guide
             Estrategia de testing: Testing strategy
-            Estandares: Standards
-            Guia de revision: Code review guide
-            Definition of Done: Definition of Done
             Backlog de ingenieria: Engineering backlog
             Specs: Specs
-            ADR: ADR
-            Prompts IA: AI prompts
-            Discovery ChatGPT: ChatGPT discovery
-            Feature Codex: Codex feature
-            Bugfix Codex: Codex bugfix
-            Review Codex: Codex review
+            Resultados guardados: Saved results
+            Alcance actual: Current scope
+            Busqueda configurable: Configurable search
             Primeros pasos: Getting started
             Modulos: Modules
             Cloud assets: Cloud assets
@@ -77,20 +71,17 @@ plugins:
             Video search: Video search
             Document analysis: Document analysis
             Referencia: Reference
-            Guia de implementacion: Implementation guide
             Credenciales y perfiles cloud: Cloud credentials and profiles
             Credenciales cloud para produccion: Production cloud credentials
             Referencias cloud y staging: Cloud references and staging
             API: API
             Busqueda de targets en video: Video target search
-            Ruta MVP video real: Real video MVP route
             AWS Rekognition face search: AWS Rekognition face search
             Image batch search: Image batch search
             Arquitectura: Architecture
             Modelo de datos: Data model
             Seguridad: Security
             Operacion: Operations
-            QA: QA
             Roadmap: Roadmap
 
 markdown_extensions:
@@ -112,65 +103,51 @@ markdown_extensions:
 
 nav:
   - Inicio: index.md
-  - Contexto:
-      - AI onboarding: context/AI_ONBOARDING.md
-      - Contexto del proyecto: context/PROJECT_CONTEXT.md
-      - Estado actual: context/CURRENT_STATE.md
-      - Decisiones IA: context/ACTIVE_DECISIONS.md
-  - Specs: specs/README.md
-  - ADR: adr/README.md
-  - Prompts IA:
-      - Discovery ChatGPT: prompts/chatgpt-discovery.md
-      - Feature Codex: prompts/codex-feature.md
-      - Bugfix Codex: prompts/codex-bugfix.md
-      - Review Codex: prompts/codex-review.md
+  - Resultados guardados: examples/video-result-evidence.md
   - Primeros pasos:
       - Primeros pasos: getting-started.md
       - Referencias cloud y staging: cloud-asset-references-and-staging.md
+  - Arquitectura:
+      - Arquitectura: architecture.md
+      - Flujos de procesamiento: architecture/PROCESSING_FLOWS.md
+      - Modelo de datos: data-model.md
+  - API:
+      - API: api.md
+      - Busqueda de targets en video: video-target-search.md
+      - AWS Rekognition face search: aws-rekognition-face-search.md
+      - Image batch search: image-batch-search.md
   - Modulos:
       - Cloud assets: modules/cloud-assets.md
       - Face search: modules/face-search.md
       - Image batch search: modules/image-batch-search.md
       - Video search: modules/video-search.md
       - Document analysis: modules/document-analysis.md
-  - API:
-      - API: api.md
-      - Busqueda de targets en video: video-target-search.md
-      - AWS Rekognition face search: aws-rekognition-face-search.md
-      - Image batch search: image-batch-search.md
-  - Arquitectura:
-      - Arquitectura: architecture.md
-      - Arquitectura implementada: architecture/ARCHITECTURE.md
-      - Flujos de procesamiento: architecture/PROCESSING_FLOWS.md
-      - Modelo de datos: data-model.md
+  - Seguridad: security.md
+  - Operacion: operations.md
+  - Referencia:
+      - Credenciales y perfiles cloud: reference/cloud-identities-and-provider-profiles.md
+      - Credenciales cloud para produccion: reference/production-cloud-credentials.md
+      - Flujos de endpoints: reference/api-endpoint-flows.md
   - Desarrollo:
       - Guia de desarrollo: development/DEVELOPMENT_GUIDE.md
       - Guia de configuracion: development/CONFIGURATION_GUIDE.md
   - Testing:
       - Estrategia de testing: testing/TESTING_STRATEGY.md
-  - Estandares:
-      - Guia de revision: standards/CODE_REVIEW_GUIDE.md
-      - Definition of Done: standards/DEFINITION_OF_DONE.md
-  - Backlog de ingenieria: backlog/ENGINEERING_BACKLOG.md
-  - Seguridad: security.md
-  - Operacion: operations.md
-  - QA: qa.md
   - Roadmap: roadmap.md
-  - Referencia:
-      - Guia de implementacion: reference/implementation-guide.md
-      - Credenciales y perfiles cloud: reference/cloud-identities-and-provider-profiles.md
-      - Credenciales cloud para produccion: reference/production-cloud-credentials.md
-      - Flujos de endpoints: reference/api-endpoint-flows.md
-      - Ruta MVP video real: reference/video-mvp-real-route.md
+  - Specs:
+      - Alcance actual: specs/s3-video-face-search-map.md
+      - Busqueda configurable: specs/bib-photo-search-pilot.md
+  - Backlog de ingenieria: backlog/ENGINEERING_BACKLOG.md
+  - Contexto:
+      - AI onboarding: context/AI_ONBOARDING.md
+      - Contexto del proyecto: context/PROJECT_CONTEXT.md
+      - Estado actual: context/CURRENT_STATE.md
+      - Decisiones IA: context/ACTIVE_DECISIONS.md
 
 not_in_nav: |
   client-onboarding-guide.md
   github-ci-cd*.md
   reference/local-tokens-and-google-secrets.md
-  archive/*.md
   profiles.md
-  qa-review.md
   skills.md
-  devalpo-mediaintelligence-qa/*.md
-  devalpo-mediaintelligence-qa/references/*.md
   runbooks/*.md

@@ -14,7 +14,7 @@ description: Use for QA, release readiness, CI/CD, docs validation, secret scann
 
 - `docs/context/AI_ONBOARDING.md`
 - `docs/context/CURRENT_STATE.md`
-- `docs/qa.md`
+- `docs/testing/TESTING_STRATEGY.md`
 - `docs/operations.md`
 - `.github/workflows/ci.yml`
 - `.github/workflows/docs.yml`

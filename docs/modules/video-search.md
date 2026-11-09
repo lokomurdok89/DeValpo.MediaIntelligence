@@ -19,4 +19,4 @@ Results are grouped by `targetKey` and include video time segments.
 ## Full reference
 
 - [Video target search](../video-target-search.md)
-- [Real video route](../reference/video-mvp-real-route.md)
+- [Google video configuration](../video-target-search.md)

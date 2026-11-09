@@ -16,3 +16,4 @@ test-results/
 playwright-report/
 site/
 mkdocs-serve*.log
+/outputs/private/

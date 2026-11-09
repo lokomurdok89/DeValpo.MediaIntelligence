@@ -1,4 +1,0 @@
-interface:
-  display_name: "Media Intelligence QA"
-  short_description: "Audit DeValpo MediaIntelligence product readiness."
-  default_prompt: "Run a product QA audit for DeValpo MediaIntelligence and produce prioritized findings."

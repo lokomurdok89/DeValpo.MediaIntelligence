@@ -29,9 +29,9 @@ repository unless a task explicitly broadens the scope.
 - `ACTIVE_DECISIONS.md`: decisions that constrain future work.
 - `CURRENT_STATE.md`: durable operating baseline and known gaps; verify live Git
   state with commands instead of copying branch names here.
-- `../architecture/ARCHITECTURE.md`: implemented components and boundaries.
+- `../architecture.en.md`: implemented components and boundaries.
 - `../architecture/PROCESSING_FLOWS.md`: implemented runtime flows.
-- `../development/`, `../testing/`, `../standards/` and `../backlog/`: working
+- `../development/`, `../testing/` and `../backlog/`: working
   practices, quality expectations and pending engineering work.
 
 ## Context Boundaries

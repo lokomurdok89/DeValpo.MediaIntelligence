@@ -8,17 +8,20 @@ The operator must provide:
 
 - Client key, for example `first-client`.
 - Display name and contact email.
-- Allowed profile keys. For the first release, use `generic-document-ocr-v1` unless compatibility requires `invoice-extraction-v1`.
+- Allowed profile keys. Use `event-face-search-v1` for the facial-video pilot, `event-video-target-search-v1` for Google video search, or `generic-document-ocr-v1` for document OCR; grant only the intended profiles.
 - Webhook URL and signing secret if the client wants callbacks.
 - Retention period in days.
 
 The platform must already have:
 
 - PostgreSQL reachable.
-- Google Document AI enabled and ready.
+- The selected provider configured (AWS for facial video; Google Document AI only for document OCR).
 - JWT signing key supplied through deployment secrets.
 - Swagger disabled or protected in release environments.
 - Migrations applied through the release runbook.
+
+For a local admin token, see [Getting Started](getting-started.md). The example
+below is for document OCR; replace its allowed profile for a different workflow.
 
 ## Create Client
 
@@ -42,6 +45,9 @@ curl.exe -X POST "https://<host>/api/v1/auth/token" `
 ```
 
 Use the returned `accessToken` as `Authorization: Bearer <token>`.
+
+For facial video, follow [AWS face search](aws-rekognition-face-search.md);
+for visible video targets, follow [Google video search](video-target-search.md).
 
 ## Submit A Document
 
@@ -90,9 +96,10 @@ curl.exe -X PUT "https://<host>/api/v1/admin/clients/<clientKey>/retention-polic
 
 Retention should be executed by an operator according to the client's data policy.
 
-## Operational Smoke Test
+## Optional Onboarding Checks
 
-For each onboarded client:
+Only when a new integration needs verification and cloud processing is authorized;
+not a prerequisite to replay the saved demo:
 
 - API key can be exchanged for JWT.
 - Client can submit one real PDF with its allowed profile.

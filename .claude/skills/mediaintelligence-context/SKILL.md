@@ -22,7 +22,6 @@ description: Use for orientation in DeValpo.MediaIntelligence before feature, bu
 
 - `secrets/`
 - `site/`
-- `docs/archive/` unless auditing history.
 - `docs/reference/` unless the task requires a long reference.
 
 ## Validate

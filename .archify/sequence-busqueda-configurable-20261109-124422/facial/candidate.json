@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Reconocimiento facial · Base existente y gates propuestos",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": ".archify/sequence-busqueda-configurable-20261109-124422/facial/facial.html",
+    "repository": {
+      "url": "https://github.com/lokomurdok89/DeValpo.MediaIntelligence.git",
+      "revision": "2c27a288e459378514b52f676c16080c95be250e",
+      "link_mode": "local-only"
+    },
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "Aplicación",
+      "sublabel": "Trabajo facial",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Application/ImageBatchSearch/ImageBatchSearchManifestParser.cs",
+          "line": 108,
+          "end_line": 120,
+          "label": "FaceReference ya existe"
+        }
+      ]
+    },
+    {
+      "id": "adapter",
+      "type": "backend",
+      "label": "Adaptador AWS",
+      "sublabel": "Referencia facial",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/Providers/Aws/Rekognition/AwsRekognitionImageBatchSearchProvider.cs",
+          "line": 96,
+          "end_line": 124,
+          "label": "Flujo actual; gates propuestos aparte"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "cloud",
+      "label": "S3",
+      "sublabel": "Fotos y referencias",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/Providers/Aws/Rekognition/AwsRekognitionImageBatchSearchProvider.cs",
+          "line": 192,
+          "end_line": 225,
+          "label": "Flujo actual; gates propuestos aparte"
+        }
+      ]
+    },
+    {
+      "id": "rek",
+      "type": "cloud",
+      "label": "Rekognition",
+      "sublabel": "Colección configurada",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/Providers/Aws/Rekognition/AwsRekognitionImageBatchSearchProvider.cs",
+          "line": 150,
+          "end_line": 170,
+          "label": "Flujo actual; gates propuestos aparte"
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 185,
+      "to": 355,
+      "label": "Gate propuesto: uso autorizado y proveedor habilitado"
+    },
+    {
+      "from": 365,
+      "to": 495,
+      "label": "Flujo existente: referencia contra caras de fotos fuente"
+    },
+    {
+      "from": 505,
+      "to": 635,
+      "label": "finally: intento de limpieza; verificación pendiente"
+    }
+  ],
+  "messages": [
+    {
+      "id": "request",
+      "from": "app",
+      "to": "adapter",
+      "y": 205,
+      "label": "Si autorizado: buscar",
+      "variant": "security"
+    },
+    {
+      "id": "stage",
+      "from": "adapter",
+      "to": "s3",
+      "y": 245,
+      "label": "Preparar fotos",
+      "variant": "default"
+    },
+    {
+      "id": "index",
+      "from": "adapter",
+      "to": "rek",
+      "y": 285,
+      "label": "IndexFaces: fotos fuente",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ids",
+      "from": "rek",
+      "to": "adapter",
+      "y": 330,
+      "label": "FaceId → imagen",
+      "variant": "return"
+    },
+    {
+      "id": "refs",
+      "from": "adapter",
+      "to": "s3",
+      "y": 385,
+      "label": "Preparar referencia",
+      "variant": "default"
+    },
+    {
+      "id": "search",
+      "from": "adapter",
+      "to": "rek",
+      "y": 425,
+      "label": "SearchFacesByImage: ref",
+      "variant": "emphasis"
+    },
+    {
+      "id": "matches",
+      "from": "rek",
+      "to": "adapter",
+      "y": 470,
+      "label": "Similitud o error",
+      "variant": "return"
+    },
+    {
+      "id": "cleanup",
+      "from": "adapter",
+      "to": "rek",
+      "y": 525,
+      "label": "Si hay IDs: DeleteFaces",
+      "variant": "security"
+    },
+    {
+      "id": "cleanupstatus",
+      "from": "rek",
+      "to": "adapter",
+      "y": 570,
+      "label": "OK o fallo de limpieza",
+      "variant": "return"
+    },
+    {
+      "id": "result",
+      "from": "adapter",
+      "to": "app",
+      "y": 615,
+      "label": "Matches + issues",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Reconocimiento facial existente",
+      "items": [
+        "FaceReference es una capacidad del producto; dorsales son sólo el primer piloto.",
+        "Se indexan caras de las fotos fuente. La referencia consulta la colección y los IDs retornados se filtran al trabajo actual.",
+        "La búsqueda usa minSimilarity; el score facial actual es 0–100, no confianza OCR 0–1 ni identidad confirmada.",
+        "El visor conserva algunos controles en inglés. No es evidencia de una ejecución cloud."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Gate de activación propuesto",
+      "items": [
+        "Antes de procesar: autorización de fuentes y referencias, responsable de privacidad, presupuesto y dataset facial aprobados.",
+        "Referencia clara con un rostro; ambigüedad no debe seleccionar una persona silenciosamente.",
+        "Google Vision no reconoce identidad facial; nunca enrutar FaceReference al OCR.",
+        "Límites y calidad del piloto dorsal no certifican la capacidad facial."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Limpieza: llamada existente, garantía pendiente",
+      "items": [
+        "finally intenta DeleteFaces. Actualmente el fallo se registra y se reutiliza el token de cancelación.",
+        "Verificar limpieza tras éxito, fallo, cancelación y caída; definir recuperación antes de activar.",
+        "No borrar archivos staged al terminar: lifecycle S3/GCS gobierna su retención.",
+        "No exponer FaceId o embeddings; validar aislamiento entre trabajos y clientes."
+      ]
+    }
+  ]
+}

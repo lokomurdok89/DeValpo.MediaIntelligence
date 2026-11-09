@@ -103,3 +103,52 @@ Tambien acepta `assetSelectorJson` para imagenes fuente y `referenceAssetSelecto
 - `/ready` valida dependencias.
 - El endpoint `/api/v1/dev/token` existe solo en `Development`.
 - Las API keys crudas se devuelven una vez y luego solo queda el hash.
+
+## Documentos, Revisión Y Callbacks
+
+[Alta de clientes](client-onboarding-guide.md) conserva ejemplos de creación,
+API key de entrega única, intercambio JWT y subida documental. Los documentos
+usan `POST /api/v1/analyze` (archivo y perfil) o `POST /api/v1/analysis-jobs`
+(metadatos sin archivo); se consultan `/api/v1/analysis-jobs/{jobId}` y `/result`.
+`POST /api/v1/analysis-jobs/{jobId}/cancel` cancela un trabajo documental no terminal.
+Este ciclo no implica que todos los módulos de búsqueda tengan los mismos estados.
+
+| Estado documental | Significado |
+| --- | --- |
+| `Pending` / `Running` | Pendiente / procesando |
+| `Completed` | Resultado disponible; revisar también `issues` |
+| `RequiresReview` | Requiere revisión humana |
+| `Failed` / `Cancelled` | Fallo terminal / cancelación |
+
+El resultado incluye `confidence`, `requiresHumanReview`, `extractedFields`,
+`detectedEntities`, `detectedLabels`, `generatedClips` e `issues`.
+Una lista vacía de `generatedClips` no acredita generación física de clips.
+`metadataJson` en uploads admite metadatos planos de strings, sin datos sensibles.
+
+Operator/admin lista `/api/v1/human-review-tasks?status=Pending`, consulta
+`/{taskId}` y hace POST a `/{taskId}/start` y `/{taskId}/complete`.
+El cierre usa `decision` (`Approve`, `Correct` o `Reject`) y `comment`;
+los detalles de corrección siguen el contrato del endpoint. Las
+[secuencias API](reference/api-endpoint-flows.md) cubren revisión y administración.
+
+Las entregas opcionales `analysis.completed` se firman con HMAC-SHA256 sobre
+string UTF-8 `timestamp + "." + rawPayload`. Headers para el receptor:
+
+```text
+X-DeValpo-Event-Id: <delivery-id>
+X-DeValpo-Event-Type: analysis.completed
+X-DeValpo-Timestamp: <unix-seconds>
+X-DeValpo-Signature: sha256=<hex-hmac>
+```
+
+El payload contiene `eventType`, `jobId`, `clientKey`, `profileKey`, `jobStatus`,
+`confidence`, `requiresHumanReview` y `resultUrl` relativo, no OCR completo,
+respuestas brutas ni credenciales. Configura targets en
+`/api/v1/admin/clients/{clientKey}/webhook-targets` y consulta
+`/api/v1/webhook-deliveries` para conocer el estado de entrega. No se debe asumir
+que este callback documental cubra todos los flujos de búsqueda.
+
+Rotación/revocación de claves: POST a
+`/api/v1/admin/clients/{clientKey}/api-keys/{apiKeyId}/rotate` y `/revoke`.
+Auditoría y retención se detallan en las secuencias API y alta de clientes;
+no incluir API keys crudas, identificadores faciales ni OCR en logs compartidos.

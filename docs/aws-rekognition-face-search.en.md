@@ -1,8 +1,8 @@
 # AWS Rekognition Face Search
 
-This page defines the Phase 2 architecture and requirements for face search in videos with Amazon Rekognition.
+This page defines the architecture and contracts for face search in videos with Amazon Rekognition.
 
-Phase 2 does not replace Google Video Intelligence. Google remains the base flow for visible-number OCR and generic face detection. AWS Rekognition is added as a separate provider for comparing reference images against faces found in videos.
+AWS Rekognition does not replace Google Video Intelligence. Google remains the base flow for visible-number OCR and generic face detection. AWS Rekognition is added as a separate provider for comparing reference images against faces found in videos.
 
 Official references:
 
@@ -13,7 +13,12 @@ Official references:
 
 ## Current State
 
-The API can run without AWS credentials today. It exposes local status, keeps AWS disabled by default, and accepts face search jobs only for `event-face-search-v1`; when AWS is disabled, processing completes with a disabled-provider issue.
+The API can start without AWS credentials. Face-search routes/workers are feature-gated
+by `FaceSearchEnabled`; enabled routes accept only `event-face-search-v1`.
+A disabled provider can return an issue rather than simulated matches.
+The [saved pilot evidence](examples/video-result-evidence.en.md) demonstrates the real flow.
+Setup/remote-check commands below are for separately authorized installation work,
+not prerequisites to replay the offline demo.
 
 | Piece | State |
 | --- | --- |
@@ -75,24 +80,24 @@ Expected response:
 flowchart TB
     API["API Controllers"] --> App["Application Use Cases"]
     App --> GooglePort["IVideoSearchProvider"]
-    App -. future .-> FacePort["IFaceSearchApplicationService"]
+    App --> FacePort["IFaceSearchApplicationService"]
     GooglePort --> GoogleProvider["Infrastructure/Providers/Google/VideoIntelligence"]
-    FacePort -. future .-> AwsProvider["Infrastructure/Providers/Aws/Rekognition"]
+    FacePort --> AwsProvider["Infrastructure/Providers/Aws/Rekognition"]
     GoogleProvider --> GCS["Google Cloud Storage"]
     GoogleProvider --> GVI["Google Video Intelligence"]
-    AwsProvider -. future .-> S3["Amazon S3"]
-    AwsProvider -. future .-> Rek["Amazon Rekognition"]
+    AwsProvider --> S3["Amazon S3"]
+    AwsProvider --> Rek["Amazon Rekognition"]
 ```
 
 Rules:
 
 - Google processes visible numbers and generic face occurrences.
-- AWS will process face comparison against reference images.
+- AWS processes face comparison against reference images.
 - Providers are not mixed inside the same class.
 - Buckets and credentials are not shared between providers.
 - Application defines contracts; Infrastructure talks to cloud SDKs.
 
-## Phase 2 Goal
+## Goal
 
 Allow a client to submit:
 
@@ -113,7 +118,7 @@ The system must return time ranges where AWS finds a face similar to the referen
 | Rekognition collection | Temporary facial vector container for the job. |
 | IAM app user/role | Allows upload to S3, face indexing and result lookup. |
 
-V1 uses polling with `GetFaceSearch`. SNS/SQS is reserved for a later phase because it requires additional infrastructure.
+V1 uses polling with `GetFaceSearch`. SNS/SQS is reserved for a future extension because it requires additional infrastructure.
 
 ## Minimum Permissions
 
@@ -121,11 +126,9 @@ V1 uses polling with `GetFaceSearch`. SNS/SQS is reserved for a later phase beca
 s3:PutObject
 s3:GetObject
 s3:GetBucketLocation
-rekognition:CreateCollection
 rekognition:DescribeCollection
 rekognition:IndexFaces
 rekognition:DeleteFaces
-rekognition:ListFaces
 rekognition:StartFaceSearch
 rekognition:GetFaceSearch
 ```
@@ -142,6 +145,7 @@ AwsRekognition__BucketName=<private-s3-bucket>
 AwsRekognition__CollectionId=<rekognition-collection-id>
 AwsRekognition__CredentialsPath=/run/secrets/aws-credentials
 AwsRekognition__ProfileName=<profile-name>
+AwsRekognition__AllowUserCredentials=true
 AwsRekognition__MinSimilarity=90
 AwsRekognition__UsePolling=true
 ```
@@ -161,7 +165,49 @@ The remote check validates:
 - an AWS credential source exists;
 - the S3 bucket is reachable;
 - the Rekognition collection exists;
-- credentials have enough permissions.
+- credentials permit those readiness operations, not necessarily every indexing/search operation.
+
+
+### Local Credentials And Diagnosis
+
+For a local named profile (never commit credentials or print their contents):
+
+```powershell
+aws configure --profile <profile-name>
+Copy-Item "$env:USERPROFILE/.aws/credentials" secrets/aws-credentials
+```
+
+Compose mounts that ignored file at `/run/secrets/aws-credentials`. Production
+uses managed roles or externally managed secrets, not local user credentials.
+See [cloud identities](reference/cloud-identities-and-provider-profiles.md) and
+[production permissions](reference/production-cloud-credentials.md).
+
+When separately authorized to inspect resources:
+
+```powershell
+aws sts get-caller-identity --profile <profile-name>
+aws s3api get-bucket-location --bucket <private-s3-bucket> --profile <profile-name>
+aws rekognition describe-collection --collection-id <rekognition-collection-id> --region <aws-region> --profile <profile-name>
+```
+
+Keep account/resource identifiers out of shared logs. `s3:ListBucket` is needed
+for prefix selection; `ExplicitAssets` does not enumerate a prefix. Collection
+creation is setup work, not a runtime permission requirement. The production
+policy guide separates collection, S3 and video-job permissions; do not broaden
+all resources to `*` just because one job action requires a different scope.
+
+Polling settings are `PollingIntervalSeconds` and `PollingTimeoutSeconds` under
+`AwsRekognition` (5 and 900 in the example). `UsePolling=true` is required;
+`SnsTopicArn` and `RoleArn` are unused by the current worker. Keep
+`DeleteStagedObjectsAfterProcessing=false`; bucket lifecycle owns file cleanup.
+
+| Symptom | Check |
+| --- | --- |
+| `configured=false` | Enabled flags, region, bucket, collection and mounted credential profile |
+| Access denied | The denied action and resource; readiness success does not prove search permission |
+| `Unsupported codec/format` | Use a separately approved H.264 copy; do not overwrite the original |
+| Zero matches with issues | Read the issue before treating the result as a successful empty search |
+| Cleanup failure | Temporary face cleanup is attempted; do not claim universal cleanup from one successful run |
 
 ## Preparation Commands
 
@@ -205,33 +251,37 @@ aws rekognition describe-collection `
   --region $region
 ```
 
-## Recommended Phase 2A Flow
+## Processing Flow
 
 ```mermaid
 sequenceDiagram
-    participant Client as External client
-    participant API as MediaIntelligence API
+    participant Client as Client
+    participant API as API
     participant DB as PostgreSQL
-    participant S3 as Amazon S3
+    participant Worker as FaceSearchJobWorker
+    participant S3 as Private S3
     participant Rek as AWS Rekognition
-    participant Worker as FaceSearchWorker
-
-    Client->>API: POST /face-search-jobs with multipart or assetSelectorJson
-    API->>API: Validate JWT, manifest and references
-    API->>S3: Use existing assets or stage temporarily
-    API->>Rek: IndexFaces in collection
-    API->>DB: Create Pending job with targetKey and faceId
+    Client->>API: POST /api/v1/face-search-jobs
+    API->>API: Validate access, manifest and asset references
+    API->>DB: Persist Pending job and asset metadata
+    API-->>Client: 202 + jobId
+    Worker->>DB: Claim job
+    Worker->>S3: Reuse compatible cloud assets or stage media
+    Worker->>Rek: IndexFaces (reference image)
     Worker->>Rek: StartFaceSearch
-    Worker->>Rek: Poll GetFaceSearch
-    Rek-->>Worker: Matches with timestamps
-    Worker->>DB: Persist FaceReference matches
-    Client->>API: GET /face-search-jobs/{jobId}/result
-    API-->>Client: targetKey, videoKey, ranges and similarity
+    loop Until terminal provider state
+        Worker->>Rek: GetFaceSearch
+    end
+    Rek-->>Worker: Matches and timestamps
+    Worker->>Rek: Attempt DeleteFaces for temporary IDs
+    Worker->>DB: Persist normalized matches and issues (no FaceId)
+    Client->>API: GET /api/v1/face-search-jobs/{jobId}/result
+    API-->>Client: targetKey, video, times, similarity, issues
 ```
 
-## Future Contract
+## Implemented Contract
 
-Future endpoints, only after the real provider is implemented:
+Existing endpoints (subject to feature configuration and authorization):
 
 ```http
 POST /api/v1/face-search-jobs
@@ -259,13 +309,14 @@ Minimum manifest:
   "minSimilarity": 90,
   "targets": [
     {
-      "targetKey": "participant-001"
+      "targetKey": "participant-001",
+      "referenceImageKey": "reference-1"
     }
   ]
 }
 ```
 
-Expected result:
+Illustrative result fragment (not a recorded run):
 
 ```json
 {
@@ -276,7 +327,7 @@ Expected result:
       "targetKey": "participant-001",
       "videoKey": "video-1",
       "startTimeSeconds": 83.2,
-      "endTimeSeconds": 95.8,
+      "endTimeSeconds": 83.2,
       "similarity": 94.7,
       "matchType": "FaceReference",
       "sourceProvider": "AwsRekognition"
@@ -287,7 +338,7 @@ Expected result:
 
 ## Mandatory Rules
 
-- `consentReferenceId` is optional; missing consent reference does not block processing.
+- `consentReferenceId` is optional; missing reference does not block processing. The external platform owns authorization and consent records.
 - Opaque `targetKey` is required.
 - Reject `name`, `rut`, `email`, `phone`, `userId`, `personId`.
 - `FaceSearchEnabled=false` by default.
@@ -295,42 +346,6 @@ Expected result:
 - Do not permanently store reference images without an explicit retention policy.
 - Audit consent, indexing, search, result read and deletion.
 - Do not delete staged objects from the job; file cleanup depends on bucket lifecycle policy with a short TTL.
-- Delete temporary indexed faces with `DeleteFaces` after completing or failing the job.
-- Later revocation by target/job is outside v1 because the API does not persist `FaceId`; if a persistent index is defined, that phase must add storage and consent-based deletion.
+- The provider attempts temporary `DeleteFaces` cleanup in `finally`; errors/cancellation require operational attention. Face IDs are not persisted by this video workflow.
+- Later revocation by target/job is outside v1 because the API does not persist `FaceId`; if a persistent index is defined, that extension must add storage and consent-based deletion.
 - Do not return fake matches.
-
-## QA Without Credentials
-
-Checklist to validate that the API runs without AWS:
-
-```powershell
-curl.exe http://localhost:8085/health
-curl.exe http://localhost:8085/api/v1/providers/aws-rekognition/status
-curl.exe -s -o NUL -w "%{http_code}" "http://localhost:8085/api/v1/providers/aws-rekognition/status?checkRemote=true"
-curl.exe -s -o NUL -w "%{http_code}" -X POST "http://localhost:8085/api/v1/face-search-jobs" -H "Authorization: Bearer $token"
-```
-
-Expected result:
-
-| Validation | Result |
-| --- | --- |
-| `/health` | `200` |
-| Basic AWS status | `enabled=false`, `configured=false` |
-| `checkRemote=true` without token | `401` |
-| `checkRemote=true` with token without operational scope | `403` |
-| `POST /api/v1/face-search-jobs` without token | `401` |
-| `POST /api/v1/face-search-jobs` with invalid request | `400` |
-
-If remote status is tested with AWS enabled, use real credentials and real resources. Do not use simulated responses.
-
-## Criteria Before Testing Real AWS Jobs
-
-Before running a real smoke test:
-
-1. AWS CLI authenticates correctly.
-2. Private S3 bucket is created.
-3. Rekognition collection is created.
-4. IAM permissions are defined.
-5. `UsePolling=true` is configured; SNS/SQS does not apply to v1.
-6. An external `consentReferenceId` source exists.
-7. Real reference image and real video exist for a local smoke test.

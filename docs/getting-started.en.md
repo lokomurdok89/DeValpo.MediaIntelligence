@@ -1,130 +1,80 @@
 # Getting Started
 
-This is the short path to run the product locally and test it with a real document.
+For the offline demo, follow the repository README. It needs
+neither cloud credentials nor the API. This page is for a new backend installation;
+provider checks and job submissions require separate authorization and may incur costs.
 
 ## Requirements
 
-- .NET SDK 10.0.x.
-- Docker Desktop.
-- Google Cloud CLI.
-- Access to the Google Document AI project and processor.
-- AWS CLI only if you will validate real Rekognition.
+- Docker Desktop / Compose for the API and PostgreSQL 17.
+- .NET SDK 10.x only for building or running outside Docker.
+- A configured provider only for the workflow you intend to use; Google is not a prerequisite for AWS facial search.
+- An external JWT signing secret, never committed.
 
-## 1. Prepare Local Variables
+## 1. Configure The Selected Workflow
 
-```powershell
-Copy-Item deploy\.env.example deploy\.env
-```
-
-Edit `deploy/.env` and configure:
-
-```text
-GoogleDocumentAi__Enabled=true
-GoogleDocumentAi__ProjectId=<project-id>
-GoogleDocumentAi__Location=<location>
-GoogleDocumentAi__ProcessorId=<processor-id>
-GoogleDocumentAi__CredentialsPath=/run/secrets/google-application-default-credentials.json
-GoogleDocumentAi__AllowUserCredentials=true
-Jwt__SigningKey=<local-dev-secret-min-32-chars>
-```
-
-AWS is disabled by default. To test real Rekognition, also configure:
-
-```text
-AwsRekognition__Enabled=true
-AwsRekognition__FaceSearchEnabled=true
-AwsRekognition__Region=<aws-region>
-AwsRekognition__BucketName=<private-s3-bucket>
-AwsRekognition__CollectionId=<rekognition-collection-id>
-AwsRekognition__CredentialsPath=/run/secrets/aws-credentials
-AwsRekognition__ProfileName=default
-AwsRekognition__AllowUserCredentials=true
-AwsRekognition__UsePolling=true
-```
-
-## 2. Prepare Google ADC
+Copy the example only if the local file does not already exist:
 
 ```powershell
-gcloud auth application-default login
-gcloud auth application-default set-quota-project <project-id>
-Copy-Item "$env:APPDATA\gcloud\application_default_credentials.json" secrets\google-application-default-credentials.json
+if (-not (Test-Path deploy/.env)) { Copy-Item deploy/.env.example deploy/.env }
 ```
 
-More detail: [local tokens and Google secrets](reference/local-tokens-and-google-secrets.md).
+Set `Jwt__SigningKey` to a private value of at least 32 characters. Keep the
+existing local Development issuer/audience configuration consistent with the API.
+`Jwt__RequireHttpsMetadata=false` is for local development, not a production recommendation.
+`Database__ApplyMigrationsOnStartup=true` applies schema changes at local startup;
+for production use the [migration runbook](runbooks/release-and-migrations.md).
 
-That document explains the full path from installing Google Cloud CLI to obtaining the ADC credential this API uses to call Document AI.
+| Workflow | Canonical setup |
+| --- | --- |
+| Facial search in S3 video | [AWS configuration and permissions](aws-rekognition-face-search.en.md) |
+| Video numbers / generic faces | [Google Video Intelligence](video-target-search.en.md) |
+| Document OCR | [Document AI runbook](runbooks/google-document-ai.md) and [ADC setup](reference/local-tokens-and-google-secrets.md) |
+| Production identities | [Managed roles and external secrets](reference/production-cloud-credentials.md) |
 
-## 2.1. Prepare Optional AWS Credentials
+Configure only the providers needed. Keep credential files out of version control;
+local Compose mounts `secrets/` read-only at `/run/secrets`. A mount is not permission
+to print credentials or publish the directory.
 
-Only if you will test real face search:
+## 2. Start Locally
 
 ```powershell
-aws configure --profile <profile-name>
-Copy-Item "$env:USERPROFILE\.aws\credentials" secrets\aws-credentials
+docker compose -f deploy/docker-compose.yml config --quiet
+docker compose -f deploy/docker-compose.yml up --build
 ```
 
-Docker mounts that file at `/run/secrets/aws-credentials`. Do not paste access keys into `deploy/.env` or commit them.
+API: `http://localhost:8085`; Development Swagger: `/swagger`;
+PostgreSQL host port: `5435`. `/health` checks process liveness; `/ready`
+checks configured dependencies. Do not paste full Compose config or logs containing secrets.
 
-## 3. Start Docker
+## 3. Onboard A Client And Obtain A Token
+
+Only in local `Development`, obtain the admin token needed for client setup:
 
 ```powershell
-docker compose -f deploy\docker-compose.yml config
-docker compose -f deploy\docker-compose.yml up --build
+# Development only; never use this helper in a production environment.
+$baseUrl = "http://localhost:8085"
+$body = @{ subject = "local-admin"; clientKey = "admin"; scope = "media-intelligence:admin" } | ConvertTo-Json
+$adminToken = (Invoke-RestMethod -Method Post -Uri "$baseUrl/api/v1/dev/token" -ContentType "application/json" -Body $body).accessToken
 ```
 
-Expected services:
+Then follow [client onboarding](client-onboarding-guide.md): create a client with
+only the intended profile, securely retain its one-time API key and exchange it
+at `POST /api/v1/auth/token`. Use that client JWT for submissions and result reads,
+not the admin token. Production needs an authorized admin identity; the development
+helper is unavailable there.
 
-- API: `http://localhost:8085`.
-- Swagger: `http://localhost:8085/swagger`.
-- PostgreSQL host port: `5435`.
+The catalog endpoints `/api/v1/capabilities`, `/api/v1/profiles` and `/api/v1/skills`
+accept a bearer token. Remote provider checks require operator/admin scope;
+a default development token is not a substitute for those permissions.
 
-## 4. Check Health
+## 4. Submit And Read Results When Authorized
 
-```powershell
-curl.exe http://localhost:8085/health
-curl.exe http://localhost:8085/ready
-```
+[API contracts](api.en.md) link the workflows. Source media for productive video/
+image jobs uses cloud selectors; multipart is retained for development.
+Poll the corresponding job route, read `/result` and inspect `issues` as well as
+status. Document jobs can require human review; see the API reference for states,
+review endpoints and webhook headers.
 
-## 5. Generate Local Token
-
-```powershell
-$tokenJson = curl.exe -s -X POST http://localhost:8085/api/v1/dev/token `
-  -H "Content-Type: application/json" `
-  -d "{}"
-
-$token = ($tokenJson | ConvertFrom-Json).accessToken
-```
-
-## 6. Validate Google
-
-```powershell
-curl.exe "http://localhost:8085/api/v1/providers/google-document-ai/status?checkRemote=true" `
-  -H "Authorization: Bearer $token"
-```
-
-## 6.1. Validate Optional AWS
-
-```powershell
-curl.exe "http://localhost:8085/api/v1/providers/aws-rekognition/status?checkRemote=true" `
-  -H "Authorization: Bearer $token"
-```
-
-Expected result when AWS is configured correctly: `AWS Rekognition S3 bucket and collection are reachable.`
-
-## 7. Upload A Real Document
-
-```powershell
-curl.exe -X POST http://localhost:8085/api/v1/analyze `
-  -H "Authorization: Bearer $token" `
-  -F "clientKey=generic" `
-  -F "profileKey=generic-document-ocr-v1" `
-  -F "assetType=Document" `
-  -F "file=@<local-path-to-document.pdf>"
-```
-
-Read the `jobId` and query the result:
-
-```powershell
-curl.exe "http://localhost:8085/api/v1/analysis-jobs/<jobId>/result" `
-  -H "Authorization: Bearer $token"
-```
+[Operations and diagnosis](operations.en.md) covers logs and failures.
+This guide does not require repeating historical cloud jobs to show the demo.

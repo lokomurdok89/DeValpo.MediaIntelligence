@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MediaIntelligence · Visor de resultados</title>
+  <link rel="stylesheet" href="viewer.css">
+  <script src="viewer.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./"><span class="brand-mark">M</span> MediaIntelligence</a><span class="local-badge"><span></span> Sesión local · sin cloud</span></header>
+  <main>
+    <div class="intro"><p class="eyebrow">VIDEO INTELLIGENCE / RESULTADOS GUARDADOS</p><h1>Encuentra el momento.</h1><p>Elige un video, descubre lo que encontró y salta al momento.</p></div>
+    <nav id="gallery" class="gallery" aria-label="Videos disponibles"></nav>
+    <div id="error" class="error" role="alert" hidden></div>
+    <div class="workspace">
+      <section class="player-card" aria-label="Video y navegación">
+        <div class="section-heading"><span id="video-label">VIDEO LOCAL</span><span id="duration">Cargando video…</span></div>
+        <video id="video" controls playsinline preload="metadata" aria-label="Video de la sesión"></video>
+        <div class="transport"><div><span class="muted">POSICIÓN ACTUAL</span><strong id="position">00:00.000</strong></div><div class="navigation"><button id="previous" disabled aria-label="Coincidencia anterior">← Anterior</button><button id="next" disabled aria-label="Coincidencia siguiente">Siguiente →</button></div></div>
+        <div class="selection"><span class="selection-icon">↗</span><div><strong id="selected-title">Selecciona un momento</strong><p id="selected-detail">El video se pausará en la coincidencia para que puedas revisarla.</p></div><button id="play-selection" disabled>Reproducir desde aquí</button></div>
+        <p class="privacy-note">El video permanece en tu equipo. No se sube ningún archivo ni se vuelve a procesar.</p>
+      </section>
+      <aside class="results-card" aria-label="Resultados del video">
+        <div class="results-heading"><div><p id="provider" class="eyebrow">RESULTADO GUARDADO</p><h2>Hallazgos <span id="count">—</span></h2></div><span id="source-kind" class="saved">JSON guardado</span></div>
+        <p id="summary" class="summary" aria-live="polite">Cargando resultados…</p>
+        <div class="column-labels"><span>MOMENTO DEL VIDEO</span><span id="score-label">SIMILITUD / 100</span></div>
+        <ol id="matches" class="match-list"></ol>
+        <p id="footnote" class="footnote">Son ocurrencias, no personas distintas. La similitud no es una probabilidad de identidad.</p>
+      </aside>
+    </div>
+    <footer><span>Tus videos. Sus resultados. Los momentos relevantes.</span><span>Revisión de resultados existentes</span></footer>
+  </main>
+</body>
+</html>

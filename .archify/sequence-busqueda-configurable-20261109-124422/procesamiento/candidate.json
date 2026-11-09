@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "OCR configurable · Ejecución propuesta",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": ".archify/sequence-busqueda-configurable-20261109-124422/procesamiento/procesamiento.html",
+    "repository": {
+      "url": "https://github.com/lokomurdok89/DeValpo.MediaIntelligence.git",
+      "revision": "2c27a288e459378514b52f676c16080c95be250e",
+      "link_mode": "local-only"
+    },
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "cliente",
+      "type": "external",
+      "label": "Cliente",
+      "sublabel": "Polling",
+      "sources": [
+        {
+          "path": "docs/image-batch-search.md",
+          "line": 15,
+          "end_line": 22,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API",
+      "sublabel": "Acceso resultado",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Api/Controllers/ImageBatchSearchJobsController.cs",
+          "line": 143,
+          "end_line": 205,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Worker",
+      "sublabel": "Política por target",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Api/Workers/ImageBatchSearchJobWorker.cs",
+          "line": 16,
+          "end_line": 54,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Estado durable",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/Persistence/Repositories/ImageBatchSearchJobRepository.cs",
+          "line": 45,
+          "end_line": 145,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    },
+    {
+      "id": "ocr",
+      "type": "cloud",
+      "label": "OCR adapter",
+      "sublabel": "GCS + Vision",
+      "sources": [
+        {
+          "path": "src/DeValpo.MediaIntelligence.Infrastructure/Providers/Google/Vision/GoogleVisionImageBatchSearchProvider.cs",
+          "line": 25,
+          "end_line": 68,
+          "label": "Base actual; no prueba de propuesta"
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 185,
+      "to": 420,
+      "label": "Un worker · por foto · límites acumulativos"
+    },
+    {
+      "from": 430,
+      "to": 505,
+      "label": "Fin: cobertura y resultados en transacción"
+    },
+    {
+      "from": 515,
+      "to": 665,
+      "label": "Consulta autorizada · parar polling al terminar"
+    }
+  ],
+  "messages": [
+    {
+      "id": "claim",
+      "from": "worker",
+      "to": "db",
+      "y": 200,
+      "label": "Claim",
+      "variant": "emphasis"
+    },
+    {
+      "id": "assets",
+      "from": "db",
+      "to": "worker",
+      "y": 235,
+      "label": "Job + política",
+      "variant": "return"
+    },
+    {
+      "id": "call",
+      "from": "worker",
+      "to": "ocr",
+      "y": 270,
+      "label": "Si permiso OK: leer + OCR",
+      "variant": "security"
+    },
+    {
+      "id": "evidence",
+      "from": "ocr",
+      "to": "worker",
+      "y": 305,
+      "label": "Tokens o error por foto",
+      "variant": "return"
+    },
+    {
+      "id": "retry",
+      "from": "worker",
+      "to": "ocr",
+      "y": 350,
+      "label": "Si transitorio + cupo: retry",
+      "variant": "dashed"
+    },
+    {
+      "id": "retryresult",
+      "from": "ocr",
+      "to": "worker",
+      "y": 395,
+      "label": "Resultado del reintento",
+      "variant": "return"
+    },
+    {
+      "id": "save",
+      "from": "worker",
+      "to": "db",
+      "y": 445,
+      "label": "Finalizar",
+      "variant": "emphasis"
+    },
+    {
+      "id": "saved",
+      "from": "db",
+      "to": "worker",
+      "y": 485,
+      "label": "Commit",
+      "variant": "return"
+    },
+    {
+      "id": "poll",
+      "from": "cliente",
+      "to": "api",
+      "y": 530,
+      "label": "GET estado",
+      "variant": "default"
+    },
+    {
+      "id": "read",
+      "from": "api",
+      "to": "db",
+      "y": 565,
+      "label": "Leer job; verificar dueño",
+      "variant": "security"
+    },
+    {
+      "id": "result",
+      "from": "db",
+      "to": "api",
+      "y": 600,
+      "label": "Resultado + cobertura",
+      "variant": "return"
+    },
+    {
+      "id": "deliver",
+      "from": "api",
+      "to": "cliente",
+      "y": 645,
+      "label": "200 si propio",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "worker",
+      "from": 200,
+      "to": 490,
+      "type": "backend"
+    },
+    {
+      "participant": "ocr",
+      "from": 265,
+      "to": 400,
+      "type": "cloud"
+    },
+    {
+      "participant": "api",
+      "from": 530,
+      "to": 650,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Propuesta F0 · pendiente de aprobación",
+      "items": [
+        "Las fuentes ubican responsabilidades existentes; no certifican este comportamiento objetivo.",
+        "Reglas, límites, cobertura y políticas nuevas requieren aprobación e implementación posterior.",
+        "No es una captura de ejecución. El visor puede conservar controles en inglés."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Errores y reintentos propuestos",
+      "items": [
+        "Sin error transitorio no se ejecuta la flecha retry; nunca reintentar fallos permanentes.",
+        "Adaptador encapsula descarga GCS versionada y llamada Vision; no es un servicio nuevo.",
+        "Máximo 3 intentos de job, 3 × fotos llamadas OCR y 20 min acumulados.",
+        "Fallo global de credenciales detiene el lote; identidad de foto en cada issue."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Resultado honesto",
+      "items": [
+        "Todas procesadas: Completed + Succeeded; cero matches puede ser legítimo.",
+        "Algunas fallidas/pendientes: Completed + Partial; ninguna procesada: Failed.",
+        "Contadores por foto, no por intento; no duplicar matches al recuperar.",
+        "Sin acceso: 404, nunca devolver datos. La galería se resuelve en catálogo externo."
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Matching por tipo · no sólo dorsales",
+      "items": [
+        "Worker/caso de uso aplica la política por target antes de persistir: número exacto, palabra normalizada o código exacto.",
+        "Una extracción OCR por foto/intento, reutilizada entre targets; no concatenar tokens ni reparar O/0.",
+        "Palabras: NFC, sin borrar acentos; códigos: conservar ceros, guiones y mayúsculas según política.",
+        "Confianza desconocida nunca se convierte en 100%; umbral explícito excluye confianza desconocida.",
+        "Esta secuencia no hace reconocimiento facial: FaceReference se enruta a AWS y tiene validación separada."
+      ]
+    }
+  ]
+}

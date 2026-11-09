@@ -1,0 +1,280 @@
+{
+  "notice": "Privacy-safe derivative of the 2026-11-09 API result. Original media and identifiers withheld. The paired video is a generated placeholder, not analyzed footage.",
+  "status": "Completed",
+  "issues": [],
+  "faceMatches": [
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 6.506,
+      "endTimeSeconds": 6.506,
+      "similarity": 92.05,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 8.508,
+      "endTimeSeconds": 8.508,
+      "similarity": 93.4,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 13.513,
+      "endTimeSeconds": 13.513,
+      "similarity": 87.87,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 17.017,
+      "endTimeSeconds": 17.017,
+      "similarity": 87.02,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 18.018,
+      "endTimeSeconds": 18.018,
+      "similarity": 91.63,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 32.966,
+      "endTimeSeconds": 32.966,
+      "similarity": 99.7,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 33.466,
+      "endTimeSeconds": 33.466,
+      "similarity": 99.68,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 34.968,
+      "endTimeSeconds": 34.968,
+      "similarity": 95.18,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 35.468,
+      "endTimeSeconds": 35.468,
+      "similarity": 99.96,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 35.969,
+      "endTimeSeconds": 35.969,
+      "similarity": 99.96,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 35.969,
+      "endTimeSeconds": 35.969,
+      "similarity": 99.96,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 36.469,
+      "endTimeSeconds": 36.469,
+      "similarity": 99.97,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 36.469,
+      "endTimeSeconds": 36.469,
+      "similarity": 99.97,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 36.97,
+      "endTimeSeconds": 36.97,
+      "similarity": 99.98,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 36.97,
+      "endTimeSeconds": 36.97,
+      "similarity": 99.98,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 37.47,
+      "endTimeSeconds": 37.47,
+      "similarity": 99.99,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 37.47,
+      "endTimeSeconds": 37.47,
+      "similarity": 99.99,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 37.971,
+      "endTimeSeconds": 37.971,
+      "similarity": 99.97,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 37.971,
+      "endTimeSeconds": 37.971,
+      "similarity": 99.97,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 38.471,
+      "endTimeSeconds": 38.471,
+      "similarity": 99.96,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 38.471,
+      "endTimeSeconds": 38.471,
+      "similarity": 99.96,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 38.972,
+      "endTimeSeconds": 38.972,
+      "similarity": 99.99,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 38.972,
+      "endTimeSeconds": 38.972,
+      "similarity": 99.99,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 46.98,
+      "endTimeSeconds": 46.98,
+      "similarity": 99.91,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 52.485,
+      "endTimeSeconds": 52.485,
+      "similarity": 89.2,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 52.852,
+      "endTimeSeconds": 52.852,
+      "similarity": 97.55,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 52.986,
+      "endTimeSeconds": 52.986,
+      "similarity": 96.47,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 53.353,
+      "endTimeSeconds": 53.353,
+      "similarity": 99.83,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 53.486,
+      "endTimeSeconds": 53.486,
+      "similarity": 99.08,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 54.988,
+      "endTimeSeconds": 54.988,
+      "similarity": 81.23,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 55.355,
+      "endTimeSeconds": 55.355,
+      "similarity": 99.37,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 55.488,
+      "endTimeSeconds": 55.488,
+      "similarity": 99.39,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 55.855,
+      "endTimeSeconds": 55.855,
+      "similarity": 99.5,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 55.989,
+      "endTimeSeconds": 55.989,
+      "similarity": 99.25,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 56.356,
+      "endTimeSeconds": 56.356,
+      "similarity": 99.47,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 56.489,
+      "endTimeSeconds": 56.489,
+      "similarity": 99.85,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 56.856,
+      "endTimeSeconds": 56.856,
+      "similarity": 99.84,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 56.99,
+      "endTimeSeconds": 56.99,
+      "similarity": 99.44,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 71.871,
+      "endTimeSeconds": 71.871,
+      "similarity": 97.51,
+      "sourceProvider": "AwsRekognition"
+    }
+  ]
+}

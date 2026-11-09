@@ -1,138 +1,174 @@
 # DeValpo.MediaIntelligence
 
-> Reusable multi-client document and media intelligence engine.
+> Find the moment that matters — without moving your media catalog out of your platform.
 
-[![CI](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/ci.yml)
-[![Docs](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/docs.yml/badge.svg)](https://github.com/lokomurdok89/DeValpo.MediaIntelligence/actions/workflows/docs.yml)
+**English** | [Español](README.es.md)
 
-DeValpo.MediaIntelligence exposes a secure API for real document ingestion, Google Document AI analysis, Google video search, AWS Rekognition face search, persisted jobs, human review, client webhooks and operational diagnostics.
+MediaIntelligence is a **cloud-first media-search backend** for teams building
+photo and video discovery into their own products. Send private storage references
+and a search target; receive structured findings your application can display.
 
-## Open The Documentation
+**Working example:** find a reference face in an S3 video, retrieve its
+timestamps, and click a finding to jump to that moment.
 
-GitHub Pages is not currently published for this repository because it is private and the active GitHub plan does not support Pages for this repo. Use the GitHub-rendered docs or run the MkDocs preview locally.
+[![Illustrated preview: real results, private footage withheld](docs/assets/demo/preview.svg)](#try-the-privacy-safe-demo)
 
-| I want to... | Open this |
-| --- | --- |
-| Start from the documentation home | [docs/index.md](docs/index.md) |
-| Run the product locally | [docs/getting-started.md](docs/getting-started.md) |
-| Develop or configure the service | [docs/development/DEVELOPMENT_GUIDE.md](docs/development/DEVELOPMENT_GUIDE.md) and [configuration guide](docs/development/CONFIGURATION_GUIDE.md) |
-| Understand implemented architecture and flows | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) and [processing flows](docs/architecture/PROCESSING_FLOWS.md) |
-| Follow testing, review and completion standards | [docs/testing/TESTING_STRATEGY.md](docs/testing/TESTING_STRATEGY.md) and [docs/standards/](docs/standards/) |
-| Review engineering gaps | [docs/backlog/ENGINEERING_BACKLOG.md](docs/backlog/ENGINEERING_BACKLOG.md) |
-| Configure Google/AWS users, credentials and profiles | [docs/reference/cloud-identities-and-provider-profiles.md](docs/reference/cloud-identities-and-provider-profiles.md) |
-| Configure cloud references and staging | [docs/cloud-asset-references-and-staging.md](docs/cloud-asset-references-and-staging.md) |
-| Generate Google credentials and tokens | [docs/reference/local-tokens-and-google-secrets.md](docs/reference/local-tokens-and-google-secrets.md) |
-| Implement the application end-to-end | [docs/reference/implementation-guide.md](docs/reference/implementation-guide.md) |
-| See endpoint flows and sequence diagrams | [docs/reference/api-endpoint-flows.md](docs/reference/api-endpoint-flows.md) |
-| Search visible targets in event videos | [docs/video-target-search.md](docs/video-target-search.md) |
-| Prepare the real video MVP test | [docs/reference/video-mvp-real-route.md](docs/reference/video-mvp-real-route.md) |
-| Run AWS Rekognition face search | [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md) |
-| Search targets in image batches | [docs/image-batch-search.md](docs/image-batch-search.md) |
-| Understand the API | [docs/api.md](docs/api.md) |
-| Review architecture and components | [docs/architecture.md](docs/architecture.md) |
-| Review security, JWT and secrets | [docs/security.md](docs/security.md) |
-| Operate Docker, readiness and runbooks | [docs/operations.md](docs/operations.md) |
-| Follow QA and product certification | [docs/qa.md](docs/qa.md) |
-| See the product roadmap | [docs/roadmap.md](docs/roadmap.md) |
+**[Try the demo](#try-the-privacy-safe-demo)** · **[See the result](#what-the-real-run-returned)** · **[Understand the architecture](#cloud-first-by-design)** · **[Integrate](docs/api.en.md)**
 
-## Local Documentation Preview
+## What You Can Explore
 
-Run the real tabbed documentation site locally:
+- **A working facial-video flow:** private S3 references → asynchronous job → structured findings.
+- **An offline result viewer:** click a saved finding and seek, without cloud credentials.
+- **A layered backend:** ASP.NET Core, PostgreSQL and AWS/Google adapters with clear boundaries.
+
+Your application keeps its users, permissions and media catalog. This repository
+focuses on processing jobs and returning findings, not replacing your platform.
+
+## Try The Privacy-Safe Demo
+
+**Clone the repo and try click → seek → playback. No AWS account, credentials,
+API, database or new processing required.** Requires Python 3.10+ and an H.264-capable browser.
+
+Run from the repository root:
 
 ```powershell
-pip install -r requirements-docs.txt
-python -m mkdocs serve
+python scripts/local-viewer/serve.py --video docs/assets/demo/public-demo-media-withheld.mp4 --result docs/assets/demo/public-result.json
 ```
 
-Then open:
+1. Open the complete `Visor local:` URL printed in the terminal.
+2. Select a row under **Hallazgos** to pause at its timestamp.
+3. Choose **Reproducir desde aquí** to play from that point; **Anterior / Siguiente** move between findings.
+4. Leave the terminal running; stop it with **Ctrl+C**. Do not open `index.html` directly.
 
-```text
-http://127.0.0.1:8000/DeValpo.MediaIntelligence/
-```
+**What is real:** the timestamps and similarity scores for all 39 records, extracted from the
+saved successful API response. **What is replaced:** the video is a generated,
+explicitly labeled privacy placeholder with a running clock — not the analyzed
+footage and not evidence of visual identity accuracy. The public JSON is a
+minimal derivative, not an untouched API export. It contains no original filenames,
+job/client/face IDs, reference images or cloud paths. The preview above is an illustration.
+No original video frames or audio are included. The demo demonstrates navigation,
+not visual verification of a person.
 
-Build validation:
+### Use Your Own Authorized Media
+
+The same viewer also opens original local media and saved results:
 
 ```powershell
-python -m mkdocs build --strict
+python scripts/local-viewer/serve.py --videos-dir "<local-video-folder>" --result "<saved-api-result.json>" --result "<saved-comparison.json>"
 ```
 
-## Quick Start
+Repeat `--result` for additional exports. The private three-video gallery retains
+39 records for the 1:12 H.264 copy, 18 for the short H.264 video, and a separate
+zero-match summary with issues for the other short video. Private assets are not bundled.
 
-```powershell
-dotnet restore DeValpo.MediaIntelligence.sln
-dotnet build DeValpo.MediaIntelligence.sln
-dotnet test DeValpo.MediaIntelligence.sln
-docker compose -f deploy\docker-compose.yml up --build
-```
+The server is loopback-only and read-only. A completed search with no findings
+returns an empty collection; processing issues remain visible, and a missing
+export is **not** presented as zero matches.
+[Viewer formats and usage](scripts/local-viewer/README.md)
 
-The local API listens on:
+## What The Real Run Returned
 
-```text
-http://localhost:8085
-```
+An authorized S3 facial-search run on **2026-11-09** used a reference photo and
+a **72.072-second H.264 video** through the existing API.
 
-## Main Real Flow
+| Result | Observed value |
+| --- | ---: |
+| Job state | `Completed` |
+| Match records | **39** |
+| Distinct timestamps | **32** |
+| First / last finding | **6.506 s / 71.871 s** |
+| Similarity threshold | **80 / 100** |
+| Returned similarity | **81.23–99.99 / 100** |
+| Reported issues | **0** |
+
+These are returned match records, not 39 different people or verified identities.
+Repeated timestamps are preserved; similarity is not a measured accuracy percentage.
+The successful run used an H.264 copy after AWS rejected the original HEVC
+format. The original media and raw responses remain private.
+
+[Evidence and provenance](docs/examples/video-result-evidence.en.md) also documents
+the other saved AWS result and the historical Google record. The original Google
+JSON remains unavailable and is not part of this playable demo.
+
+## Cloud-First By Design
+
+**Bring object references, not large uploads through your application API.**
+The external platform owns private buckets and upload/playback links.
+MediaIntelligence accepts `assetSelectorJson` and, for reference-face workflows,
+`referenceAssetSelectorJson`: structured bucket/object references, not public or presigned URLs.
 
 ```mermaid
 flowchart LR
-    A["Configure deploy/.env"] --> B["Mount Google credentials outside repo"]
-    B --> C["Mount optional AWS credentials outside repo"]
-    C --> D["Start Docker Compose"]
-    D --> E["Generate Development JWT"]
-    E --> F["Upload real media"]
-    F --> G["Poll job"]
-    G --> H["Read result"]
+    P["Your platform: media + access"] --> S["Private S3 video + reference photo"]
+    S --> A["API: references + targetKey"]
+    A --> J["Persist job / return 202"]
+    J --> W["Hosted worker"]
+    W --> R["AWS Rekognition"]
+    R --> D["PostgreSQL: findings + issues"]
+    D --> U["Your UI: read result / seek"]
 ```
 
-Google CLI, ADC credential generation and Document AI validation are documented in [docs/reference/local-tokens-and-google-secrets.md](docs/reference/local-tokens-and-google-secrets.md).
-AWS Rekognition face search is documented in [docs/aws-rekognition-face-search.md](docs/aws-rekognition-face-search.md). V1 is polling-only, uses externally mounted AWS credentials, keeps staged files for bucket lifecycle cleanup, and deletes temporary indexed faces after each job. Cloud-reference jobs and staging policy are documented in [docs/cloud-asset-references-and-staging.md](docs/cloud-asset-references-and-staging.md). Image batch search is documented in [docs/image-batch-search.md](docs/image-batch-search.md); AWS supports visible numbers and face references, while Google Vision v1 supports visible numbers/OCR and returns `Unsupported` for identity face matching.
-
-## Repository Map
-
-| Path | Purpose |
+| Boundary | Responsibility |
 | --- | --- |
-| `src/DeValpo.MediaIntelligence.Api` | ASP.NET Core API, Swagger, auth and health endpoints. |
-| `src/DeValpo.MediaIntelligence.Application` | Use cases, orchestration and application abstractions. |
-| `src/DeValpo.MediaIntelligence.Infrastructure` | EF Core, PostgreSQL, storage, Google Document AI and workers. |
-| `src/DeValpo.MediaIntelligence.Contracts` | Public DTOs and API contracts. |
-| `src/DeValpo.MediaIntelligence.Domain` | Domain entities and persistence model. |
-| `deploy` | Docker Compose and environment examples. |
-| `docs` | MkDocs documentation source. |
-| `tests` | Unit and API tests. |
+| `Api` | HTTP, authentication, status/results and hosted workers |
+| `Application` | Use cases and provider-neutral orchestration |
+| `Domain` | Core entities and job state |
+| `Contracts` | Public DTOs, without provider SDK or EF types |
+| `Infrastructure` | AWS/Google adapters, storage and PostgreSQL |
 
-## GitHub Pages
+This Clean Architecture-style separation gives new providers and consumers a
+clear integration point. Persisted jobs decouple request acceptance from processing.
+S3/GCS references avoid forwarding the original bytes in each submission;
+provider-specific staging is used when necessary.
 
-The docs workflow builds the MkDocs site and uploads a `mkdocs-site` artifact. Public Pages deploy is intentionally gated by:
+**Ready to extend does not mean already autoscaled:** workers currently run with
+the API. Distributed coordination, separate workers and autoscaling are future
+operating choices, not demonstrated features. Bucket allowlists are implemented;
+complete per-client/prefix isolation must not be assumed.
+Temporary Rekognition face IDs have a separate cleanup path; file retention
+belongs to bucket lifecycle. The pilot collection returned to zero stored faces.
 
-```text
-DEPLOY_GITHUB_PAGES=true
-```
+[Architecture](docs/architecture.en.md) · [Cloud references](docs/cloud-asset-references-and-staging.en.md)
 
-To make the public Pages URL work, the repository must either be public or use a GitHub plan that supports Pages for private repositories. After that:
+## Existing Capabilities, Honest Scope
 
-1. Go to `Settings -> Pages`.
-2. Set source to `GitHub Actions`.
-3. Create repository variable `DEPLOY_GITHUB_PAGES=true`.
-4. Re-run the `Docs` workflow.
+| Capability | Integration | Output |
+| --- | --- | --- |
+| Reference face in video — first pilot | AWS Rekognition | Matching timestamps and similarity |
+| Reference face in photos | AWS Rekognition image-batch search | Matching images grouped by `targetKey` |
+| Visible numbers in videos | Google Video Intelligence | Matching time ranges |
+| Generic faces in videos | Google Video Intelligence | Face occurrences, not identity recognition |
+| Visible numbers in photos | Google Vision OCR / AWS Rekognition | Matching images grouped by target |
+| Documents | Google Document AI | Structured document analysis |
 
-## Safety
+These integrations exist in code; this demo demonstrates the **AWS facial-video
+journey**, not a new validation of every provider. Bib-photo retrieval is the
+next product slice. General word and alphanumeric-code queries are planned,
+not implemented query types. No production frontend, accuracy SLA or load capacity is claimed.
 
-Never commit:
+## How To Integrate
 
-- `deploy/.env`
-- `secrets/*.json`
-- `secrets/aws-credentials`
-- Google credential files
-- AWS credential files
-- raw API keys
-- JWT signing keys
-- webhook signing secrets
+The backend accepts an authorized reference photo and compatible private S3
+videos, then returns findings for your application to display.
 
-Run the secret scan before pushing:
+1. Configure external credentials, AWS resources and the permitted S3 bucket.
+2. Submit `POST /api/v1/face-search-jobs` with an authorized client/profile,
+   cloud selectors and a manifest using opaque `targetKey` values.
+3. Poll `GET /api/v1/face-search-jobs/{jobId}` and retrieve its `/result`.
+4. Display returned timestamps and inspect `issues`, not only the job state.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ci\secret-scan.ps1 -Root .
-```
+The search endpoint does not create your source bucket or issue upload links.
+Multipart remains available for development and compatibility.
 
-Agent instructions and current technical context start at [AGENTS.md](AGENTS.md)
-and [docs/context/AI_ONBOARDING.md](docs/context/AI_ONBOARDING.md).
+[API contracts](docs/api.en.md) · [AWS setup](docs/aws-rekognition-face-search.en.md) ·
+[Local backend setup](docs/getting-started.en.md) · [Security](docs/security.en.md)
+
+## Repository Guide
+
+- `src/` — layered backend; `tests/` — automated checks.
+- `scripts/local-viewer/` — offline viewer; `docs/assets/demo/` — privacy-safe sample only.
+- `deploy/` — Compose and configuration examples; `docs/` — integration and operational references.
+- [AGENTS.md](AGENTS.md) and [AI onboarding](docs/context/AI_ONBOARDING.md) — operational context for contributors and AI.
+
+Keep originals, credentials and raw biometric responses outside Git. The ignored
+`outputs/private/` workspace is for local-only artifacts, not distribution.

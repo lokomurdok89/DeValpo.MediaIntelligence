@@ -16,7 +16,6 @@ other AI agent working in `DeValpo.MediaIntelligence`.
 - `secrets/`
 - `site/`
 - `bin/`, `obj/`, `TestResults/`
-- `docs/archive/` unless auditing historical planning.
 - `docs/reference/` unless provider setup, endpoint diagrams or long evidence are needed.
 
 ## Short Repo Map
@@ -30,7 +29,6 @@ other AI agent working in `DeValpo.MediaIntelligence`.
 - `docs/modules/`: short module documentation.
 - `docs/reference/`: long task-specific references.
 - `docs/specs/`: feature specs.
-- `docs/adr/`: architecture decision records.
 
 ## Choose Documentation By Task
 
@@ -41,7 +39,7 @@ other AI agent working in `DeValpo.MediaIntelligence`.
 - Provider work: read the relevant module doc and only the required provider reference.
 - Cloud references or staging: read `docs/cloud-asset-references-and-staging.md`
   and `docs/modules/cloud-assets.md`.
-- QA/release: read `docs/qa.md`, `docs/operations.md` and CI scripts.
+- Release/operations: read `docs/operations.md`, `docs/testing/TESTING_STRATEGY.md` and CI scripts.
 
 ## Recommended Flow
 
@@ -56,6 +54,6 @@ other AI agent working in `DeValpo.MediaIntelligence`.
 
 - Use one conversation per feature or PR.
 - Do not mix unrelated features in one run.
-- Do not read `docs/reference/` or `docs/archive/` unless needed.
+- Do not read `docs/reference/` unless needed.
 - Do not commit unless the user explicitly asks.
 - For documentation-only requests, do not modify source code.

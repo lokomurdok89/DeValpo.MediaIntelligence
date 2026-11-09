@@ -10,3 +10,6 @@ playwright-report/
 *.user
 *.suo
 /storage/
+secrets/
+**/.env
+outputs/private/

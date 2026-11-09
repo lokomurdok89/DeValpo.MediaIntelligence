@@ -14,7 +14,7 @@ Local and release operations rely on Docker Compose, health checks, readiness ch
 ## Local Docker
 
 ```powershell
-docker compose -f deploy\docker-compose.yml config
+docker compose -f deploy\docker-compose.yml config --quiet
 docker compose -f deploy\docker-compose.yml up --build
 docker compose -f deploy\docker-compose.yml ps
 ```
@@ -39,3 +39,13 @@ Components:
 CI validates build, tests, migrations, secret scan, Docker and Trivy. The documentation site is built with `mkdocs build --strict` and published through GitHub Pages from `main`.
 
 More detail: [GitHub CI/CD](github-ci-cd.md).
+
+## Diagnosis
+
+Use `docker compose -f deploy/docker-compose.yml logs media-intelligence-api`
+locally without sharing secrets. `Pending` can indicate a stopped worker;
+`Failed` requires checking normalized issues and provider logs. For `401`, `403`,
+invalid uploads, credentials or webhook failures, use the existing
+[error reference](reference/api-endpoint-flows.en.md).
+[AWS setup and diagnosis](aws-rekognition-face-search.en.md) is now the single
+provider guide, alongside [production credentials](reference/production-cloud-credentials.md).

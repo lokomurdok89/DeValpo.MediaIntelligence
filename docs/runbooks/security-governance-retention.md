@@ -1,6 +1,6 @@
 # Security, Governance And Retention Runbook
 
-This runbook covers the local product controls added in Phase 9: audit trail, per-client retention, PII/log handling and the preparation path for managed secrets.
+This runbook covers the local product controls: audit trail, per-client retention, PII/log handling and the preparation path for managed secrets.
 
 ## Access Model
 
