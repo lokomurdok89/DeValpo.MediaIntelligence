@@ -1,28 +1,95 @@
 # DeValpo.MediaIntelligence
 
-> Encuentra el momento que importa, sin sacar el catálogo de medios de tu plataforma.
+> **Motor cloud-first de análisis y búsqueda multimedia desarrollado con ASP.NET Core, PostgreSQL y adaptadores AWS/Google.**
 
 [English](README.md) | **Español**
 
-MediaIntelligence es un **backend cloud-first de búsqueda multimedia** para
-integrar descubrimiento de fotos y videos en tu producto. Envía referencias a
-archivos privados y un objetivo; recibe resultados estructurados para tu interfaz.
+**Fotos, videos y documentos privados → AWS / Google → resultados estructurados para tu aplicación.**
+MediaIntelligence es un backend que orquesta análisis documental, búsqueda de
+imágenes y búsqueda en videos mediante servicios externos de IA. Las aplicaciones
+envían trabajos autenticados con referencias estructuradas a objetos privados
+S3/GCS y parámetros del caso de uso; los workers alojados procesan esos trabajos
+de forma asíncrona, convierten las respuestas de los proveedores a modelos internos
+y persisten estado, hallazgos e incidencias en PostgreSQL.
 
-**Ejemplo funcional:** buscar una cara de referencia en un video S3, obtener
-sus timestamps y seleccionar una coincidencia para llegar a ese momento.
+Cloud-first significa que la entrada habitual de producción son referencias al
+almacenamiento, en lugar de volver a subir los mismos medios por la API de la
+aplicación en cada solicitud. Se utiliza staging cuando el proveedor lo requiere.
+Tu aplicación conserva catálogo y reglas de acceso, y consume los resultados
+mediante endpoints HTTP. El visor incluido consume resultados guardados de forma
+offline; no es un frontend obligatorio.
 
-[![Vista ilustrada: resultados reales, video privado protegido](docs/assets/demo/preview.svg)](#probar-la-demo-anonimizada)
+```mermaid
+flowchart LR
+    App["Tu aplicación"] -->|"Referencias S3 / GCS + objetivo"| Engine["Motor MediaIntelligence"]
+    Engine --> AWS["AWS Rekognition: búsqueda facial"]
+    Engine --> Google["Google: OCR, video y documentos"]
+    AWS --> Result["Hallazgos + timestamps + scores + incidencias"]
+    Google --> Result
+    Result --> UI["Tu interfaz, flujo o integración"]
+    Engine -. "Siguiente fase" .-> YOLO["YOLO / detección en tiempo real: previsto"]
+    Engine -. "Punto de extensión" .-> Other["Otros modelos, herramientas o motores"]
+```
 
-**[Probar la demo](#probar-la-demo-anonimizada)** · **[Ver el resultado](#qué-devolvió-la-ejecución-real)** · **[Entender la arquitectura](#cloud-first-desde-el-diseño)** · **[Integrar](docs/api.md)**
+**El motor orquesta; los adaptadores resuelven el comportamiento de cada proveedor.**
+Las interfaces de Application separan los casos de uso de los SDK en Infrastructure;
+los DTO públicos no exponen tipos de los proveedores ni de EF Core. AWS Rekognition
+aporta búsqueda por cara de referencia; Google Vision, Video Intelligence y
+Document AI cubren OCR, análisis de video y procesamiento documental. No son
+capacidades intercambiables de reconocimiento de identidad.
 
-## Qué Puedes Explorar
+### Extensibilidad Y Siguiente Fase
 
-- **Un flujo facial en video que funciona:** referencias S3 privadas → trabajo asíncrono → resultados estructurados.
-- **Un visor offline:** selecciona un hallazgo guardado y salta al momento, sin credenciales cloud.
-- **Un backend por capas:** ASP.NET Core, PostgreSQL y adaptadores AWS/Google con responsabilidades separadas.
+**El motor no está limitado a AWS ni a Google.** Su arquitectura basada en
+adaptadores ofrece puntos de integración para otros modelos, herramientas y
+motores de procesamiento, incluidos servicios propios o autoalojados. Cada
+integración implementa las interfaces correspondientes y convierte sus resultados
+a los modelos de la aplicación; las capacidades nuevas pueden requerir también
+casos de uso o contratos nuevos. Es extensibilidad mediante código, no compatibilidad
+automática plug-and-play con cualquier motor.
 
-Tu aplicación conserva usuarios, permisos y catálogo multimedia. Este repositorio
-se concentra en procesar trabajos y devolver hallazgos, no en sustituir tu plataforma.
+**Siguiente fase: integrar YOLO para detección de objetos, con el procesamiento
+en tiempo real como dirección prevista.** Se incorporarán el adaptador y la
+orquestación de streaming correspondientes, manteniendo la separación entre
+proveedores y lógica de aplicación. Es trabajo previsto, no implementado:
+el motor actual procesa trabajos enviados, no transmisiones en vivo.
+
+**[Probar la demo](#probar-la-demo-anonimizada)** · **[Ver el resultado](#qué-devolvió-la-ejecución-real)** · **[Seguir la arquitectura](#cloud-first-desde-el-diseño)** · **[Integrar](docs/api.md)**
+
+## Qué Obtienes
+
+**Ejemplo funcional: foto de referencia + video privado S3 → momentos coincidentes → clic para saltar.**
+El piloto AWS guardado devolvió **39 registros en 32 timestamps distintos**, con
+**0 incidencias reportadas**, sobre un **video de 72 segundos**.
+
+| Entrada | Salida del motor | Qué puede hacer tu aplicación |
+| --- | --- | --- |
+| Cara de referencia + video S3 | Timestamps y scores de similitud | Saltar a los momentos coincidentes |
+| Número visible + fotos o video | Imágenes o rangos temporales coincidentes | Filtrar una galería o destacar un fragmento |
+| Documento + perfil de análisis | Análisis estructurado del documento | Alimentar otro flujo de trabajo |
+
+Un hallazgo concreto del [resultado público anonimizado](docs/assets/demo/public-result.json):
+
+```json
+{
+  "videoFileName": "public-demo-media-withheld.mp4",
+  "startTimeSeconds": 6.506,
+  "endTimeSeconds": 6.506,
+  "similarity": 92.05,
+  "sourceProvider": "AwsRekognition"
+}
+```
+
+Es una coincidencia guardada, no una respuesta API completa. Una búsqueda exitosa
+sin hallazgos devuelve una colección vacía; los errores permanecen separados.
+La similitud es un score del proveedor, no un porcentaje de precisión medida.
+
+[![Demo ilustrada: 39 registros reales y clic para saltar; video original protegido](docs/assets/demo/preview.svg)](#probar-la-demo-anonimizada)
+
+**Qué esperar de la demo:** ver 39 registros guardados, seleccionar el primero y
+saltar al segundo **6,506**; después reproducir o avanzar al siguiente hallazgo.
+El video es un sustituto generado e identificado; los tiempos y scores son reales.
+No se publican fotogramas ni audio originales.
 
 ## Probar La Demo Anonimizada
 
@@ -100,14 +167,27 @@ MediaIntelligence recibe `assetSelectorJson` y, para caras de referencia,
 `referenceAssetSelectorJson`: campos de bucket/objeto, no URLs públicas ni prefirmadas.
 
 ```mermaid
-flowchart LR
-    P["Tu plataforma: medios + acceso"] --> S["Video S3 privado + foto de referencia"]
-    S --> A["API: referencias + targetKey"]
-    A --> J["Persistir trabajo / devolver 202"]
-    J --> W["Worker alojado en la API"]
-    W --> R["AWS Rekognition"]
-    R --> D["PostgreSQL: hallazgos + incidencias"]
-    D --> U["Tu interfaz: leer resultado / saltar"]
+sequenceDiagram
+    participant App as Tu aplicación
+    participant API as API MediaIntelligence
+    participant DB as PostgreSQL
+    participant Worker as Worker alojado en la API
+    participant AWS as AWS Rekognition
+    App->>API: Selectores de foto y video (S3)
+    API->>DB: Persistir trabajo
+    API-->>App: 202 Accepted + ID del trabajo
+    Worker->>DB: Cargar trabajo pendiente
+    Worker->>AWS: Iniciar búsqueda facial
+    AWS-->>Worker: ID del trabajo
+    loop Hasta completar el trabajo del proveedor
+        Worker->>AWS: Consultar estado / resultados
+        AWS-->>Worker: Estado / hallazgos
+    end
+    Worker->>DB: Guardar hallazgos e incidencias
+    App->>API: Consultar resultado
+    API->>DB: Leer resultado guardado
+    API-->>App: Timestamps + similitud + incidencias
+    Note over App: Mostrar hallazgos y saltar en reproducción autorizada
 ```
 
 | Capa | Responsabilidad |
@@ -145,7 +225,7 @@ archivos. La colección del piloto terminó con cero caras almacenadas.
 
 Estas integraciones existen en código; la demo demuestra el **recorrido facial
 AWS en video**, no una validación nueva de todos los proveedores. La búsqueda
-de fotos por dorsal sigue como próxima experiencia. Las consultas generales
+de fotos por dorsal queda como una experiencia posterior. Las consultas generales
 de palabras y códigos alfanuméricos están previstas, no implementadas.
 No se afirma un frontend productivo, SLA de precisión ni capacidad de carga medida.
 

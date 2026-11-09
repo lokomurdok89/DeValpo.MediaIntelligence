@@ -48,6 +48,13 @@
 - Treat GitHub as a technical portfolio: visitors should quickly understand the
   implemented result, try the privacy-safe demo and inspect the architecture.
   Keep current diagrams; remove superseded phase plans and bib-only sequences.
+- README first-screen messaging leads with the cloud-first engine, existing
+  AWS/Google adapters and concrete output, not just the viewer. Keep architecture
+  and sequence diagrams inline for GitHub readers. The next planned phase is
+  YOLO object detection with real-time processing as the intended direction.
+  Other models, tools and engines remain extensible through adapters, not
+  automatically compatible. YOLO and streaming are not implemented; this
+  documentation decision does not authorize implementation or cloud execution.
 
 ## Architecture
 

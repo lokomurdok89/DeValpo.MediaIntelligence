@@ -75,6 +75,14 @@ JSON sources remain, alongside the presentation and public demo. Documentation
 no longer claims that the retired diagram versions are retained. GitHub is the
 technical portfolio entry point, not a sales proposal.
 
+The bilingual README now leads with the cloud-first engine and an inline
+AWS/Google integration map, followed by a real sanitized finding and expected
+demo behavior. An inline sequence explains the asynchronous facial-video flow.
+YOLO object detection is now the next planned phase, with real-time processing
+as the intended direction. README EN/ES distinguish this planned adapter and
+streaming extension from the implemented job engine, and explain how other
+models, tools and processing engines can be integrated through adapters.
+
 ## Recommended Next Work
 
 1. Keep one conversation per feature or PR.

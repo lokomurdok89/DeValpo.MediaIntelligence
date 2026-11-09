@@ -9,7 +9,14 @@ its saved AWS result, then seeks to a selected occurrence without calling AWS.
 See the [existing results](examples/video-result-evidence.md) and
 [current scope](specs/s3-video-face-search-map.md).
 
-## Next Visible Value
+## Next Phase — YOLO Integration
+
+Integrate YOLO for object detection, with real-time processing as the intended
+direction. This requires a new adapter and streaming orchestration; neither is
+implemented. The same extension approach can support other models, tools or
+processing engines, with use-case and contract changes where necessary.
+
+## Existing Demo And Later Extensions
 
 - The three-video gallery is implemented. The specifically authorized S3 run
   on 2026-11-09 added 39 clickable AWS records for the 1:12 H.264 copy, alongside

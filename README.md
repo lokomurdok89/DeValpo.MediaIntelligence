@@ -1,28 +1,92 @@
 # DeValpo.MediaIntelligence
 
-> Find the moment that matters — without moving your media catalog out of your platform.
+> **Cloud-first media analysis and search engine built with ASP.NET Core, PostgreSQL and AWS/Google adapters.**
 
 **English** | [Español](README.es.md)
 
-MediaIntelligence is a **cloud-first media-search backend** for teams building
-photo and video discovery into their own products. Send private storage references
-and a search target; receive structured findings your application can display.
+**Private photos, videos and documents → AWS / Google → structured results for your application.**
+MediaIntelligence is a backend that orchestrates document analysis, image search
+and video search through external AI services. Applications submit authenticated
+jobs with structured references to private S3/GCS objects and use-case parameters;
+hosted workers process them asynchronously, map provider responses to internal
+models and persist job state, findings and processing issues in PostgreSQL.
 
-**Working example:** find a reference face in an S3 video, retrieve its
-timestamps, and click a finding to jump to that moment.
+Cloud-first means storage references are the normal production input, rather
+than uploading the same media through the application API for each request.
+Provider-specific staging is used when needed. Your application retains its media
+catalog and access rules, and consumes results through HTTP endpoints. The bundled
+viewer is an offline consumer of saved results, not a required frontend.
 
-[![Illustrated preview: real results, private footage withheld](docs/assets/demo/preview.svg)](#try-the-privacy-safe-demo)
+```mermaid
+flowchart LR
+    App["Your application"] -->|"S3 / GCS references + target"| Engine["MediaIntelligence engine"]
+    Engine --> AWS["AWS Rekognition: face search"]
+    Engine --> Google["Google: OCR, video and documents"]
+    AWS --> Result["Findings + timestamps + scores + issues"]
+    Google --> Result
+    Result --> UI["Your UI, workflow or integration"]
+    Engine -. "Next phase" .-> YOLO["YOLO / real-time detection: planned"]
+    Engine -. "Extension point" .-> Other["Other models, tools or processing engines"]
+```
 
-**[Try the demo](#try-the-privacy-safe-demo)** · **[See the result](#what-the-real-run-returned)** · **[Understand the architecture](#cloud-first-by-design)** · **[Integrate](docs/api.en.md)**
+**The engine owns orchestration; adapters own provider-specific behavior.**
+Application interfaces separate use cases from the SDKs in Infrastructure;
+public DTOs do not expose provider SDK or EF Core types. AWS Rekognition supplies
+reference-face search, while Google Vision, Video Intelligence and Document AI
+cover OCR, video analysis and document processing. These capabilities are not
+interchangeable identity-recognition services.
 
-## What You Can Explore
+### Extensibility And Next Phase
 
-- **A working facial-video flow:** private S3 references → asynchronous job → structured findings.
-- **An offline result viewer:** click a saved finding and seek, without cloud credentials.
-- **A layered backend:** ASP.NET Core, PostgreSQL and AWS/Google adapters with clear boundaries.
+**The engine is not limited to AWS or Google.** Its adapter-based architecture
+provides integration points for additional models, tools and processing engines,
+including custom or self-hosted services. Each integration implements the relevant
+interfaces and maps its output to the application's models; new capabilities may
+also require new use cases or contracts. This is extensibility through code,
+not automatic plug-and-play compatibility with every engine.
 
-Your application keeps its users, permissions and media catalog. This repository
-focuses on processing jobs and returning findings, not replacing your platform.
+**Next phase: integrate YOLO for object detection, with real-time processing as
+the intended direction.** This work will add the appropriate adapter and streaming
+orchestration while preserving the separation between providers and application
+logic. It is planned, not implemented: the current engine processes submitted
+jobs, not live streams.
+
+**[Try the demo](#try-the-privacy-safe-demo)** · **[See the result](#what-the-real-run-returned)** · **[Follow the architecture](#cloud-first-by-design)** · **[Integrate](docs/api.en.md)**
+
+## What You Get
+
+**Working example: reference photo + private S3 video → matching moments → click to seek.**
+The saved AWS pilot returned **39 match records at 32 distinct timestamps**, with
+**0 reported issues**, from a **72-second video**.
+
+| Input | Engine output | What your app can do |
+| --- | --- | --- |
+| Reference face + S3 video | Timestamps and similarity scores | Jump to matching moments |
+| Visible-number target + photos or video | Matching images or time ranges | Filter a gallery or highlight a clip |
+| Document + analysis profile | Structured document analysis | Feed a downstream workflow |
+
+A concrete finding from the [public, sanitized result](docs/assets/demo/public-result.json):
+
+```json
+{
+  "videoFileName": "public-demo-media-withheld.mp4",
+  "startTimeSeconds": 6.506,
+  "endTimeSeconds": 6.506,
+  "similarity": 92.05,
+  "sourceProvider": "AwsRekognition"
+}
+```
+
+This is one saved match, not a complete API response. A successful search with no
+findings returns an empty collection; errors remain separate. Similarity is a
+provider score, not a measured accuracy percentage.
+
+[![Illustrated demo: 39 real match records, click a finding to seek; original footage withheld](docs/assets/demo/preview.svg)](#try-the-privacy-safe-demo)
+
+**Expected demo experience:** see 39 saved records, click the first finding and
+jump to **6.506 seconds**, then play or move to the next finding. The video is a
+labeled generated substitute; the times and scores are real. No original frames
+or audio are published.
 
 ## Try The Privacy-Safe Demo
 
@@ -98,14 +162,27 @@ MediaIntelligence accepts `assetSelectorJson` and, for reference-face workflows,
 `referenceAssetSelectorJson`: structured bucket/object references, not public or presigned URLs.
 
 ```mermaid
-flowchart LR
-    P["Your platform: media + access"] --> S["Private S3 video + reference photo"]
-    S --> A["API: references + targetKey"]
-    A --> J["Persist job / return 202"]
-    J --> W["Hosted worker"]
-    W --> R["AWS Rekognition"]
-    R --> D["PostgreSQL: findings + issues"]
-    D --> U["Your UI: read result / seek"]
+sequenceDiagram
+    participant App as Your application
+    participant API as MediaIntelligence API
+    participant DB as PostgreSQL
+    participant Worker as Hosted worker
+    participant AWS as AWS Rekognition
+    App->>API: Reference photo + video selectors (S3)
+    API->>DB: Persist job
+    API-->>App: 202 Accepted + job ID
+    Worker->>DB: Load pending job
+    Worker->>AWS: Start facial search
+    AWS-->>Worker: Job ID
+    loop Until provider job finishes
+        Worker->>AWS: Get search status / results
+        AWS-->>Worker: Status / findings
+    end
+    Worker->>DB: Save findings and issues
+    App->>API: Get job result
+    API->>DB: Read saved result
+    API-->>App: Timestamps + similarity + issues
+    Note over App: Display findings and seek in authorized playback
 ```
 
 | Boundary | Responsibility |
@@ -143,7 +220,7 @@ belongs to bucket lifecycle. The pilot collection returned to zero stored faces.
 
 These integrations exist in code; this demo demonstrates the **AWS facial-video
 journey**, not a new validation of every provider. Bib-photo retrieval is the
-next product slice. General word and alphanumeric-code queries are planned,
+a later product slice. General word and alphanumeric-code queries are planned,
 not implemented query types. No production frontend, accuracy SLA or load capacity is claimed.
 
 ## How To Integrate

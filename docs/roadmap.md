@@ -9,7 +9,15 @@ video con su resultado AWS guardado y saltar a una coincidencia sin llamar a AWS
 Consulta los [resultados existentes](examples/video-result-evidence.md) y el
 [alcance actual](specs/s3-video-face-search-map.md).
 
-## Próximo Valor Visible
+## Siguiente Fase — Integración YOLO
+
+Integrar YOLO para detección de objetos, con el procesamiento en tiempo real
+como dirección prevista. Requiere un nuevo adaptador y orquestación de streaming;
+ninguno está implementado. El mismo enfoque de extensión permite incorporar
+otros modelos, herramientas o motores, adaptando casos de uso y contratos cuando
+sea necesario.
+
+## Demo Existente Y Extensiones Posteriores
 
 - La galería de tres videos ya está implementada. La ejecución S3 autorizada
   del 2026-11-09 añadió 39 registros AWS seleccionables para la copia H.264 de
