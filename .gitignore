@@ -6,8 +6,8 @@ obj/
 *.suo
 .env
 deploy/.env
-secrets/*.json
-secrets/aws-credentials
+/secrets/*
+!/secrets/.gitkeep
 *.db
 /storage/
 TestResults/

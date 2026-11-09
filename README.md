@@ -65,21 +65,105 @@ The saved AWS pilot returned **39 match records at 32 distinct timestamps**, wit
 | Visible-number target + photos or video | Matching images or time ranges | Filter a gallery or highlight a clip |
 | Document + analysis profile | Structured document analysis | Feed a downstream workflow |
 
-A concrete finding from the [public, sanitized result](docs/assets/demo/public-result.json):
+### Input → Output: Facial Search In Video
+
+**Input:** one private video, an authorized reference photo and a similarity
+threshold of 80. Bucket names, object paths and identifiers below are illustrative,
+not the original pilot request or published credentials.
+
+`POST /api/v1/face-search-jobs` accepts authenticated **multipart/form-data**.
+For readability, the form fields are shown together as JSON below. Serialize
+`manifestJson`, `assetSelectorJson` and `referenceAssetSelectorJson` individually
+as JSON strings in their form fields; **do not send this whole object as an
+application/json request body**. The cloud-reference flow needs no media upload.
 
 ```json
 {
-  "videoFileName": "public-demo-media-withheld.mp4",
-  "startTimeSeconds": 6.506,
-  "endTimeSeconds": 6.506,
-  "similarity": 92.05,
-  "sourceProvider": "AwsRekognition"
+  "clientKey": "<authorized-client-key>",
+  "profileKey": "event-face-search-v1",
+  "manifestJson": {
+    "minSimilarity": 80,
+    "targets": [
+      {
+        "targetKey": "subject-001",
+        "referenceImageKey": "reference-001"
+      }
+    ]
+  },
+  "assetSelectorJson": {
+    "selectorMode": "ExplicitAssets",
+    "storageProvider": "S3",
+    "bucketName": "<private-video-bucket>",
+    "region": "<aws-region>",
+    "assets": [
+      {
+        "assetKey": "video-001",
+        "objectKey": "demo/source-video.mp4",
+        "contentType": "video/mp4"
+      }
+    ]
+  },
+  "referenceAssetSelectorJson": {
+    "selectorMode": "ExplicitAssets",
+    "storageProvider": "S3",
+    "bucketName": "<private-reference-bucket>",
+    "region": "<aws-region>",
+    "assets": [
+      {
+        "assetKey": "reference-001",
+        "objectKey": "demo/reference-photo.jpg",
+        "contentType": "image/jpeg"
+      }
+    ]
+  }
 }
 ```
 
-This is one saved match, not a complete API response. A successful search with no
-findings returns an empty collection; errors remain separate. Similarity is a
-provider score, not a measured accuracy percentage.
+**Output:** after the job completes, read
+`GET /api/v1/face-search-jobs/{jobId}/result`. Below are the **first three of 39
+real match records** from the privacy-safe derivative, with `status` and `issues`.
+This is an abbreviated, anonymized result, not the full API response: job/client,
+target/reference identifiers and timestamps describing job creation/completion
+are omitted; the original video filename is replaced with the demo filename.
+
+```json
+{
+  "status": "Completed",
+  "issues": [],
+  "faceMatches": [
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 6.506,
+      "endTimeSeconds": 6.506,
+      "similarity": 92.05,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 8.508,
+      "endTimeSeconds": 8.508,
+      "similarity": 93.4,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 13.513,
+      "endTimeSeconds": 13.513,
+      "similarity": 87.87,
+      "sourceProvider": "AwsRekognition"
+    }
+  ]
+}
+```
+
+**Read it as:** the reference face produced a candidate at **6.506 s**, with a
+similarity score of **92.05 / 100**; selecting that finding seeks to that moment.
+A zero-length start/end range represents a point occurrence, not a clip duration.
+Similarity is a provider score, not a measured accuracy percentage. An empty
+`faceMatches` array means no findings; always inspect `issues` separately.
+
+[Open all 39 records as JSON](docs/assets/demo/public-result.json) ·
+[Full API contract](docs/aws-rekognition-face-search.en.md#implemented-contract)
 
 [![Illustrated demo: 39 real match records, click a finding to seek; original footage withheld](docs/assets/demo/preview.svg)](#try-the-privacy-safe-demo)
 

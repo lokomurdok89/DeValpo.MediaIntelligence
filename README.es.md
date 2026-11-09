@@ -68,21 +68,107 @@ El piloto AWS guardado devolvió **39 registros en 32 timestamps distintos**, co
 | Número visible + fotos o video | Imágenes o rangos temporales coincidentes | Filtrar una galería o destacar un fragmento |
 | Documento + perfil de análisis | Análisis estructurado del documento | Alimentar otro flujo de trabajo |
 
-Un hallazgo concreto del [resultado público anonimizado](docs/assets/demo/public-result.json):
+### Entrada → Salida: Búsqueda Facial En Video
+
+**Entrada:** un video privado, una foto de referencia autorizada y un umbral
+de similitud de 80. Los buckets, rutas e identificadores siguientes son ejemplos,
+no la solicitud original del piloto ni credenciales publicadas.
+
+`POST /api/v1/face-search-jobs` recibe **multipart/form-data** autenticado.
+Para facilitar la lectura, los campos del formulario se muestran juntos como
+JSON. Serializa `manifestJson`, `assetSelectorJson` y
+`referenceAssetSelectorJson` por separado como cadenas JSON en sus respectivos
+campos; **no envíes este objeto completo como un cuerpo application/json**.
+El flujo por referencias cloud no necesita adjuntar los archivos multimedia.
 
 ```json
 {
-  "videoFileName": "public-demo-media-withheld.mp4",
-  "startTimeSeconds": 6.506,
-  "endTimeSeconds": 6.506,
-  "similarity": 92.05,
-  "sourceProvider": "AwsRekognition"
+  "clientKey": "<authorized-client-key>",
+  "profileKey": "event-face-search-v1",
+  "manifestJson": {
+    "minSimilarity": 80,
+    "targets": [
+      {
+        "targetKey": "subject-001",
+        "referenceImageKey": "reference-001"
+      }
+    ]
+  },
+  "assetSelectorJson": {
+    "selectorMode": "ExplicitAssets",
+    "storageProvider": "S3",
+    "bucketName": "<private-video-bucket>",
+    "region": "<aws-region>",
+    "assets": [
+      {
+        "assetKey": "video-001",
+        "objectKey": "demo/source-video.mp4",
+        "contentType": "video/mp4"
+      }
+    ]
+  },
+  "referenceAssetSelectorJson": {
+    "selectorMode": "ExplicitAssets",
+    "storageProvider": "S3",
+    "bucketName": "<private-reference-bucket>",
+    "region": "<aws-region>",
+    "assets": [
+      {
+        "assetKey": "reference-001",
+        "objectKey": "demo/reference-photo.jpg",
+        "contentType": "image/jpeg"
+      }
+    ]
+  }
 }
 ```
 
-Es una coincidencia guardada, no una respuesta API completa. Una búsqueda exitosa
-sin hallazgos devuelve una colección vacía; los errores permanecen separados.
-La similitud es un score del proveedor, no un porcentaje de precisión medida.
+**Salida:** al completar el trabajo, consulta
+`GET /api/v1/face-search-jobs/{jobId}/result`. Aquí se muestran los **primeros tres
+de 39 registros reales** del resultado anonimizado, junto con `status` e `issues`.
+Es un resultado abreviado y anonimizado, no la respuesta API completa: se omiten
+identificadores de trabajo/cliente, objetivo/referencia y fechas de creación/finalización;
+el nombre original del video se sustituye por el nombre usado en la demo.
+
+```json
+{
+  "status": "Completed",
+  "issues": [],
+  "faceMatches": [
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 6.506,
+      "endTimeSeconds": 6.506,
+      "similarity": 92.05,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 8.508,
+      "endTimeSeconds": 8.508,
+      "similarity": 93.4,
+      "sourceProvider": "AwsRekognition"
+    },
+    {
+      "videoFileName": "public-demo-media-withheld.mp4",
+      "startTimeSeconds": 13.513,
+      "endTimeSeconds": 13.513,
+      "similarity": 87.87,
+      "sourceProvider": "AwsRekognition"
+    }
+  ]
+}
+```
+
+**Cómo leerlo:** la cara de referencia produjo un candidato en el segundo
+**6,506**, con un score de similitud de **92,05 / 100**; seleccionar ese hallazgo
+permite saltar a ese momento. Inicio y fin iguales representan una ocurrencia
+puntual, no la duración de un fragmento. La similitud no es un porcentaje de
+precisión medida. Un array `faceMatches` vacío indica ausencia de hallazgos;
+revisa siempre `issues` por separado.
+
+[Ver los 39 registros completos en JSON](docs/assets/demo/public-result.json) ·
+[Contrato completo de la API](docs/aws-rekognition-face-search.md#contrato-implementado)
 
 [![Demo ilustrada: 39 registros reales y clic para saltar; video original protegido](docs/assets/demo/preview.svg)](#probar-la-demo-anonimizada)
 
